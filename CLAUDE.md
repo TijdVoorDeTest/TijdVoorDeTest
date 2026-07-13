@@ -276,10 +276,19 @@ question counts as covered more than once).
     - Strict types declaration required
     - Trailing commas in multiline structures
     - No else-only blocks
+    - `@Symfony` already enforces alphabetical import ordering (`ordered_imports`), single-quoted strings
+      (`single_quote`), and stripping redundant/empty PHPDoc (`no_superfluous_phpdoc_tags`, `no_empty_phpdoc`) — no
+      project-specific overrides needed for these
+- **Docblocks**: only write one when it adds information beyond the method signature (e.g. `@throws`, a non-obvious
+  edge case or constraint) — don't restate parameter/return types already expressed by PHP type declarations.
+  `no_superfluous_phpdoc_tags`/`no_empty_phpdoc` above strip redundant tags/blocks mechanically; whether to write a
+  docblock at all is this convention
 - **Rector**: Aggressive modernization with all attribute sets + prepared sets (dead code, code quality, Doctrine,
   Symfony, PHPUnit)
 - **PHPStan**: Level 8 with extensions for Doctrine and Symfony
-- **Twig-CS-Fixer**: Template style enforcement
+- **Twig-CS-Fixer**: Explicit ruleset in `.twig-cs-fixer.php` (default `TwigCsFixer` standard for
+  formatting/whitespace/quotes, plus the `Symfony` standard for template/directory naming conventions) — pinned
+  explicitly rather than relying on the package's implicit defaults
 - **Safe functions**: Use `thecodingmachine/safe` wrappers for standard PHP functions that return `false` on failure —
   they throw exceptions instead
 - **TypeScript (`assets/`)**: Compiled via `sensiolabs/typescript-bundle` (standalone SWC binary, no Node/npm).
