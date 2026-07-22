@@ -60,6 +60,7 @@ Corrections: Jokers
 'Could not find candidate with name {name}': 'Kon kandidaat met naam {name} niet vinden'
 'Could not find candidate with name {name} in elimination.': 'Kon geen kandidaat vinden met de naam {name} in de eliminatie'
 'Could not load releases from GitHub.': 'Kan releases niet laden van GitHub.'
+Create: Aanmaken
 'Create a season': 'Maak een seizoen aan'
 'Create an account': 'Maak een account aan'
 'Create an empty quiz and add questions from the question bank.': 'Maak een lege quiz aan en voeg vragen toe vanuit de vragenbank.'
@@ -183,6 +184,7 @@ Quiz: Test
 'Quiz finalized': 'Test afgerond'
 'Quiz is no longer finalized': 'Test is niet langer afgerond'
 'Quiz name': Testnaam
+'Quiz renamed': 'Test hernoemd'
 Quizzes: Tests
 Randomize: Husselen
 'Re-opens the quiz for editing. Candidates will no longer be able to take the quiz until it is finalized again.': 'Heropent de test voor bewerking. Deelnemers kunnen de test niet meer afnemen totdat deze opnieuw is afgerond.'
@@ -197,6 +199,8 @@ Releases: Releases
 'Remove label': 'Label verwijderen'
 Rename: Hernoemen
 'Rename candidate': 'Kandidaat hernoemen'
+'Rename quiz': 'Test hernoemen'
+'Rename season': 'Seizoen hernoemen'
 'Repeat Password': 'Herhaal wachtwoord'
 'Resend confirmation email': 'Bevestigingsmail opnieuw versturen'
 'Reset password': 'Wachtwoord resetten'
@@ -213,6 +217,7 @@ Season: Seizoen
 'Season Name': Seizoennaam
 'Season code': Seizoenscode
 'Season code regenerated': 'Seizoenscode opnieuw gegenereerd'
+'Season renamed': 'Seizoen hernoemd'
 Seasons: Seizoenen
 'Send password reset email': 'Stuur reset-e-mail'
 Settings: Instellingen
@@ -233,7 +238,9 @@ Submit: Verstuur
 'The quiz has already been filled in and can no longer be altered': 'De test is al ingevuld en kan niet meer aangepast worden'
 'The quiz is already finalized': 'De test is al afgerond'
 'The quiz must be finalized before it can be activated': 'De test moet afgerond zijn voordat deze geactiveerd kan worden'
+'The quiz name must be between 1 and 64 characters': 'De naam van de test moet tussen de 1 en 64 tekens zijn'
 'The season code is used by candidates to join this season. Regenerating it invalidates the current code, so make sure to share the new one.': 'De seizoenscode wordt door kandidaten gebruikt om dit seizoen te vinden. Als je een nieuwe code genereert, werkt de oude niet meer, dus deel de nieuwe code opnieuw.'
+'The season name must be between 1 and 64 characters': 'De naam van het seizoen moet tussen de 1 en 64 tekens zijn'
 'There are no answers for this question': 'Er zijn geen antwoorden voor deze vraag'
 'There is already an account with this email': 'Er is al een account met dit e-mailadres'
 'There is no active quiz': 'Er is geen test actief'

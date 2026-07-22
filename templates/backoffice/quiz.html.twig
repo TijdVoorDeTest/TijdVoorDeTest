@@ -1,5 +1,7 @@
 {% extends 'backoffice/base.html.twig' %}
 
+{% import 'backoffice/partials/rename_control.html.twig' as rename %}
+
 {% block title %}{{ parent() }}{{ season.name }}{% endblock %}
 
 {% block breadcrumbs %}
@@ -20,7 +22,13 @@
         {id: 'answers', label: 'Answer Mapping'|trans, route: 'tvdt_backoffice_quiz_candidates'},
     ] %}
 
-    <h2 class="mb-3">{{ 'Quiz'|trans }}: {{ season.name }} - {{ quiz.name }}</h2>
+    <h2 class="mb-3 d-flex align-items-center gap-2 rename-trigger-host">
+        {{ 'Quiz'|trans }}: {{ season.name }} - {{ quiz.name }}
+        {{ rename.trigger('renameQuizModal') }}
+    </h2>
+
+    {{ rename.modal('renameQuizModal', 'Rename quiz'|trans, path('tvdt_backoffice_quiz_rename', {quiz: quiz.id}), csrf_token('rename_quiz'), quiz.name, 64) }}
+
     <ul class="nav nav-tabs mb-3">
         {% for tab in tabs %}
             <li class="nav-item">

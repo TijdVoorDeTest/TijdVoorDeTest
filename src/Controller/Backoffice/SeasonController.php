@@ -120,6 +120,32 @@ class SeasonController extends AbstractController
         return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
     }
 
+    #[IsCsrfTokenValid('rename_season')]
+    #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
+    #[Route(
+        '/backoffice/season/{seasonCode:season}/rename',
+        name: 'tvdt_backoffice_season_rename',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX],
+        methods: ['POST'],
+    )]
+    public function renameSeason(Season $season, Request $request): RedirectResponse
+    {
+        $name = mb_trim($request->request->getString('name'));
+
+        if ('' === $name || mb_strlen($name) > 64) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('The season name must be between 1 and 64 characters'));
+
+            return $this->redirectToRoute('tvdt_backoffice_season', ['seasonCode' => $season->seasonCode]);
+        }
+
+        $season->name = $name;
+        $this->em->flush();
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Season renamed'));
+
+        return $this->redirectToRoute('tvdt_backoffice_season', ['seasonCode' => $season->seasonCode]);
+    }
+
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
     #[Route(
         '/backoffice/season/{seasonCode:season}/add-candidate',
@@ -256,7 +282,7 @@ class SeasonController extends AbstractController
                     new Length(max: 64),
                 ],
             ])
-            ->add('save', SubmitType::class, ['label' => 'Create'])
+            ->add('save', SubmitType::class, ['label' => $this->translator->trans('Create'), 'translation_domain' => false])
             ->getForm();
 
         $form->handleRequest($request);

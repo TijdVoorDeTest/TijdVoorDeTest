@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tvdt\Controller\Backoffice;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Safe\DateTimeImmutable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -321,6 +322,39 @@ class QuizController extends AbstractController
             $this->em->flush();
             $this->addFlash(FlashType::Success, $this->translator->trans('Quiz is no longer finalized'));
         }
+
+        return $this->redirectToRoute('tvdt_backoffice_quiz', ['seasonCode' => $quiz->season->seasonCode, 'quiz' => $quiz->id]);
+    }
+
+    #[IsCsrfTokenValid('rename_quiz')]
+    #[IsGranted(SeasonVoter::EDIT, subject: 'quiz')]
+    #[Route(
+        '/backoffice/quiz/{quiz}/rename',
+        name: 'tvdt_backoffice_quiz_rename',
+        requirements: ['quiz' => Requirement::UUID],
+        methods: ['POST'],
+    )]
+    public function renameQuiz(Quiz $quiz, Request $request): RedirectResponse
+    {
+        $name = mb_trim($request->request->getString('name'));
+
+        if ('' === $name || mb_strlen($name) > 64) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('The quiz name must be between 1 and 64 characters'));
+
+            return $this->redirectToRoute('tvdt_backoffice_quiz', ['seasonCode' => $quiz->season->seasonCode, 'quiz' => $quiz->id]);
+        }
+
+        $quiz->name = $name;
+
+        try {
+            $this->em->flush();
+        } catch (UniqueConstraintViolationException) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('A quiz with this name already exists in this season'));
+
+            return $this->redirectToRoute('tvdt_backoffice_quiz', ['seasonCode' => $quiz->season->seasonCode, 'quiz' => $quiz->id]);
+        }
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Quiz renamed'));
 
         return $this->redirectToRoute('tvdt_backoffice_quiz', ['seasonCode' => $quiz->season->seasonCode, 'quiz' => $quiz->id]);
     }

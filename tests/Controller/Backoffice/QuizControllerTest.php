@@ -113,9 +113,9 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         $candidate = $this->getCandidate('Tom');
 
         $url = \sprintf('/backoffice/season/krtek/quiz/%s/candidates/%s', $quiz->id, $question->id);
-        $crawler = $this->client->request(Request::METHOD_GET, $url);
+        $this->client->request(Request::METHOD_GET, $url);
         self::assertResponseIsSuccessful();
-        $token = (string) $crawler->filter('input[name="_token"]')->first()->attr('value');
+        $token = $this->getCsrfTokenFromCurrentPage('/candidates/');
 
         $this->client->request(Request::METHOD_POST, $url, [
             '_token' => $token,

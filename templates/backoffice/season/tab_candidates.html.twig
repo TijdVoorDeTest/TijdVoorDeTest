@@ -1,3 +1,5 @@
+{% import 'backoffice/partials/rename_control.html.twig' as rename %}
+
 <div class="row" data-controller="bo--modal" data-action="turbo:submit-end->bo--modal#frameSubmitEnd">
     <div class="col-md-6 col-12">
         <div class="mb-3">
@@ -19,33 +21,14 @@
                                 title="{{ 'Delete'|trans }}"><i class="bi bi-trash"></i></button>
                     </div>
 
-                    <div class="modal fade" id="renameCandidate-{{ candidate.id }}"
-                         data-controller="bo--modal" data-bo--modal-target="modal"
-                         data-action="hidden.bs.modal->bo--modal#resetDirty"
-                         tabindex="-1" aria-labelledby="renameCandidate-{{ candidate.id }}Label" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <form action="{{ path('tvdt_backoffice_candidate_rename', {seasonCode: season.seasonCode, candidate: candidate.id}) }}"
-                                      method="POST">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="renameCandidate-{{ candidate.id }}Label">{{ 'Rename candidate'|trans }}</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-start">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('rename_candidate') }}">
-                                        <label class="form-label" for="renameCandidateName-{{ candidate.id }}">{{ 'Name'|trans }}</label>
-                                        <input type="text" class="form-control" id="renameCandidateName-{{ candidate.id }}"
-                                               name="name" value="{{ candidate.name }}" maxlength="16" required autofocus
-                                               data-action="input->bo--modal#markDirty change->bo--modal#markDirty">
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Cancel'|trans }}</button>
-                                        <button type="submit" class="btn btn-primary">{{ 'Rename'|trans }}</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    {{ rename.modal(
+                        'renameCandidate-' ~ candidate.id,
+                        'Rename candidate'|trans,
+                        path('tvdt_backoffice_candidate_rename', {seasonCode: season.seasonCode, candidate: candidate.id}),
+                        csrf_token('rename_candidate'),
+                        candidate.name,
+                        16,
+                    ) }}
 
                     <div class="modal fade" id="deleteCandidate-{{ candidate.id }}" data-bs-backdrop="static"
                          tabindex="-1" aria-labelledby="deleteCandidate-{{ candidate.id }}Label" aria-hidden="true">
