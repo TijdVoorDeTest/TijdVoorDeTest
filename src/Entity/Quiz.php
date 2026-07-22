@@ -10,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
+use Tvdt\Enum\QuizStatus;
 use Tvdt\Repository\QuizRepository;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
@@ -77,6 +78,16 @@ class Quiz
     /** A locked quiz can no longer be altered: it is either explicitly finalized or a candidate has already started filling it in. */
     public bool $isLocked {
         get => $this->isFinalized || $this->hasStartedCandidates;
+    }
+
+    public QuizStatus $status {
+        get => match (true) {
+            $this->season->activeQuiz === $this => QuizStatus::Active,
+            $this->questions->isEmpty() => QuizStatus::New,
+            !$this->isFinalized => QuizStatus::Concept,
+            !$this->hasStartedCandidates => QuizStatus::Ready,
+            default => QuizStatus::Finished,
+        };
     }
 
     public function addElimination(Elimination $elimination): self

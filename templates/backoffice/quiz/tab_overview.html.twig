@@ -26,13 +26,7 @@
 <div class="col-xl-8 col-12" data-controller="bo--quiz">
     <h4 class="mb-3">
         {{ 'Quick actions'|trans }}
-        {% if quiz.isFinalized %}
-            <span class="badge text-bg-success">{{ 'Finalized'|trans }}</span>
-        {% elseif quiz.isLocked %}
-            <span class="badge text-bg-warning">{{ 'Locked (answers given)'|trans }}</span>
-        {% else %}
-            <span class="badge text-bg-secondary">{{ 'Draft'|trans }}</span>
-        {% endif %}
+        <span class="badge text-bg-{{ quiz.status.badgeColour.value }}">{{ quiz.status.label|trans }}</span>
     </h4>
     <div class="mb-3 btn-group">
 

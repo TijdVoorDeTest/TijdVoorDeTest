@@ -50,6 +50,7 @@ Candidates: Kandidaten
 Close: Sluiten
 Colour: Kleur
 Completed: Voltooid
+Concept: Concept
 'Confirm Answers': 'Bevestig antwoorden'
 'Confirm your email address to enable this feature.': 'Bevestig je e-mailadres om deze functie te kunnen gebruiken.'
 'Confirm your email address to enable this.': 'Bevestig je e-mailadres om dit te gebruiken.'
@@ -96,6 +97,7 @@ Email: E-mail
 'Export to XLSX': 'Exporteren naar XLSX'
 Finalize: Afronden
 Finalized: Afgerond
+Finished: Afgerond
 'Forgot your password?': 'Wachtwoord vergeten?'
 Fullscreen: 'Volledig scherm'
 Gray: Grijs
@@ -126,6 +128,7 @@ Logout: Uitloggen
 Manage: Beheren
 'Manage Quiz': 'Beheer test'
 Name: Naam
+New: Nieuw
 'New email address': 'Nieuw e-mailadres'
 'New label': 'Nieuw label'
 'New password': 'Nieuw wachtwoord'
