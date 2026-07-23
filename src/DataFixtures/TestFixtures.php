@@ -8,11 +8,14 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Safe\DateTimeImmutable;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Tvdt\Entity\Answer;
 use Tvdt\Entity\Candidate;
+use Tvdt\Entity\GivenAnswer;
 use Tvdt\Entity\Question;
 use Tvdt\Entity\Quiz;
+use Tvdt\Entity\QuizCandidate;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\User;
 
@@ -50,6 +53,29 @@ final class TestFixtures extends Fixture implements FixtureGroupInterface, Depen
 
         $krtek = $this->getReference(KrtekFixtures::KRTEK_SEASON, Season::class);
         $krtek->addOwner($user);
+
+        // Gives Quiz 4 a real score so it can be carried into an Elimination (which only ever
+        // seeds candidates that QuizRepository::getScores() returns) — needed for
+        // tests/E2E/EliminationScreenE2ETest.php's real "prepare elimination" browser flow.
+        // Deliberately not Quiz 3: a started QuizCandidate makes hasStartedCandidates/isLocked
+        // true, which would break tests/E2E/QuestionEditModalE2ETest.php's assumption that
+        // Quiz 3's questions are still editable. Deliberately not "Tom": that candidate is
+        // relied on by several other tests (e.g. deletion tests) that don't expect a
+        // GivenAnswer to already exist for them.
+        $quiz4 = $krtek->quizzes->filter(static fn (Quiz $quiz): bool => 'Quiz 4' === $quiz->name)->first();
+        \assert($quiz4 instanceof Quiz);
+        $elise = $krtek->candidates->filter(static fn (Candidate $candidate): bool => 'Elise' === $candidate->name)->first();
+        \assert($elise instanceof Candidate);
+        $firstQuestion = $quiz4->questions->first();
+        \assert($firstQuestion instanceof Question);
+        $firstAnswer = $firstQuestion->answers->first();
+        \assert($firstAnswer instanceof Answer);
+
+        $quizCandidate = new QuizCandidate($quiz4, $elise);
+        $quizCandidate->started = new DateTimeImmutable();
+
+        $manager->persist($quizCandidate);
+        $manager->persist(new GivenAnswer($elise, $quiz4, $firstAnswer));
 
         $anotherSeason = new Season();
         $anotherSeason->name = 'Another Season';
