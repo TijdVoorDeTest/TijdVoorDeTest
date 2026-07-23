@@ -9,6 +9,7 @@
          failOnWarning="true"
          bootstrap="tests/bootstrap.php"
          cacheDirectory="/tmp/phpunit.cache"
+         defaultTestSuite="default"
 >
     <php>
         <ini name="display_errors" value="1" />
@@ -17,9 +18,38 @@
         <server name="SHELL_VERBOSITY" value="-1" />
     </php>
 
+    <!--
+        Three tiers, split by what each test actually needs (see CLAUDE.md's Testing Conventions):
+        unit: plain PHPUnit TestCase, no kernel, DB, or browser. Fast, no I/O.
+        integration: KernelTestCase/WebTestCase-based (DB, routing, the container). DAMA rolls
+        back each test's transaction, so these stay isolated and fast enough for every run.
+        e2e: Symfony Panther driving a real Chromium browser (see tests/E2E/). Runs in a
+        separate process DAMA can't wrap, so it's kept out of the default suite, run
+        explicitly with `just test-e2e`.
+        "default" is unit+integration together (excludes e2e) and is what bare `just test` runs;
+        passing an explicit testsuite, file, or directory argument to phpunit overrides this.
+    -->
     <testsuites>
-        <testsuite name="Project Test Suite">
+        <testsuite name="unit">
+            <directory>tests/Entity</directory>
+            <directory>tests/Helpers</directory>
+            <directory>tests/Security</directory>
+            <directory>tests/Service</directory>
+            <directory>tests/Twig</directory>
+            <exclude>tests/Service/DataExportServiceTest.php</exclude>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Command</directory>
+            <directory>tests/Controller</directory>
+            <directory>tests/Repository</directory>
+            <file>tests/Service/DataExportServiceTest.php</file>
+        </testsuite>
+        <testsuite name="e2e">
+            <directory>tests/E2E</directory>
+        </testsuite>
+        <testsuite name="default">
             <directory>tests</directory>
+            <exclude>tests/E2E</exclude>
         </testsuite>
     </testsuites>
 
@@ -33,6 +63,7 @@
     </source>
 
     <extensions>
+        <bootstrap class="Symfony\Component\Panther\ServerExtension" />
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
     </extensions>
 </phpunit>

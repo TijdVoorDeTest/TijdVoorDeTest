@@ -128,6 +128,17 @@ phpstan *args:
 test *args:
     docker compose exec php vendor/bin/phpunit {{ args }}
 
+# Browser-driven E2E tests (Symfony Panther). Reloads the test DB before AND after: these tests
+# mutate real data (e.g. renames) in a separate process from PHPUnit, so DAMA's per-test
+# rollback doesn't cover them, and `just test` afterwards would otherwise see dirty fixtures.
+test-e2e *args: reload-tests
+    #!/usr/bin/env bash
+    set -uo pipefail
+    docker compose exec php vendor/bin/phpunit --testsuite=e2e {{ args }}
+    status=$?
+    just reload-tests
+    exit $status
+
 fix-ts:
     docker compose exec php deno fmt assets/
     docker compose exec php deno lint --fix assets/

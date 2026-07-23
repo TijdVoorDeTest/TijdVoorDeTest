@@ -216,6 +216,10 @@
       <path value="$PROJECT_DIR$/vendor/nette/utils" />
       <path value="$PROJECT_DIR$/vendor/nette/schema" />
       <path value="$PROJECT_DIR$/vendor/dflydev/dot-access-data" />
+      <path value="$PROJECT_DIR$/vendor/sensiolabs/typescript-bundle" />
+      <path value="$PROJECT_DIR$/vendor/symfony/rate-limiter" />
+      <path value="$PROJECT_DIR$/vendor/php-webdriver/webdriver" />
+      <path value="$PROJECT_DIR$/vendor/symfony/panther" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

@@ -76,6 +76,13 @@ ENV DENO_INSTALL=/usr/local
 # hadolint ignore=DL4006
 RUN curl -fsSL https://deno.land/install.sh | sh -s v2.9.2
 
+# Chromium + ChromeDriver for Symfony Panther browser tests, dev-only tooling so it's not
+# installed in the prod stage.
+ENV PANTHER_NO_SANDBOX=1
+ENV PANTHER_CHROME_ARGUMENTS='--disable-dev-shm-usage'
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends chromium chromium-driver && rm -rf /var/lib/apt/lists/*
+
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 RUN set -eux; \
