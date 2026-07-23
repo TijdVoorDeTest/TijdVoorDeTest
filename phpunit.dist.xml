@@ -19,37 +19,30 @@
     </php>
 
     <!--
-        Three tiers, split by what each test actually needs (see CLAUDE.md's Testing Conventions):
-        unit: plain PHPUnit TestCase, no kernel, DB, or browser. Fast, no I/O.
-        integration: KernelTestCase/WebTestCase-based (DB, routing, the container). DAMA rolls
-        back each test's transaction, so these stay isolated and fast enough for every run.
-        e2e: Symfony Panther driving a real Chromium browser (see tests/E2E/). Runs in a
-        separate process DAMA can't wrap, so it's kept out of the default suite, run
-        explicitly with `just test-e2e`.
-        "default" is unit+integration together (excludes e2e) and is what bare `just test` runs;
-        passing an explicit testsuite, file, or directory argument to phpunit overrides this.
+        Three tiers, split by what each test actually needs (see CLAUDE.md's Testing Conventions),
+        each living in its own top-level folder so it's clear from the file tree alone which suite
+        a test belongs to, with no need to check this config:
+        tests/Unit: plain PHPUnit TestCase, no kernel, DB, or browser. Fast, no I/O.
+        tests/Integration: KernelTestCase/WebTestCase-based (DB, routing, the container). DAMA
+        rolls back each test's transaction, so these stay isolated and fast enough for every run.
+        tests/E2E: Symfony Panther driving a real Chromium browser. Runs in a separate process
+        DAMA can't wrap, so it's kept out of the default suite, run explicitly with `just test-e2e`.
+        "default" is unit+integration together and is what bare `just test` runs; passing an
+        explicit testsuite, file, or directory argument to phpunit overrides this.
     -->
     <testsuites>
         <testsuite name="unit">
-            <directory>tests/Entity</directory>
-            <directory>tests/Helpers</directory>
-            <directory>tests/Security</directory>
-            <directory>tests/Service</directory>
-            <directory>tests/Twig</directory>
-            <exclude>tests/Service/DataExportServiceTest.php</exclude>
+            <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="integration">
-            <directory>tests/Command</directory>
-            <directory>tests/Controller</directory>
-            <directory>tests/Repository</directory>
-            <file>tests/Service/DataExportServiceTest.php</file>
+            <directory>tests/Integration</directory>
         </testsuite>
         <testsuite name="e2e">
             <directory>tests/E2E</directory>
         </testsuite>
         <testsuite name="default">
-            <directory>tests</directory>
-            <exclude>tests/E2E</exclude>
+            <directory>tests/Unit</directory>
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
 
