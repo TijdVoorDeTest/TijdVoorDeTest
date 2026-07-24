@@ -171,6 +171,12 @@ class SeasonController extends AbstractController
     )]
     public function removeOwner(Season $season, User $owner): RedirectResponse
     {
+        if (!$season->isOwner($owner)) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('This user is not an owner of this season'));
+
+            return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+        }
+
         if ($season->owners->count() <= 1) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('Cannot remove the last owner of a season'));
 

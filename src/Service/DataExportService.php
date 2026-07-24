@@ -22,6 +22,7 @@ use Tvdt\Entity\User;
 use Tvdt\Enum\ScreenColour;
 use Tvdt\Helpers\FilenameSanitizer;
 use Tvdt\Helpers\FormulaInjectionSafeValueBinder;
+use Tvdt\Helpers\SoftDeleteableFilter;
 use Tvdt\Repository\QuizRepository;
 
 use function Safe\tempnam;
@@ -41,14 +42,7 @@ class DataExportService
     /** @throws FilesystemException @return string path to a temp zip file; caller is responsible for removing it */
     public function exportForUser(User $user): string
     {
-        $filter = $this->entityManager->getFilters();
-        $filter->disable('softdeleteable');
-
-        try {
-            return $this->buildZip($user);
-        } finally {
-            $filter->enable('softdeleteable');
-        }
+        return SoftDeleteableFilter::withDisabled($this->entityManager, fn (): string => $this->buildZip($user));
     }
 
     private function buildZip(User $user): string

@@ -273,6 +273,7 @@ Submit: Verstuur
 'This quiz has already been filled in and can no longer be altered': 'Deze quiz is al ingevuld en kan niet meer worden gewijzigd'
 'This quiz has no questions yet': 'Deze test heeft nog geen vragen'
 'This user is already an owner of this season': 'Deze gebruiker is al eigenaar van dit seizoen'
+'This user is not an owner of this season': 'Deze gebruiker is geen eigenaar van dit seizoen'
 Time: Tijd
 'Toggle correct answer': 'Goed antwoord aan/uitzetten'
 'Type delete to confirm': 'Typ verwijderen om te bevestigen'

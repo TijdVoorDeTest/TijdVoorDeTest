@@ -254,6 +254,27 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         $this->assertFalse($this->getSeasonByCode('krtek')->isOwner($user2));
     }
 
+    public function testRemoveOwnerOfNonMemberDoesNothing(): void
+    {
+        $nonMember = $this->getUserByEmail('test@example.org');
+        $this->assertFalse($this->getSeasonByCode('krtek')->isOwner($nonMember));
+        $ownerCountBefore = $this->getSeasonByCode('krtek')->owners->count();
+
+        // The CSRF token for 'remove_season_owner' isn't tied to a specific owner id, so it's
+        // safe to fetch it from an existing owner's remove form and reuse it against $nonMember.
+        $user2 = $this->getUserByEmail('user2@example.org');
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', \sprintf('/owner/%s/remove', $user2->id));
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/season/krtek/settings/owner/%s/remove', $nonMember->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/backoffice/season/krtek/settings');
+        $this->entityManager->clear();
+
+        $this->assertCount($ownerCountBefore, $this->getSeasonByCode('krtek')->owners);
+    }
+
     public function testRemoveOwnerIsBlockedWhenItWouldLeaveNoOwners(): void
     {
         $this->loginAs('sole-owner@example.org');

@@ -44,19 +44,18 @@ class SeasonRepository extends ServiceEntityRepository
     }
 
     /** Permanently deletes the season and every row tied to it — including the season itself,
-     * which is Gedmo\SoftDeleteable and would otherwise only get its deletedAt set. Used for GDPR
-     * account-deletion purges, never for the season settings page's own "delete season" action,
-     * which soft-deletes instead (see SeasonController::deleteSeason()). */
+     * which is Gedmo\SoftDeleteable and would otherwise only get its deletedAt set. Used as the
+     * single-season entry point for permanent purges (currently exercised directly by
+     * SeasonRepositoryTest; UserRepository::deleteUser() calls scheduleForRemoval() per season
+     * itself so it can batch several seasons' purges into one flush). Never used for the season
+     * settings page's own "delete season" action, which soft-deletes instead (see
+     * SeasonController::deleteSeason()). */
     public function deleteSeason(Season $season): void
     {
         $em = $this->getEntityManager();
         $em->wrapInTransaction(function () use ($em, $season): void {
             $bankQuestionIds = $this->scheduleForRemoval($em, $season);
-            $this->flushWithoutSoftDeleteListener($em);
-
-            // Gedmo\Loggable writes its own "removed" log entry as part of the flush above, so the
-            // audit-log purge must happen after — purging first would just leave that final row behind.
-            $this->purgeBankQuestionAuditLog($em, $bankQuestionIds);
+            $this->flushAndPurgeBankQuestionAuditLog($em, $bankQuestionIds);
         });
     }
 
@@ -64,7 +63,7 @@ class SeasonRepository extends ServiceEntityRepository
      * Purges Gedmo\SoftDeleteable rows and schedules $season for removal, without flushing — lets
      * a caller batch several seasons' removal into one flush (see UserRepository::deleteUser()).
      * $season itself is also Gedmo\SoftDeleteable, so the caller must flush via
-     * flushWithoutSoftDeleteListener() below, or this permanent deletion becomes just another
+     * flushAndPurgeBankQuestionAuditLog() below, or this permanent deletion becomes just another
      * soft-delete (setting deletedAt) instead.
      *
      * @return list<string> the season's BankQuestion ids, to purge their audit log once flushed
@@ -79,6 +78,21 @@ class SeasonRepository extends ServiceEntityRepository
     }
 
     /**
+     * Flushes (with Gedmo\SoftDeleteableListener temporarily detached, see
+     * flushWithoutSoftDeleteListener() below) and then purges the given BankQuestions' audit log
+     * — combined into one method so the flush-then-purge ordering can't be gotten backwards by a
+     * caller: Gedmo\Loggable writes its own "removed" log entry as part of the flush, so purging
+     * first would just leave that final row behind.
+     *
+     * @param list<string> $bankQuestionIds
+     */
+    public function flushAndPurgeBankQuestionAuditLog(EntityManagerInterface $em, array $bankQuestionIds): void
+    {
+        $this->flushWithoutSoftDeleteListener($em);
+        $this->purgeBankQuestionAuditLog($em, $bankQuestionIds);
+    }
+
+    /**
      * Flushes with Gedmo\SoftDeleteableListener temporarily detached, so a Season scheduled for
      * removal (via scheduleForRemoval() above) is actually deleted instead of merely getting its
      * deletedAt set. This also sidesteps a second Gedmo quirk: its listener calls persist() on
@@ -88,7 +102,7 @@ class SeasonRepository extends ServiceEntityRepository
      * for this one flush restores the plain cascade-delete behavior all of this already relied on
      * before Season became SoftDeleteable.
      */
-    public function flushWithoutSoftDeleteListener(EntityManagerInterface $em): void
+    private function flushWithoutSoftDeleteListener(EntityManagerInterface $em): void
     {
         $eventManager = $em->getEventManager();
         $listeners = array_filter(
@@ -144,7 +158,7 @@ class SeasonRepository extends ServiceEntityRepository
      *
      * @param list<string> $bankQuestionIds
      */
-    public function purgeBankQuestionAuditLog(EntityManagerInterface $em, array $bankQuestionIds): void
+    private function purgeBankQuestionAuditLog(EntityManagerInterface $em, array $bankQuestionIds): void
     {
         if ([] === $bankQuestionIds) {
             return;

@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Tvdt\Entity\User;
+use Tvdt\Helpers\SoftDeleteableFilter;
 
 /** @extends ServiceEntityRepository<User> */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
@@ -49,14 +50,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             // Seasons the user already soft-deleted must still be purged for good here — account
             // deletion is a GDPR erasure request, not just a cleanup of what's currently visible —
             // so the softdeleteable filter that normally hides those seasons is disabled while
-            // reading this collection.
-            $filters = $em->getFilters();
-            $filters->disable('softdeleteable');
-            try {
-                $seasons = $user->seasons->toArray();
-            } finally {
-                $filters->enable('softdeleteable');
-            }
+            // fetching them. A fresh repository query is used rather than $user->seasons->toArray()
+            // so this can't be defeated by that collection having already been lazily loaded
+            // (under the filter's default enabled state) earlier in the same request.
+            $seasons = SoftDeleteableFilter::withDisabled(
+                $em,
+                fn (): array => $this->seasonRepository->getSeasonsForUser($user),
+            );
 
             $bankQuestionIds = [];
             foreach ($seasons as $season) {
@@ -70,9 +70,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             }
 
             $em->remove($user);
-            $this->seasonRepository->flushWithoutSoftDeleteListener($em);
-
-            $this->seasonRepository->purgeBankQuestionAuditLog($em, $bankQuestionIds);
+            $this->seasonRepository->flushAndPurgeBankQuestionAuditLog($em, $bankQuestionIds);
         });
     }
 
