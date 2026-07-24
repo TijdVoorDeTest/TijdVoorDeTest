@@ -48,7 +48,7 @@ final class QuizRepositoryTest extends DatabaseTestCase
 
         $this->entityManager->refresh($krtekSeason);
 
-        $this->assertCount(4, $krtekSeason->quizzes);
+        $this->assertCount(8, $krtekSeason->quizzes);
     }
 
     public function testTimeForCandidate(): void
