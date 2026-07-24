@@ -53,6 +53,8 @@ class QuizController extends AbstractController
     )]
     public function index(Season $season, Quiz $quiz): Response
     {
+        $this->assertQuizInSeason($season, $quiz);
+
         return $this->redirectToRoute('tvdt_backoffice_quiz_overview', ['seasonCode' => $season->seasonCode, 'quiz' => $quiz->id]);
     }
 
@@ -64,6 +66,8 @@ class QuizController extends AbstractController
     )]
     public function overview(Season $season, Quiz $quiz): Response
     {
+        $this->assertQuizInSeason($season, $quiz);
+
         $fetchedQuiz = $this->quizRepository->fetchWithQuestionsAndCandidates($quiz->id);
 
         return $this->render('backoffice/quiz.html.twig', [
@@ -83,6 +87,8 @@ class QuizController extends AbstractController
     )]
     public function result(Season $season, Quiz $quiz): Response
     {
+        $this->assertQuizInSeason($season, $quiz);
+
         $fetchedQuiz = $this->quizRepository->fetchWithQuestions($quiz->id);
 
         return $this->render('backoffice/quiz.html.twig', [
@@ -102,6 +108,8 @@ class QuizController extends AbstractController
     )]
     public function candidatesTab(Season $season, Quiz $quiz): Response
     {
+        $this->assertQuizInSeason($season, $quiz);
+
         $candidateData = $this->buildCandidateData($season, $quiz, $quiz->candidateData);
 
         return $this->render('backoffice/quiz.html.twig', [
@@ -121,6 +129,8 @@ class QuizController extends AbstractController
     )]
     public function answerMapping(Season $season, Quiz $quiz): Response
     {
+        $this->assertQuizInSeason($season, $quiz);
+
         $fetchedQuiz = $this->quizRepository->fetchWithQuestions($quiz->id);
 
         if ($fetchedQuiz->questions->isEmpty()) {
@@ -235,6 +245,10 @@ class QuizController extends AbstractController
     )]
     public function enableQuiz(Season $season, ?Quiz $quiz, Request $request): RedirectResponse
     {
+        if ($quiz instanceof Quiz && $quiz->season !== $season) {
+            throw new BadRequestHttpException('Invalid quiz');
+        }
+
         if ($quiz instanceof Quiz && !$quiz->isFinalized) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('The quiz must be finalized before it can be activated'));
 
@@ -386,6 +400,8 @@ class QuizController extends AbstractController
     )]
     public function modifyResult(Quiz $quiz, Candidate $candidate, Request $request): RedirectResponse
     {
+        $this->assertCandidateInQuizSeason($quiz, $candidate);
+
         $corrections = (float) $request->request->get('corrections');
         $penalty = (int) $request->request->get('penalty');
 
@@ -420,6 +436,8 @@ class QuizController extends AbstractController
     )]
     public function toggleCandidate(Quiz $quiz, Candidate $candidate): RedirectResponse
     {
+        $this->assertCandidateInQuizSeason($quiz, $candidate);
+
         $quizCandidate = $this->quizCandidateRepository->findOneBy([
             'quiz' => $quiz,
             'candidate' => $candidate,
@@ -451,6 +469,8 @@ class QuizController extends AbstractController
     )]
     public function resetCandidateProgress(Quiz $quiz, Candidate $candidate): RedirectResponse
     {
+        $this->assertCandidateInQuizSeason($quiz, $candidate);
+
         $this->em->wrapInTransaction(function () use ($quiz, $candidate): void {
             $this->givenAnswerRepository->deleteAllForCandidateInQuiz($quiz, $candidate);
             $this->quizCandidateRepository->resetProgressForCandidate($quiz, $candidate);
@@ -459,6 +479,20 @@ class QuizController extends AbstractController
         $this->addFlash(FlashType::Success, $this->translator->trans('Candidate progress reset'));
 
         return $this->redirectToRoute('tvdt_backoffice_quiz_candidates_tab', ['seasonCode' => $quiz->season->seasonCode, 'quiz' => $quiz->id]);
+    }
+
+    private function assertQuizInSeason(Season $season, Quiz $quiz): void
+    {
+        if (false === $season->quizzes->contains($quiz)) {
+            throw new BadRequestHttpException('Invalid quiz');
+        }
+    }
+
+    private function assertCandidateInQuizSeason(Quiz $quiz, Candidate $candidate): void
+    {
+        if (false === $quiz->season->candidates->contains($candidate)) {
+            throw new BadRequestHttpException('Invalid candidate');
+        }
     }
 
     /**
