@@ -158,11 +158,13 @@ class QuizRepository extends ServiceEntityRepository
     }
 
     /**
-     * Fetch quiz with all relations needed for error checking (questions, answers, answer
-     * candidates, and candidate data). Split into two queries: joining season.candidates into
-     * the same query as the questions/answers tree would cross-multiply two independent
-     * to-many collections into a cartesian product, which is expensive to hydrate for a quiz
-     * with many questions and candidates.
+     * Fetch quiz with all relations needed for error checking and status computation (questions,
+     * answers, answer candidates, candidate data, given answers, and elimination screen views).
+     * Split into three queries: joining season.candidates into the same query as the
+     * questions/answers tree would cross-multiply two independent to-many collections into a
+     * cartesian product, which is expensive to hydrate for a quiz with many questions and
+     * candidates. Eliminations/screenViews are hydrated in their own query for the same reason
+     * (independent to-many collection off Quiz).
      */
     public function fetchWithQuestionsAndCandidates(Uuid $id): Quiz
     {
@@ -177,13 +179,56 @@ class QuizRepository extends ServiceEntityRepository
             order by qz.ordering asc, a.ordering asc, a.id asc
             dql)->setParameter('id', $id)->getSingleResult();
 
-        /* @var Quiz */
-        return $em->createQuery(<<<dql
-            select q, qc, c from Tvdt\Entity\Quiz q
+        $em->createQuery(<<<dql
+            select q, qc, c, ga from Tvdt\Entity\Quiz q
             left join q.candidateData qc
             left join qc.candidate c
+            left join c.givenAnswers ga with ga.quiz = q
             where q.id = :id
             dql)->setParameter('id', $id)->getSingleResult();
+
+        /* @var Quiz */
+        return $em->createQuery(<<<dql
+            select q, e, sv from Tvdt\Entity\Quiz q
+            left join q.eliminations e
+            left join e.screenViews sv
+            where q.id = :id
+            dql)->setParameter('id', $id)->getSingleResult();
+    }
+
+    /**
+     * Eager-load, for every quiz in a season, all the data `Quiz::$status` reads: questions,
+     * candidate data with each candidate's given answers, and eliminations with their screen
+     * views. Three queries total regardless of how many quizzes, candidates, or eliminations
+     * exist, following the same split pattern as {@see self::fetchWithQuestionsAndCandidates()}
+     * (questions, candidateData, and eliminations are three independent to-many collections off
+     * Quiz — combining any two into one query would cross-multiply them into a cartesian
+     * product).
+     */
+    public function eagerLoadStatusDataForSeason(Season $season): void
+    {
+        $em = $this->getEntityManager();
+
+        $em->createQuery(<<<dql
+            select q, qz from Tvdt\Entity\Quiz q
+            left join q.questions qz
+            where q.season = :season
+            dql)->setParameter('season', $season)->getResult();
+
+        $em->createQuery(<<<dql
+            select q, qc, c, ga from Tvdt\Entity\Quiz q
+            left join q.candidateData qc
+            left join qc.candidate c
+            left join c.givenAnswers ga with ga.quiz = q
+            where q.season = :season
+            dql)->setParameter('season', $season)->getResult();
+
+        $em->createQuery(<<<dql
+            select q, e, sv from Tvdt\Entity\Quiz q
+            left join q.eliminations e
+            left join e.screenViews sv
+            where q.season = :season
+            dql)->setParameter('season', $season)->getResult();
     }
 
     /**

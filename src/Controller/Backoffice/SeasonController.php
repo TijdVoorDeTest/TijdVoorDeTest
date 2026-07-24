@@ -30,6 +30,7 @@ use Tvdt\Form\AddCandidatesFormType;
 use Tvdt\Form\SettingsForm;
 use Tvdt\Form\UploadQuizFormType;
 use Tvdt\Repository\CandidateRepository;
+use Tvdt\Repository\QuizRepository;
 use Tvdt\Security\Voter\SeasonVoter;
 use Tvdt\Service\QuizSpreadsheetService;
 
@@ -42,6 +43,7 @@ class SeasonController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly QuizSpreadsheetService $quizSpreadsheet,
         private readonly CandidateRepository $candidateRepository,
+        private readonly QuizRepository $quizRepository,
     ) {}
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -52,6 +54,8 @@ class SeasonController extends AbstractController
     )]
     public function index(Season $season): Response
     {
+        $this->quizRepository->eagerLoadStatusDataForSeason($season);
+
         return $this->render('backoffice/season.html.twig', [
             'season' => $season,
             'activeTab' => 'tests',

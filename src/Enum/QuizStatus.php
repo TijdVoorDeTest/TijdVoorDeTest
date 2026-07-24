@@ -12,7 +12,9 @@ enum QuizStatus: string
     case Concept = 'concept';
     case Ready = 'ready';
     case Active = 'active';
+    case Done = 'done';
     case Finished = 'finished';
+    case Revealed = 'revealed';
 
     public function label(): TranslatableMessage
     {
@@ -21,7 +23,9 @@ enum QuizStatus: string
             self::Concept => new TranslatableMessage('Concept'),
             self::Ready => new TranslatableMessage('Ready'),
             self::Active => new TranslatableMessage('Active'),
+            self::Done => new TranslatableMessage('Done'),
             self::Finished => new TranslatableMessage('Finished'),
+            self::Revealed => new TranslatableMessage('Revealed'),
         };
     }
 
@@ -32,7 +36,9 @@ enum QuizStatus: string
             self::Concept => LabelColour::Cyan,
             self::Ready => LabelColour::Green,
             self::Active => LabelColour::White,
+            self::Done => LabelColour::Yellow,
             self::Finished => LabelColour::Blue,
+            self::Revealed => LabelColour::Red,
         };
     }
 }
