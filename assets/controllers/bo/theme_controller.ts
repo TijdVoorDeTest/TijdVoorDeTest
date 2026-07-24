@@ -11,15 +11,22 @@ export function resolveEffectiveTheme(
     return theme === 'auto' ? (prefersDark ? 'dark' : 'light') : theme;
 }
 
+const ICON_CLASSES: Record<Theme, string> = {
+    auto: 'bi-circle-half',
+    light: 'bi-sun-fill',
+    dark: 'bi-moon-stars-fill',
+};
+
 export default class extends Controller {
-    static targets = ['option'];
+    static targets = ['option', 'icon'];
 
     declare readonly optionTargets: HTMLElement[];
+    declare readonly iconTarget: HTMLElement;
 
     media = window.matchMedia('(prefers-color-scheme: dark)');
 
     connect(): void {
-        this.syncActive();
+        this.apply(this.currentTheme());
         this.media.addEventListener('change', this.onMediaChange);
     }
 
@@ -54,6 +61,7 @@ export default class extends Controller {
                 option.dataset.theme === current,
             );
         });
+        this.iconTarget.className = `bi ${ICON_CLASSES[current]}`;
     }
 
     currentTheme(): Theme {

@@ -4,14 +4,6 @@
 {% block head_extra %}
     <meta name="sentry-dsn" content="{{ sentry_dsn }}">
     <meta name="user-email" content="{{ app.user ? app.user.userIdentifier : '' }}">
-    <script>
-        (function () {
-            var theme = localStorage.getItem('tvdt-theme') || 'auto';
-            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            var effective = theme === 'auto' ? (prefersDark ? 'dark' : 'light') : theme;
-            document.documentElement.setAttribute('data-bs-theme', effective);
-        })();
-    </script>
 {% endblock %}
 {% block title %}Tijd voor de test | {% endblock %}
 {% block nav %}{{ include('molshoop/nav.html.twig') }}{% endblock %}
