@@ -45,13 +45,13 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorExists($target);
     }
 
-    public function testLoginRedirectsToBackofficeWhenAlreadyAuthenticated(): void
+    public function testLoginRedirectsToMolshoopWhenAlreadyAuthenticated(): void
     {
         $this->loginAs('test@example.org');
 
         $this->client->request(Request::METHOD_GET, '/login');
 
-        self::assertResponseRedirects('/backoffice/');
+        self::assertResponseRedirects('/molshoop/');
     }
 
     public function testLoginWithInvalidCredentialsShowsFlash(): void

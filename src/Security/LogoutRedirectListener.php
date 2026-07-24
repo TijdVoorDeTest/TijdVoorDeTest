@@ -11,7 +11,7 @@ use Symfony\Component\Security\Http\Event\LogoutEvent;
 
 final readonly class LogoutRedirectListener implements EventSubscriberInterface
 {
-    private const array BLOCKED_TARGET_PREFIXES = ['/backoffice', '/elimination'];
+    private const array BLOCKED_TARGET_PREFIXES = ['/molshoop', '/elimination'];
 
     public function __construct(private UrlGeneratorInterface $urlGenerator) {}
 

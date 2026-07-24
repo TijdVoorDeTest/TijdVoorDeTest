@@ -52,7 +52,7 @@ final class LogoutRedirectListenerTest extends TestCase
     /** @return iterable<string, array{string}> */
     public static function blockedTargetProvider(): iterable
     {
-        yield 'backoffice page' => ['/backoffice/season/krtek'];
+        yield 'molshoop page' => ['/molshoop/season/krtek'];
         yield 'elimination page' => ['/elimination/00000000-0000-0000-0000-000000000000'];
         yield 'protocol-relative url' => ['//evil.example.org'];
         yield 'absolute url' => ['https://evil.example.org'];

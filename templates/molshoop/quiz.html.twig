@@ -1,0 +1,44 @@
+{% extends 'molshoop/base.html.twig' %}
+
+{% import 'molshoop/partials/rename_control.html.twig' as rename %}
+
+{% block title %}{{ parent() }}{{ season.name }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ season.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ quiz.name }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    {% set tabs = [
+        {id: 'overview', label: 'Overview'|trans, route: 'tvdt_molshoop_quiz_overview'},
+        {id: 'candidates', label: 'Candidates'|trans, route: 'tvdt_molshoop_quiz_candidates_tab'},
+        {id: 'result', label: 'Results & Elimination'|trans, route: 'tvdt_molshoop_quiz_result'},
+        {id: 'answers', label: 'Answer Mapping'|trans, route: 'tvdt_molshoop_quiz_candidates'},
+    ] %}
+
+    <h2 class="mb-3 d-flex align-items-center gap-2 rename-trigger-host">
+        {{ 'Quiz'|trans }}: {{ season.name }} - {{ quiz.name }}
+        {{ rename.trigger('renameQuizModal') }}
+    </h2>
+
+    {{ rename.modal('renameQuizModal', 'Rename quiz'|trans, path('tvdt_molshoop_quiz_rename', {quiz: quiz.id}), csrf_token('rename_quiz'), quiz.name, 64) }}
+
+    <ul class="nav nav-tabs mb-3">
+        {% for tab in tabs %}
+            <li class="nav-item">
+                <a class="nav-link{{ activeTab == tab.id ? ' active' }}" href="{{ path(tab.route, {seasonCode: season.seasonCode, quiz: quiz.id}) }}">
+                    {{ tab.label }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="pt-3">
+        {{ include(template) }}
+    </div>
+{% endblock %}

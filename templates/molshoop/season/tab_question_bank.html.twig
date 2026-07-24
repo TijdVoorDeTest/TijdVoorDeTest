@@ -1,0 +1,194 @@
+<div class="row">
+    <div class="col-md-8 col-12" data-controller="bo--modal"
+         data-action="turbo:submit-end->bo--modal#frameSubmitEnd">
+        <div class="mb-3">
+            <button class="btn btn-sm btn-outline-primary"
+                    data-action="click->bo--modal#open"
+                    data-src="{{ path('tvdt_molshoop_question_bank_new', {seasonCode: season.seasonCode}) }}"
+                    data-modal-title="{{ 'Add question'|trans }}">
+                {{ 'Add question'|trans }}
+            </button>
+        </div>
+
+    <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+        <a class="badge rounded-pill text-decoration-none text-bg-primary{% if activeLabel is not null %} opacity-50{% endif %}"
+           href="{{ path('tvdt_molshoop_question_bank', {seasonCode: season.seasonCode}) }}">{{ 'All'|trans }}</a>
+        {% for label in season.questionLabels %}
+            <span class="d-inline-flex align-items-center gap-1">
+                <a class="badge rounded-pill text-decoration-none text-bg-{{ label.colour.value }}{% if activeLabel is not same as (label) %} opacity-50{% endif %}"
+                   href="{{ path('tvdt_molshoop_question_bank', {seasonCode: season.seasonCode, label: label.slug}) }}">{{ label.name }}</a>
+                <form action="{{ path('tvdt_molshoop_question_bank_label_delete', {seasonCode: season.seasonCode, labelSlug: label.slug}) }}"
+                      method="POST" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_question_label') }}">
+                    <button type="submit" class="btn btn-sm btn-link p-0 text-danger" aria-label="{{ 'Remove label'|trans }}"><i class="bi bi-trash"></i></button>
+                </form>
+            </span>
+        {% endfor %}
+
+        {% embed 'components/modal.html.twig' with {
+            id: 'addLabelModal',
+            title: 'Add label'|trans,
+            triggerLabel: 'Add label'|trans,
+        } %}
+            {% block modal_body %}
+                <form id="addLabelForm"
+                      action="{{ path('tvdt_molshoop_question_bank_labels', {seasonCode: season.seasonCode}) }}"
+                      method="POST">
+                    <input type="hidden" name="_token" value="{{ csrf_token('add_question_label') }}">
+                    <div class="mb-3">
+                        <label for="addLabelName" class="form-label">{{ 'Name'|trans }}</label>
+                        <input type="text" class="form-control" id="addLabelName" name="name" maxlength="64" required autofocus>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label d-block">{{ 'Colour'|trans }}</label>
+                        <style>
+                            .colour-swatch { opacity: .35; cursor: pointer; transition: opacity .1s, box-shadow .1s; font-size: .875rem; }
+                            .btn-check:checked + .colour-swatch { opacity: 1; box-shadow: 0 0 0 3px rgba(255,255,255,.6); }
+                            .colour-swatch:hover { opacity: .7; }
+                        </style>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% for colour in labelColours %}
+                                <input type="radio" class="btn-check" name="colour"
+                                       id="addLabelColour_{{ colour.value }}"
+                                       value="{{ colour.value }}" autocomplete="off"
+                                       {{ loop.first ? 'checked' }}>
+                                <label class="badge rounded-pill text-bg-{{ colour.value }} colour-swatch px-3 py-2"
+                                       for="addLabelColour_{{ colour.value }}">
+                                    {{ colour.label|trans }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </form>
+            {% endblock %}
+            {% block modal_footer %}
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Cancel'|trans }}</button>
+                <button type="submit" class="btn btn-primary" form="addLabelForm">{{ 'Add label'|trans }}</button>
+            {% endblock %}
+        {% endembed %}
+    </div>
+
+        <table class="table align-middle">
+        <thead>
+        <tr>
+            <th>{{ 'Question'|trans }}</th>
+            <th>{{ 'Labels'|trans }}</th>
+            <th>{{ 'Reusable'|trans }}</th>
+            <th>{{ 'Used in'|trans }}</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for bankQuestion in bankQuestions %}
+            <tr>
+                <td>{{ bankQuestion.question }}</td>
+                <td>
+                    {% for label in bankQuestion.labels %}
+                        <span class="badge rounded-pill text-bg-{{ label.colour.value }}">{{ label.name }}</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% if bankQuestion.reusable %}
+                        <span class="badge text-bg-info">{{ 'Reusable'|trans }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% for usage in bankQuestion.usages %}
+                        <div class="d-flex align-items-center gap-1">
+                            <span>{{ usage.quiz.name }}</span>
+                            <form action="{{ path('tvdt_molshoop_question_bank_unassign', {seasonCode: season.seasonCode, bankQuestion: bankQuestion.id, usage: usage.id}) }}"
+                                  method="POST" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('unassign_bank_question') }}">
+                                <button type="submit" class="btn btn-sm btn-link p-0 text-danger" title="{{ 'Unassign'|trans }}">&times;</button>
+                            </form>
+                            {% if usage.quiz.isFinalized %}
+                                <form action="{{ path('tvdt_molshoop_question_bank_sync', {seasonCode: season.seasonCode, bankQuestion: bankQuestion.id, usage: usage.id}) }}"
+                                      method="POST" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('sync_bank_question') }}">
+                                    <button type="submit" class="btn btn-sm btn-link p-0 text-primary" title="{{ 'Sync latest changes to this quiz'|trans }}">&#8635;</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </td>
+                <td class="text-end">
+                    <div class="d-inline-flex align-items-center gap-2">
+                        {% if bankQuestion.canBeAssigned and assignableQuizzes|length > 0 %}
+                            <form action="{{ path('tvdt_molshoop_question_bank_assign', {seasonCode: season.seasonCode, bankQuestion: bankQuestion.id}) }}"
+                                  method="POST" class="d-inline-flex align-items-center gap-1">
+                                <input type="hidden" name="_token" value="{{ csrf_token('assign_bank_question') }}">
+                                <select class="form-select form-select-sm" name="quiz" required>
+                                    {% for quiz in assignableQuizzes %}
+                                        <option value="{{ quiz.id }}">{{ quiz.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" title="{{ 'Assign'|trans }}"><i class="bi bi-plus-lg"></i></button>
+                            </form>
+                        {% endif %}
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    data-action="click->bo--modal#open"
+                                    data-src="{{ path('tvdt_molshoop_question_bank_edit', {seasonCode: season.seasonCode, bankQuestion: bankQuestion.id}) }}"
+                                    data-modal-title="{{ 'Edit question'|trans }}"
+                                    title="{{ 'Edit'|trans }}"><i class="bi bi-pencil"></i></button>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteBankQuestion-{{ bankQuestion.id }}"
+                                    title="{{ 'Delete'|trans }}"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="deleteBankQuestion-{{ bankQuestion.id }}" data-bs-backdrop="static"
+                         tabindex="-1" aria-labelledby="deleteBankQuestion-{{ bankQuestion.id }}Label" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deleteBankQuestion-{{ bankQuestion.id }}Label">{{ 'Please Confirm'|trans }}</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start">
+                                    {{ 'Are you sure you want to delete this question from the question bank?'|trans }}
+                                    {% if bankQuestion.isUsed %}
+                                        <br><strong>{{ 'This question has been used in a quiz. The copy in the quiz will not be affected.'|trans }}</strong>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
+                                    <form action="{{ path('tvdt_molshoop_question_bank_delete', {seasonCode: season.seasonCode, bankQuestion: bankQuestion.id}) }}"
+                                          method="POST">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_bank_question') }}">
+                                        <button type="submit" class="btn btn-danger">{{ 'Yes'|trans }}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">{{ 'No questions in the question bank yet'|trans }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+        <div class="modal fade" tabindex="-1"
+             data-bo--modal-target="modal"
+             data-action="hidden.bs.modal->bo--modal#resetDirty"
+             aria-labelledby="bankQuestionEditModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="bankQuestionEditModalLabel">{{ 'Edit question'|trans }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <turbo-frame id="bank-question-modal-frame"
+                                 data-bo--modal-target="frame"
+                                 data-action="input->bo--modal#markDirty change->bo--modal#markDirty"></turbo-frame>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-12">
+        {{ include('molshoop/help/season_question_bank.html.twig') }}
+    </div>
+</div>

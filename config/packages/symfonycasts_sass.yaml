@@ -1,4 +1,4 @@
 symfonycasts_sass:
     root_sass:
         - './assets/styles/quiz.scss'
-        - './assets/styles/backoffice.scss'
+        - './assets/styles/molshoop.scss'

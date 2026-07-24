@@ -47,7 +47,7 @@ final class QuizRenameE2ETest extends AbstractE2ETestCase
     private function openQuiz1RenameModal(): Client
     {
         $client = $this->loginAsAdmin();
-        $client->request('GET', '/backoffice/season/krtek');
+        $client->request('GET', '/molshoop/season/krtek');
 
         $link = $client->getCrawler()->selectLink('Quiz 1')->link();
         $client->click($link);

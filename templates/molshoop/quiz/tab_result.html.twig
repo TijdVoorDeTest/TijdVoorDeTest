@@ -1,0 +1,78 @@
+<div class="row">
+<div class="col-md-8 col-12">
+<h4 class="mb-3">{{ 'Score'|trans }}</h4>
+<div class="btn-toolbar mb-3" role="toolbar">
+    <div class="btn-group me-2">
+        <form action="{{ path('tvdt_prepare_elimination', {seasonCode: season.seasonCode, quiz: quiz.id}) }}" method="POST">
+            <input type="hidden" name="_token" value="{{ csrf_token('prepare_elimination') }}">
+            <button type="submit" class="btn btn-secondary rounded-0 rounded-start">{{ 'Prepare Custom Elimination'|trans }}</button>
+        </form>
+        {%~ if not quiz.eliminations.empty %}
+            <button class="btn btn-secondary dropdown-toggle"
+                    data-bs-toggle="dropdown">{{ 'Load Prepared Elimination'|trans }}</button>
+            <ul class="dropdown-menu">
+                {%~ for elimination in quiz.eliminations %}
+                    <li><a class="dropdown-item"
+                           href="{{ path('tvdt_prepare_elimination_view', {elimination: elimination.id}) }}">{{ elimination.createdAt|format_datetime() }}</a>
+                    </li>
+                {%~ endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+<form method="post" class="d-flex align-items-center gap-2 mb-3"
+      action="{{ path('tvdt_molshoop_modify_dropouts', {quiz: quiz.id}) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('quiz_dropouts') }}">
+    <label for="dropouts" class="form-label mb-0">{{ 'Number of dropouts:'|trans }}</label>
+    <input class="form-control form-control-sm w-auto" type="number" min="1"
+           id="dropouts" name="dropouts" value="{{ quiz.dropouts }}">
+    <button class="btn btn-sm btn-primary" type="submit" title="{{ 'Save'|trans }}" aria-label="{{ 'Save'|trans }}">
+        <i class="bi bi-floppy"></i>
+    </button>
+</form>
+<table class="table table-hover table-result mb-3">
+    <thead>
+    <tr>
+        <th scope="col">{{ 'Candidate'|trans }}</th>
+        <th class="col-result-sm" scope="col">{{ 'Correct Answers'|trans }}</th>
+        <th class="col-result-md" scope="col">{{ 'Corrections'|trans }}</th>
+        <th class="col-result-md" scope="col">{{ 'Penalty'|trans }}</th>
+        <th class="col-result-xs" scope="col">{{ 'Score'|trans }}</th>
+        <th class="col-result-md" scope="col">{{ 'Time'|trans }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {%~ for candidate in result ~%}
+        <tr class="table-{% if loop.revindex > quiz.dropouts %}success{% else %}danger{% endif %}">
+            <td>{{ candidate.name }}</td>
+            <td>{{ candidate.correct|default('0') }}</td>
+            <td colspan="2">
+                <form method="post" class="d-flex gap-1"
+                      action="{{ path('tvdt_molshoop_modify_result', {quiz: quiz.id, candidate: candidate.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('candidate_result') }}">
+                    <input class="form-control form-control-sm" type="number"
+                           value="{{ candidate.corrections }}" step="0.5"
+                           name="corrections" aria-label="{{ 'Corrections'|trans }}">
+                    <input class="form-control form-control-sm" type="number"
+                           value="{{ candidate.penaltySeconds }}" step="1"
+                           name="penalty" aria-label="{{ 'Penalty'|trans }}">
+                    <button class="btn btn-sm btn-primary" type="submit" title="{{ 'Save'|trans }}" aria-label="{{ 'Save'|trans }}">
+                        <i class="bi bi-floppy"></i>
+                    </button>
+                </form>
+            </td>
+            <td>{{ candidate.score|default('x') }}</td>
+            <td>{{ candidate.time.format('%i:%S') }}</td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="6">{{ 'No results'|trans }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="col-md-4 col-12">
+    {{ include('molshoop/help/quiz_result.html.twig') }}
+</div>
+</div>

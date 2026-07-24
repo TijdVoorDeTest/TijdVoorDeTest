@@ -108,7 +108,7 @@ final class ResetPasswordController extends AbstractController
 
             $this->cleanSessionAfterReset();
 
-            return $this->redirectToRoute('tvdt_backoffice_index');
+            return $this->redirectToRoute('tvdt_molshoop_index');
         }
 
         return $this->render('reset_password/reset.html.twig', [

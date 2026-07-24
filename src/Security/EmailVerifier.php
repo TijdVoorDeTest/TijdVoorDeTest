@@ -32,7 +32,7 @@ readonly class EmailVerifier
                 new TemplatedEmail()
                     ->to($user->email)
                     ->subject($this->translator->trans('Please Confirm your Email'))
-                    ->htmlTemplate('backoffice/registration/confirmation_email.html.twig'),
+                    ->htmlTemplate('molshoop/registration/confirmation_email.html.twig'),
             );
 
             return true;

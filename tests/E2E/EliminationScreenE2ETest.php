@@ -18,7 +18,7 @@ final class EliminationScreenE2ETest extends AbstractE2ETestCase
     public function testClickingTheScreenNavigatesBackToTheNameEntryForm(): void
     {
         $client = $this->loginAsAdmin();
-        $client->request('GET', '/backoffice/season/krtek');
+        $client->request('GET', '/molshoop/season/krtek');
 
         $link = $client->getCrawler()->selectLink('Quiz 4')->link();
         $client->click($link);

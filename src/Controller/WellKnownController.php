@@ -25,7 +25,7 @@ final class WellKnownController extends AbstractController
     #[Route('/.well-known/change-password', name: 'tvdt_well_known_change_password', methods: ['GET'])]
     public function changePassword(): RedirectResponse
     {
-        return $this->redirectToRoute('tvdt_backoffice_settings');
+        return $this->redirectToRoute('tvdt_molshoop_settings');
     }
 
     /**

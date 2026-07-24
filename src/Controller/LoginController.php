@@ -22,7 +22,7 @@ final class LoginController extends AbstractController
     public function login(): Response
     {
         if ($this->getUser() instanceof UserInterface) {
-            return $this->redirectToRoute('tvdt_backoffice_index');
+            return $this->redirectToRoute('tvdt_molshoop_index');
         }
 
         // get the login error if there is one
@@ -33,7 +33,7 @@ final class LoginController extends AbstractController
             $this->addFlash(FlashType::Danger, $this->translator->trans($error->getMessageKey(), $error->getMessageData(), 'security'));
         }
 
-        return $this->render('backoffice/login/login.html.twig', [
+        return $this->render('molshoop/login/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);

@@ -1,15 +1,11 @@
 {% if is_granted('IS_AUTHENTICATED') or app.current_route() == 'tvdt_quiz_select_season' %}
     <div class="quiz-topbar">
+        <a href="{{ path('tvdt_molshoop_index') }}" class="btn btn-outline-secondary btn-sm">
+            {{ 'Molehill'|trans }}
+        </a>
         {% if is_granted('IS_AUTHENTICATED') %}
-            <a href="{{ path('tvdt_backoffice_index') }}" class="btn btn-outline-secondary btn-sm">
-                {{ 'Backoffice'|trans }}
-            </a>
             <a href="{{ path('tvdt_login_logout', {target: app.request.pathInfo}) }}" class="btn btn-outline-secondary btn-sm">
                 {{ 'Logout'|trans }}
-            </a>
-        {% else %}
-            <a href="{{ path('tvdt_backoffice_index') }}" class="btn btn-outline-secondary btn-sm">
-                {{ 'Manage Quiz'|trans }}
             </a>
         {% endif %}
     </div>

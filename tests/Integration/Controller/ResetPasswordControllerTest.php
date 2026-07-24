@@ -86,7 +86,7 @@ final class ResetPasswordControllerTest extends AbstractControllerWebTestCase
             'change_password_form[plainPassword][second]' => 'NewPass123!',
         ]);
         $this->client->submit($form);
-        $this->assertResponseRedirects('/backoffice/');
+        $this->assertResponseRedirects('/molshoop/');
 
         $this->entityManager->clear();
         $updatedUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => 'test@example.org']);
