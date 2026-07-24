@@ -19,7 +19,7 @@ final class Version20260724191719 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql("ALTER TABLE season_settings ADD language VARCHAR(5) DEFAULT 'nl' NOT NULL");
+        $this->addSql("ALTER TABLE season_settings ADD locale VARCHAR(5) DEFAULT 'nl' NOT NULL");
         $this->addSql('ALTER TABLE "user" ADD locale VARCHAR(5) DEFAULT \'nl\' NOT NULL');
     }
 
@@ -27,7 +27,7 @@ final class Version20260724191719 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE season_settings DROP language');
+        $this->addSql('ALTER TABLE season_settings DROP locale');
         $this->addSql('ALTER TABLE "user" DROP locale');
     }
 }

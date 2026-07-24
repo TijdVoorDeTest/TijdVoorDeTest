@@ -3,6 +3,7 @@ twig:
     form_themes: [ 'bootstrap_5_layout.html.twig' ]
     globals:
         sentry_dsn: '%env(SENTRY_DSN)%'
+        enabled_locales: '%kernel.enabled_locales%'
 
 when@test:
     twig:

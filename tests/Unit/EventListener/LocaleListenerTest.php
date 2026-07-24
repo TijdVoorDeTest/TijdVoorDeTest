@@ -34,7 +34,7 @@ final class LocaleListenerTest extends TestCase
 
         $season = new Season();
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->language = 'nl';
+        $season->settings->locale = 'nl';
 
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn($user);
@@ -55,7 +55,7 @@ final class LocaleListenerTest extends TestCase
     {
         $season = new Season();
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->language = 'en';
+        $season->settings->locale = 'en';
 
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn(null);

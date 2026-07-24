@@ -62,7 +62,7 @@ final class MolshoopController extends AbstractController
             $season->addOwner($this->authenticatedUser);
             $season->generateSeasonCode();
             if ($season->settings instanceof SeasonSettings) {
-                $season->settings->language = $this->authenticatedUser->locale;
+                $season->settings->locale = $this->authenticatedUser->locale;
             }
 
             $this->em->persist($season);

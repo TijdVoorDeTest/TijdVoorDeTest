@@ -110,7 +110,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     {
         $season = $this->getSeasonByCode('krtek');
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->language = 'en';
+        $season->settings->locale = 'en';
         $this->entityManager->flush();
 
         $this->client->request(Request::METHOD_GET, '/');
@@ -122,7 +122,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     {
         $season = $this->getSeasonByCode('krtek');
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->language = 'en';
+        $season->settings->locale = 'en';
         $this->entityManager->flush();
 
         $this->client->request(Request::METHOD_GET, '/krtek');
@@ -135,7 +135,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     {
         $season = $this->getSeasonByCode('krtek');
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->language = 'en';
+        $season->settings->locale = 'en';
         $this->entityManager->flush();
 
         $this->client->request(Request::METHOD_GET, \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));

@@ -32,7 +32,7 @@ final class MolshoopControllerTest extends AbstractControllerWebTestCase
 
         $season = $this->entityManager->getRepository(Season::class)->findOneBy(['name' => 'A New Season']);
         $this->assertInstanceOf(Season::class, $season);
-        $this->assertSame('en', $season->settings?->language);
+        $this->assertSame('en', $season->settings?->locale);
     }
 
     public function testExportQuizFilenameIsSanitized(): void

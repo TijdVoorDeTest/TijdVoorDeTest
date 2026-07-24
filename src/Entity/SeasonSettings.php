@@ -26,5 +26,5 @@ class SeasonSettings
     public bool $confirmAnswers = false;
 
     #[ORM\Column(length: 5, options: ['default' => 'nl'])]
-    public string $language = 'nl';
+    public string $locale = 'nl';
 }

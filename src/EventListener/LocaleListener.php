@@ -51,7 +51,7 @@ final readonly class LocaleListener implements EventSubscriberInterface
 
         foreach ($event->getArguments() as $argument) {
             if ($argument instanceof Season) {
-                return $argument->settings?->language;
+                return $argument->settings?->locale;
             }
         }
 
