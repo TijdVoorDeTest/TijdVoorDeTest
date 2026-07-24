@@ -24,4 +24,7 @@ class SeasonSettings
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     public bool $confirmAnswers = false;
+
+    #[ORM\Column(length: 5, options: ['default' => 'nl'])]
+    public string $language = 'nl';
 }

@@ -49,9 +49,15 @@ final class SettingsController extends AbstractController
 
     #[IsCsrfTokenValid('settings_language')]
     #[Route('/molshoop/settings/language', name: 'tvdt_molshoop_settings_language', methods: ['POST'])]
-    public function saveLanguage(): RedirectResponse
+    public function saveLanguage(Request $request): RedirectResponse
     {
-        // Only Dutch is available for now, so saving is a noop.
+        $language = (string) $request->request->get('language', '');
+
+        if (\in_array($language, ['nl', 'en'], true)) {
+            $this->authenticatedUser->locale = $language;
+            $this->entityManager->flush();
+        }
+
         $this->addFlash(FlashType::Success, $this->translator->trans('Language saved'));
 
         return $this->redirectToRoute('tvdt_molshoop_settings');

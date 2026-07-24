@@ -42,6 +42,7 @@ final class RegistrationController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
 
             $user->password = $this->userPasswordHasher->hashPassword($user, $plainPassword);
+            $user->locale = $request->getPreferredLanguage(['nl', 'en']) ?? 'nl';
 
             $this->entityManager->persist($user);
             $this->entityManager->flush();

@@ -47,6 +47,25 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         $this->assertFalse($user->isVerified);
     }
 
+    public function testRegisterSetsLocaleFromBrowserLanguage(): void
+    {
+        $this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'en-US,en;q=0.9');
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/register');
+        $form = $crawler->filter('form')->form([
+            'registration_form[email]' => 'english-speaker@example.org',
+            'registration_form[plainPassword][first]' => 'NewPass123!',
+            'registration_form[plainPassword][second]' => 'NewPass123!',
+        ]);
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('/molshoop/');
+
+        $this->entityManager->clear();
+        $user = $this->getUserByEmail('english-speaker@example.org');
+        $this->assertSame('en', $user->locale);
+    }
+
     public function testVerifyEmailWithoutIdRedirectsToRegister(): void
     {
         $this->client->request(Request::METHOD_GET, '/verify/email');

@@ -18,6 +18,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Tvdt\Controller\AbstractController;
 use Tvdt\Entity\Quiz;
 use Tvdt\Entity\Season;
+use Tvdt\Entity\SeasonSettings;
 use Tvdt\Enum\FlashType;
 use Tvdt\Form\CreateSeasonFormType;
 use Tvdt\Helpers\FilenameSanitizer;
@@ -60,6 +61,9 @@ final class MolshoopController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $season->addOwner($this->authenticatedUser);
             $season->generateSeasonCode();
+            if ($season->settings instanceof SeasonSettings) {
+                $season->settings->language = $this->authenticatedUser->locale;
+            }
 
             $this->em->persist($season);
             $this->em->flush();
