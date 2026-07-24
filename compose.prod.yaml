@@ -2,7 +2,7 @@
 # Production environment override
 services:
   php:
-    image: ghcr.io/marijndoeve/tijdvoordetest:${IMAGE_TAG}
+    image: ghcr.io/tijdvoordetest/tijdvoordetest:${IMAGE_TAG}
     environment:
       APP_SECRET: ${APP_SECRET}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
