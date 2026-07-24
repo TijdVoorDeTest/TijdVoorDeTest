@@ -25,12 +25,15 @@ use Tvdt\Controller\AbstractController;
 use Tvdt\Entity\Candidate;
 use Tvdt\Entity\Quiz;
 use Tvdt\Entity\Season;
+use Tvdt\Entity\User;
 use Tvdt\Enum\FlashType;
 use Tvdt\Form\AddCandidatesFormType;
 use Tvdt\Form\SettingsForm;
 use Tvdt\Form\UploadQuizFormType;
 use Tvdt\Repository\CandidateRepository;
 use Tvdt\Repository\QuizRepository;
+use Tvdt\Repository\SeasonRepository;
+use Tvdt\Repository\UserRepository;
 use Tvdt\Security\Voter\SeasonVoter;
 use Tvdt\Service\QuizSpreadsheetService;
 
@@ -44,6 +47,8 @@ class SeasonController extends AbstractController
         private readonly QuizSpreadsheetService $quizSpreadsheet,
         private readonly CandidateRepository $candidateRepository,
         private readonly QuizRepository $quizRepository,
+        private readonly UserRepository $userRepository,
+        private readonly SeasonRepository $seasonRepository,
     ) {}
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -122,6 +127,96 @@ class SeasonController extends AbstractController
         $this->addFlash(FlashType::Success, $this->translator->trans('Season code regenerated'));
 
         return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+    }
+
+    #[IsCsrfTokenValid('add_season_owner')]
+    #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
+    #[Route(
+        '/backoffice/season/{seasonCode:season}/settings/add-owner',
+        name: 'tvdt_backoffice_season_add_owner',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX],
+        methods: ['POST'],
+    )]
+    public function addOwner(Season $season, Request $request): RedirectResponse
+    {
+        $email = $request->request->getString('email');
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        if (!$user instanceof User) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('No user found with this email address'));
+
+            return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+        }
+
+        if ($season->isOwner($user)) {
+            $this->addFlash(FlashType::Info, $this->translator->trans('This user is already an owner of this season'));
+
+            return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+        }
+
+        $season->addOwner($user);
+        $this->em->flush();
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Owner added'));
+
+        return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+    }
+
+    #[IsCsrfTokenValid('remove_season_owner')]
+    #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
+    #[Route(
+        '/backoffice/season/{seasonCode:season}/settings/owner/{owner}/remove',
+        name: 'tvdt_backoffice_season_remove_owner',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX, 'owner' => Requirement::UUID],
+        methods: ['POST'],
+    )]
+    public function removeOwner(Season $season, User $owner): RedirectResponse
+    {
+        if ($season->owners->count() <= 1) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('Cannot remove the last owner of a season'));
+
+            return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+        }
+
+        $isSelf = $owner === $this->authenticatedUser;
+
+        $season->removeOwner($owner);
+        $this->em->flush();
+
+        if ($isSelf) {
+            $this->addFlash(FlashType::Success, $this->translator->trans('You left the season'));
+
+            return $this->redirectToRoute('tvdt_backoffice_index');
+        }
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Owner removed'));
+
+        return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+    }
+
+    #[IsCsrfTokenValid('delete_season')]
+    #[IsGranted(SeasonVoter::DELETE, subject: 'season')]
+    #[Route(
+        '/backoffice/season/{seasonCode:season}/settings/delete',
+        name: 'tvdt_backoffice_season_delete',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX],
+        methods: ['POST'],
+    )]
+    public function deleteSeason(Season $season, Request $request): RedirectResponse
+    {
+        $confirmation = mb_strtolower(mb_trim($request->request->getString('confirmation')));
+
+        if ('verwijderen' !== $confirmation) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans("Type 'verwijderen' to confirm"));
+
+            return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+        }
+
+        $this->seasonRepository->deleteSeason($season);
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Season deleted'));
+
+        return $this->redirectToRoute('tvdt_backoffice_index');
     }
 
     #[IsCsrfTokenValid('rename_season')]

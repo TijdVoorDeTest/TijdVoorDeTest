@@ -189,4 +189,149 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
 
         self::assertResponseStatusCodeSame(403);
     }
+
+    public function testAddOwnerByEmailGrantsOwnership(): void
+    {
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/add-owner');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/add-owner', [
+            '_token' => $token,
+            'email' => 'test@example.org',
+        ]);
+
+        self::assertResponseRedirects('/backoffice/season/krtek/settings');
+        $this->entityManager->clear();
+
+        $newOwner = $this->getUserByEmail('test@example.org');
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertTrue($season->isOwner($newOwner));
+    }
+
+    public function testAddOwnerWithUnknownEmailShowsWarningAndDoesNotChangeOwners(): void
+    {
+        $ownerCountBefore = $this->getSeasonByCode('krtek')->owners->count();
+
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/add-owner');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/add-owner', [
+            '_token' => $token,
+            'email' => 'nobody@example.org',
+        ]);
+
+        self::assertResponseRedirects('/backoffice/season/krtek/settings');
+        $this->entityManager->clear();
+
+        $this->assertCount($ownerCountBefore, $this->getSeasonByCode('krtek')->owners);
+    }
+
+    public function testAddOwnerIsDeniedForNonOwner(): void
+    {
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/add-owner');
+
+        $this->loginAs('test@example.org');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/add-owner', [
+            '_token' => $token,
+            'email' => 'test@example.org',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testRemoveOwnerRemovesOwnership(): void
+    {
+        $user2 = $this->getUserByEmail('user2@example.org');
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', \sprintf('/owner/%s/remove', $user2->id));
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/season/krtek/settings/owner/%s/remove', $user2->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/backoffice/season/krtek/settings');
+        $this->entityManager->clear();
+
+        $user2 = $this->getUserByEmail('user2@example.org');
+        $this->assertFalse($this->getSeasonByCode('krtek')->isOwner($user2));
+    }
+
+    public function testRemoveOwnerIsBlockedWhenItWouldLeaveNoOwners(): void
+    {
+        $this->loginAs('sole-owner@example.org');
+        $soleOwner = $this->getUserByEmail('sole-owner@example.org');
+
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/doomd/settings', \sprintf('/owner/%s/remove', $soleOwner->id));
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/season/doomd/settings/owner/%s/remove', $soleOwner->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/backoffice/season/doomd/settings');
+        $this->entityManager->clear();
+
+        $soleOwner = $this->getUserByEmail('sole-owner@example.org');
+        $this->assertTrue($this->getSeasonByCode('doomd')->isOwner($soleOwner));
+    }
+
+    public function testLeaveSeasonRemovesOwnershipAndRedirectsToIndex(): void
+    {
+        $krtekAdmin = $this->getUserByEmail('krtek-admin@example.org');
+
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', \sprintf('/owner/%s/remove', $krtekAdmin->id));
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/season/krtek/settings/owner/%s/remove', $krtekAdmin->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/backoffice/');
+        $this->entityManager->clear();
+
+        $krtekAdmin = $this->getUserByEmail('krtek-admin@example.org');
+        $this->assertFalse($this->getSeasonByCode('krtek')->isOwner($krtekAdmin));
+    }
+
+    public function testDeleteSeasonWithCorrectConfirmationDeletesSeason(): void
+    {
+        $seasonId = $this->getSeasonByCode('krtek')->id;
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/settings/delete');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/delete', [
+            '_token' => $token,
+            'confirmation' => 'verwijderen',
+        ]);
+
+        self::assertResponseRedirects('/backoffice/');
+        $this->entityManager->clear();
+
+        $this->assertNotInstanceOf(Season::class, $this->entityManager->getRepository(Season::class)->find($seasonId));
+    }
+
+    public function testDeleteSeasonWithWrongConfirmationKeepsSeason(): void
+    {
+        $seasonId = $this->getSeasonByCode('krtek')->id;
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/settings/delete');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/delete', [
+            '_token' => $token,
+            'confirmation' => 'wrong',
+        ]);
+
+        self::assertResponseRedirects('/backoffice/season/krtek/settings');
+        $this->entityManager->clear();
+
+        $this->assertInstanceOf(Season::class, $this->entityManager->getRepository(Season::class)->find($seasonId));
+    }
+
+    public function testDeleteSeasonIsDeniedForNonOwner(): void
+    {
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/settings/delete');
+
+        $this->loginAs('test@example.org');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/delete', [
+            '_token' => $token,
+            'confirmation' => 'verwijderen',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
 }
