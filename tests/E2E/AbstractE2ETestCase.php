@@ -6,6 +6,7 @@ namespace Tvdt\Tests\E2E;
 
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\PantherTestCase;
+use Tvdt\DataFixtures\TestFixtures;
 
 abstract class AbstractE2ETestCase extends PantherTestCase
 {
@@ -15,7 +16,7 @@ abstract class AbstractE2ETestCase extends PantherTestCase
 
         $form = $client->getCrawler()->filter('form')->form([
             '_username' => 'krtek-admin@example.org',
-            '_password' => 'test1234',
+            '_password' => TestFixtures::PASSWORD,
         ]);
         $client->submit($form);
         $client->waitFor('a[href="/logout"]');
