@@ -43,7 +43,7 @@
             </button>
         </form>
 
-        <p>{{ 'Deleting this season permanently removes it, its tests, and all candidate answers. This cannot be undone.'|trans }}</p>
+        <p>{{ 'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.'|trans }}</p>
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteSeasonModal">
             {{ 'Delete season...'|trans }}
         </button>
@@ -105,7 +105,7 @@
 
 <div class="modal fade" id="deleteSeasonModal" data-bs-backdrop="static"
      data-controller="bo--modal bo--type-to-confirm" data-bo--modal-target="modal"
-     data-bo--type-to-confirm-word-value="verwijderen"
+     data-bo--type-to-confirm-words-value="{{ ['verwijderen', 'delete']|json_encode }}"
      data-action="hidden.bs.modal->bo--modal#resetDirty"
      tabindex="-1" aria-labelledby="deleteSeasonModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -116,10 +116,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-start">
-                    <p>{{ 'This permanently deletes this season, its tests, and all candidate answers. This cannot be undone.'|trans }}</p>
+                    <p>{{ 'This hides this season, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.'|trans }}</p>
                     <input type="hidden" name="_token" value="{{ csrf_token('delete_season') }}">
                     <label class="form-label" for="deleteSeasonConfirmation">
-                        {{ 'Type {word} to confirm'|trans({word: 'verwijderen'}) }}
+                        {{ 'Type delete to confirm'|trans }}
                     </label>
                     <input type="text" class="form-control" id="deleteSeasonConfirmation" name="confirmation"
                            autocomplete="off" autofocus

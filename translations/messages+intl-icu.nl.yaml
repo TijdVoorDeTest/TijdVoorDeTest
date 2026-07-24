@@ -83,7 +83,7 @@ Delete: Verwijderen
 'Delete season': 'Seizoen verwijderen'
 'Delete season...': 'Seizoen verwijderen...'
 Delete...: Verwijderen...
-'Deleting this season permanently removes it, its tests, and all candidate answers. This cannot be undone.': 'Als je dit seizoen verwijdert, worden ook alle tests en antwoorden van kandidaten definitief verwijderd. Dit kan niet ongedaan worden gemaakt.'
+'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
 Done: Klaar
 'Download Template': 'Download sjabloon'
@@ -262,9 +262,9 @@ Submit: Verstuur
 'There is already an account with this email': 'Er is al een account met dit e-mailadres'
 'There is no active quiz': 'Er is geen test actief'
 'This deletes your account and every season you are the only owner of. Enter your password to confirm.': 'Dit verwijdert je account en alle seizoenen waarvan jij de enige eigenaar bent. Vul je wachtwoord in om te bevestigen.'
+'This hides this season, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Dit verbergt dit seizoen overal, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
 'This invalidates the current season code. Anyone using the old code will no longer be able to join this season.': 'Hiermee wordt de huidige seizoenscode ongeldig. Iedereen die de oude code gebruikt, kan dit seizoen niet meer vinden.'
 'This link will expire in {count}.': 'Deze link verloopt over {count}.'
-'This permanently deletes this season, its tests, and all candidate answers. This cannot be undone.': 'Dit verwijdert dit seizoen, de tests en alle antwoorden van kandidaten definitief. Dit kan niet ongedaan worden gemaakt.'
 'This question cannot be deleted because it is used in a locked or active quiz': 'Deze vraag kan niet verwijderd worden omdat die gebruik wordt in een vergrendelde of actieve test'
 'This question has already been used': 'Deze vraag is al gebruikt'
 'This question has been used in a quiz. The copy in the quiz will not be affected.': 'Deze vraag is gebruikt in een test. De kopie in de test blijft ongewijzigd.'
@@ -275,8 +275,7 @@ Submit: Verstuur
 'This user is already an owner of this season': 'Deze gebruiker is al eigenaar van dit seizoen'
 Time: Tijd
 'Toggle correct answer': 'Goed antwoord aan/uitzetten'
-"Type 'verwijderen' to confirm": "__Type 'verwijderen' to confirm"
-'Type {word} to confirm': 'Typ {word} om te bevestigen'
+'Type delete to confirm': 'Typ verwijderen om te bevestigen'
 Unassign: Ontkoppelen
 'Undo finalization': 'Afronden ongedaan maken'
 'Used in': 'Gebruikt in'

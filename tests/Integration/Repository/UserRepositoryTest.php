@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tvdt\Tests\Integration\Repository;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use Safe\DateTime;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Tvdt\DataFixtures\TestFixtures;
 use Tvdt\Entity\BankQuestion;
@@ -133,5 +134,29 @@ final class UserRepositoryTest extends DatabaseTestCase
             [BankQuestion::class, $bankQuestionId],
         );
         $this->assertSame(0, $logCountAfter);
+    }
+
+    /**
+     * Account deletion is a GDPR erasure request, not a visibility cleanup: a season the user
+     * already soft-deleted (e.g. via the season settings danger zone) must still be permanently
+     * purged when they're its sole owner, not left soft-deleted forever with no owner left to
+     * ever hard-delete it.
+     */
+    public function testDeleteUserPurgesAlreadySoftDeletedSoleOwnedSeason(): void
+    {
+        $user = $this->getUserByEmail('sole-owner@example.org');
+        $season = $this->getSeasonByCode('doomd');
+        $seasonId = $season->id->toString();
+
+        $season->setDeletedAt(new DateTime());
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $user = $this->getUserByEmail('sole-owner@example.org');
+        $this->userRepository->deleteUser($user);
+        $this->entityManager->clear();
+
+        $connection = $this->entityManager->getConnection();
+        $this->assertSame(0, (int) $connection->fetchOne('select count(*) from season where id = ?', [$seasonId]));
     }
 }

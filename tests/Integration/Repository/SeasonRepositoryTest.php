@@ -71,6 +71,7 @@ final class SeasonRepositoryTest extends DatabaseTestCase
     {
         $season = $this->getSeasonByCode('bbbbb');
         $this->assertGreaterThan(1, $season->owners->count());
+        $seasonId = $season->id->toString();
 
         $bankQuestion = new BankQuestion();
         $bankQuestion->question = 'Wie is de Krtek eigenlijk?';
@@ -91,7 +92,9 @@ final class SeasonRepositoryTest extends DatabaseTestCase
         $this->seasonRepository->deleteSeason($season);
         $this->entityManager->clear();
 
-        $this->assertNotInstanceOf(Season::class, $this->seasonRepository->findOneBySeasonCode('bbbbb'));
+        // Season is Gedmo\SoftDeleteable, so findOneBySeasonCode() (filtered) would return null
+        // even for a merely soft-deleted row — only a raw row count proves it's truly gone.
+        $this->assertSame(0, (int) $connection->fetchOne('select count(*) from season where id = ?', [$seasonId]));
 
         $logCountAfter = (int) $connection->fetchOne(
             'select count(*) from ext_log_entries where object_class = ? and object_id = ?',

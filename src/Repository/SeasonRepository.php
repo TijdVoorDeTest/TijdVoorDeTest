@@ -7,6 +7,7 @@ namespace Tvdt\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Gedmo\SoftDeleteable\SoftDeleteableListener;
 use Tvdt\Entity\BankQuestion;
 use Tvdt\Entity\Elimination;
 use Tvdt\Entity\GivenAnswer;
@@ -42,13 +43,16 @@ class SeasonRepository extends ServiceEntityRepository
         )->setParameter('user', $user)->getResult();
     }
 
-    /** Deletes the season and every row tied to it, including data Gedmo would otherwise only soft-delete. */
+    /** Permanently deletes the season and every row tied to it — including the season itself,
+     * which is Gedmo\SoftDeleteable and would otherwise only get its deletedAt set. Used for GDPR
+     * account-deletion purges, never for the season settings page's own "delete season" action,
+     * which soft-deletes instead (see SeasonController::deleteSeason()). */
     public function deleteSeason(Season $season): void
     {
         $em = $this->getEntityManager();
         $em->wrapInTransaction(function () use ($em, $season): void {
             $bankQuestionIds = $this->scheduleForRemoval($em, $season);
-            $em->flush();
+            $this->flushWithoutSoftDeleteListener($em);
 
             // Gedmo\Loggable writes its own "removed" log entry as part of the flush above, so the
             // audit-log purge must happen after — purging first would just leave that final row behind.
@@ -58,10 +62,10 @@ class SeasonRepository extends ServiceEntityRepository
 
     /**
      * Purges Gedmo\SoftDeleteable rows and schedules $season for removal, without flushing — lets
-     * a caller batch several seasons' removal into one flush (see UserRepository::deleteUser(),
-     * which combines this with removing the user in a single flush; calling flush() separately
-     * per season there confuses Doctrine's change-set detection for still-managed entities tied
-     * to the bulk-deleted rows above).
+     * a caller batch several seasons' removal into one flush (see UserRepository::deleteUser()).
+     * $season itself is also Gedmo\SoftDeleteable, so the caller must flush via
+     * flushWithoutSoftDeleteListener() below, or this permanent deletion becomes just another
+     * soft-delete (setting deletedAt) instead.
      *
      * @return list<string> the season's BankQuestion ids, to purge their audit log once flushed
      */
@@ -72,6 +76,37 @@ class SeasonRepository extends ServiceEntityRepository
         $em->remove($season);
 
         return $bankQuestionIds;
+    }
+
+    /**
+     * Flushes with Gedmo\SoftDeleteableListener temporarily detached, so a Season scheduled for
+     * removal (via scheduleForRemoval() above) is actually deleted instead of merely getting its
+     * deletedAt set. This also sidesteps a second Gedmo quirk: its listener calls persist() on
+     * each soft-deleted entity to record the timestamp, and persist() cascades into any
+     * cascade:['persist'] association — Season's Quiz/Candidate/BankQuestion/QuestionLabel — which
+     * silently *cancels* their own cascaded deletion within the same flush. Detaching the listener
+     * for this one flush restores the plain cascade-delete behavior all of this already relied on
+     * before Season became SoftDeleteable.
+     */
+    public function flushWithoutSoftDeleteListener(EntityManagerInterface $em): void
+    {
+        $eventManager = $em->getEventManager();
+        $listeners = array_filter(
+            $eventManager->getListeners('onFlush'),
+            static fn (object $listener): bool => $listener instanceof SoftDeleteableListener,
+        );
+
+        foreach ($listeners as $listener) {
+            $eventManager->removeEventListener('onFlush', $listener);
+        }
+
+        try {
+            $em->flush();
+        } finally {
+            foreach ($listeners as $listener) {
+                $eventManager->addEventListener('onFlush', $listener);
+            }
+        }
     }
 
     /**

@@ -7,13 +7,18 @@ namespace Tvdt\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 use Tvdt\Repository\SeasonRepository;
 
+#[Gedmo\SoftDeleteable]
 #[ORM\Entity(repositoryClass: SeasonRepository::class)]
 class Season
 {
+    use SoftDeleteableEntity;
+
     private const string SEASON_CODE_CHARACTERS = 'bcdfghjklmnpqrstvwxz';
 
     #[ORM\Column(type: UuidType::NAME)]

@@ -289,7 +289,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         $this->assertFalse($this->getSeasonByCode('krtek')->isOwner($krtekAdmin));
     }
 
-    public function testDeleteSeasonWithCorrectConfirmationDeletesSeason(): void
+    public function testDeleteSeasonWithCorrectConfirmationSoftDeletesSeason(): void
     {
         $seasonId = $this->getSeasonByCode('krtek')->id;
         $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/settings/delete');
@@ -297,6 +297,30 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/delete', [
             '_token' => $token,
             'confirmation' => 'verwijderen',
+        ]);
+
+        self::assertResponseRedirects('/backoffice/');
+        $this->entityManager->clear();
+
+        // Filtered lookups must no longer see it...
+        $this->assertNotInstanceOf(Season::class, $this->entityManager->getRepository(Season::class)->find($seasonId));
+
+        // ...but the row itself must still exist with deletedAt set — a soft delete, not a hard one.
+        $connection = $this->entityManager->getConnection();
+        $this->assertSame(
+            1,
+            (int) $connection->fetchOne('select count(*) from season where id = ? and deleted_at is not null', [$seasonId->toString()]),
+        );
+    }
+
+    public function testDeleteSeasonAcceptsTheEnglishConfirmationWord(): void
+    {
+        $seasonId = $this->getSeasonByCode('krtek')->id;
+        $token = $this->getCsrfTokenFromPage('/backoffice/season/krtek/settings', '/settings/delete');
+
+        $this->client->request(Request::METHOD_POST, '/backoffice/season/krtek/settings/delete', [
+            '_token' => $token,
+            'confirmation' => 'delete',
         ]);
 
         self::assertResponseRedirects('/backoffice/');

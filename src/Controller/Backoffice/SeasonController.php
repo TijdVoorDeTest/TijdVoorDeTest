@@ -6,6 +6,7 @@ namespace Tvdt\Controller\Backoffice;
 
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Safe\DateTime;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormError;
@@ -32,7 +33,6 @@ use Tvdt\Form\SettingsForm;
 use Tvdt\Form\UploadQuizFormType;
 use Tvdt\Repository\CandidateRepository;
 use Tvdt\Repository\QuizRepository;
-use Tvdt\Repository\SeasonRepository;
 use Tvdt\Repository\UserRepository;
 use Tvdt\Security\Voter\SeasonVoter;
 use Tvdt\Service\QuizSpreadsheetService;
@@ -48,7 +48,6 @@ class SeasonController extends AbstractController
         private readonly CandidateRepository $candidateRepository,
         private readonly QuizRepository $quizRepository,
         private readonly UserRepository $userRepository,
-        private readonly SeasonRepository $seasonRepository,
     ) {}
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -206,13 +205,18 @@ class SeasonController extends AbstractController
     {
         $confirmation = mb_strtolower(mb_trim($request->request->getString('confirmation')));
 
-        if ('verwijderen' !== $confirmation) {
-            $this->addFlash(FlashType::Danger, $this->translator->trans("Type 'verwijderen' to confirm"));
+        if (!\in_array($confirmation, ['verwijderen', 'delete'], true)) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('Type delete to confirm'));
 
             return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
         }
 
-        $this->seasonRepository->deleteSeason($season);
+        // Soft delete only: this hides the season everywhere without touching its tests,
+        // candidates, or answers, so it can still be restored later (see issue for restoring a
+        // soft-deleted season). Permanent removal only happens via GDPR account deletion
+        // (UserRepository::deleteUser()) or the scheduled cleanup job (see issue for that).
+        $season->setDeletedAt(new DateTime());
+        $this->em->flush();
 
         $this->addFlash(FlashType::Success, $this->translator->trans('Season deleted'));
 

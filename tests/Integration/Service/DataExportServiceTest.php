@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Reader;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Safe\DateTime;
 use Tvdt\Entity\Answer;
 use Tvdt\Entity\Elimination;
 use Tvdt\Entity\EliminationScreenView;
@@ -166,6 +167,34 @@ final class DataExportServiceTest extends DatabaseTestCase
         $hasDeletedRow = array_any(\array_slice($rows, 1), static fn (array $row): bool => null !== $row[$deletedColumnIndex] && '' !== $row[$deletedColumnIndex]);
 
         $this->assertTrue($hasDeletedRow, 'Expected the soft-deleted QuizCandidate to still appear with a Deleted timestamp');
+    }
+
+    public function testSeasonsSheetAndSeasonInfoSheetIncludeSoftDeletedSeason(): void
+    {
+        $season = $this->getSeasonByCode('krtek');
+        $season->setDeletedAt(new DateTime());
+
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $zip = $this->openZip($this->getUserByEmail('krtek-admin@example.org'));
+        $profileContent = $zip->getFromName('profile.xlsx');
+        $this->assertIsString($profileContent);
+        $candidatesContent = $zip->getFromName('krtek-Krtek-Weekend/candidates.xlsx');
+        $this->assertIsString($candidatesContent);
+        $zip->close();
+
+        $seasonsRows = $this->loadSheet($profileContent, 'Seasons')->toArray();
+        $deletedColumnIndex = array_search('Deleted', $seasonsRows[0], true);
+        $this->assertIsInt($deletedColumnIndex);
+        $krtekRow = current(array_filter(\array_slice($seasonsRows, 1), static fn (array $row): bool => 'Krtek Weekend' === $row[0]));
+        $this->assertIsArray($krtekRow);
+        $this->assertNotEmpty($krtekRow[$deletedColumnIndex], 'Expected the soft-deleted season to still appear with a Deleted timestamp');
+
+        $infoRows = $this->loadSheet($candidatesContent, 'Season info')->toArray();
+        $deletedRow = current(array_filter($infoRows, static fn (array $row): bool => 'Deleted' === $row[0]));
+        $this->assertIsArray($deletedRow);
+        $this->assertNotEmpty($deletedRow[1], 'Expected the Season info sheet to show a Deleted timestamp');
     }
 
     public function testRawAnswersSheetShowsCandidatesByQuestionsGrid(): void

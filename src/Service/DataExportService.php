@@ -120,7 +120,7 @@ class DataExportService
 
         $seasons = $spreadsheet->createSheet();
         $seasons->setTitle('Seasons');
-        $seasons->fromArray(['Season', 'Season code', 'Quizzes', 'Candidates', 'Shared with other owners'], null, 'A1');
+        $seasons->fromArray(['Season', 'Season code', 'Quizzes', 'Candidates', 'Shared with other owners', 'Deleted'], null, 'A1');
         $seasons->getStyle('1:1')->getFont()->setBold(true);
 
         $row = 2;
@@ -131,11 +131,12 @@ class DataExportService
                 $season->quizzes->count(),
                 $season->candidates->count(),
                 $season->owners->count() > 1 ? 'Yes' : 'No',
+                $season->getDeletedAt()?->format(\DateTimeInterface::ATOM) ?? '',
             ], null, 'A'.$row);
             ++$row;
         }
 
-        foreach (['A', 'B', 'C', 'D', 'E'] as $column) {
+        foreach (['A', 'B', 'C', 'D', 'E', 'F'] as $column) {
             $seasons->getColumnDimension($column)->setAutoSize(true);
         }
 
@@ -377,6 +378,7 @@ class DataExportService
             ['Show numbers', $season->settings?->showNumbers ? 'Yes' : 'No'],
             ['Confirm answers', $season->settings?->confirmAnswers ? 'Yes' : 'No'],
             ['Shared with other owners', $season->owners->count() > 1 ? 'Yes' : 'No'],
+            ['Deleted', $season->getDeletedAt()?->format(\DateTimeInterface::ATOM) ?? ''],
         ], null, 'A1');
         $infoSheet->getColumnDimension('A')->setAutoSize(true);
         $infoSheet->getColumnDimension('B')->setAutoSize(true);

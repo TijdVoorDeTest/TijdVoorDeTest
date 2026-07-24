@@ -46,8 +46,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $em->wrapInTransaction(function () use ($em, $user): void {
             $this->invalidateResetPasswordRequests($user);
 
+            // Seasons the user already soft-deleted must still be purged for good here — account
+            // deletion is a GDPR erasure request, not just a cleanup of what's currently visible —
+            // so the softdeleteable filter that normally hides those seasons is disabled while
+            // reading this collection.
+            $filters = $em->getFilters();
+            $filters->disable('softdeleteable');
+            try {
+                $seasons = $user->seasons->toArray();
+            } finally {
+                $filters->enable('softdeleteable');
+            }
+
             $bankQuestionIds = [];
-            foreach ($user->seasons->toArray() as $season) {
+            foreach ($seasons as $season) {
                 if (1 === $season->owners->count()) {
                     array_push($bankQuestionIds, ...$this->seasonRepository->scheduleForRemoval($em, $season));
 
@@ -58,7 +70,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             }
 
             $em->remove($user);
-            $em->flush();
+            $this->seasonRepository->flushWithoutSoftDeleteListener($em);
 
             $this->seasonRepository->purgeBankQuestionAuditLog($em, $bankQuestionIds);
         });
