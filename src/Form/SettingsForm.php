@@ -23,10 +23,10 @@ class SettingsForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $choices = [];
-        foreach ($this->enabledLocales as $locale) {
-            $choices[\Locale::getDisplayLanguage($locale, $locale)] = $locale;
-        }
+        $choices = array_combine(
+            array_map(static fn (string $locale): string => \Locale::getDisplayLanguage($locale, $locale), $this->enabledLocales),
+            $this->enabledLocales,
+        );
 
         $builder
             ->add('showNumbers', options: [
