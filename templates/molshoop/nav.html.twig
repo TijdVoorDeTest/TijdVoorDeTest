@@ -41,6 +41,36 @@
                         </div>
                     </div>
                 </li>
+                <li class="nav-item dropdown" data-controller="bo--theme">
+                    <button type="button" class="nav-link dropdown-toggle border-0 bg-transparent"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            aria-label="{{ 'Theme'|trans }}">
+                        <i class="bi bi-circle-half"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button type="button" class="dropdown-item" data-theme="auto"
+                                    data-bo--theme-target="option"
+                                    data-action="click->bo--theme#select">
+                                <i class="bi bi-circle-half me-1"></i> {{ 'Auto'|trans }}
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" data-theme="light"
+                                    data-bo--theme-target="option"
+                                    data-action="click->bo--theme#select">
+                                <i class="bi bi-sun-fill me-1"></i> {{ 'Light'|trans }}
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" data-theme="dark"
+                                    data-bo--theme-target="option"
+                                    data-action="click->bo--theme#select">
+                                <i class="bi bi-moon-stars-fill me-1"></i> {{ 'Dark'|trans }}
+                            </button>
+                        </li>
+                    </ul>
+                </li>
                 {% if is_granted('IS_AUTHENTICATED') %}
                     <li class="nav-item">
                         <a class="nav-link{% if 'tvdt_molshoop_settings' == app.current_route() %} active{% endif %}"
