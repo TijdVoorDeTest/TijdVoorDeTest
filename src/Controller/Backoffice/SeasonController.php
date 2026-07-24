@@ -30,6 +30,7 @@ use Tvdt\Form\AddCandidatesFormType;
 use Tvdt\Form\SettingsForm;
 use Tvdt\Form\UploadQuizFormType;
 use Tvdt\Repository\CandidateRepository;
+use Tvdt\Repository\QuizRepository;
 use Tvdt\Security\Voter\SeasonVoter;
 use Tvdt\Service\QuizSpreadsheetService;
 
@@ -42,6 +43,7 @@ class SeasonController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly QuizSpreadsheetService $quizSpreadsheet,
         private readonly CandidateRepository $candidateRepository,
+        private readonly QuizRepository $quizRepository,
     ) {}
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -52,6 +54,8 @@ class SeasonController extends AbstractController
     )]
     public function index(Season $season): Response
     {
+        $this->quizRepository->eagerLoadStatusDataForSeason($season);
+
         return $this->render('backoffice/season.html.twig', [
             'season' => $season,
             'activeTab' => 'tests',
@@ -118,6 +122,32 @@ class SeasonController extends AbstractController
         $this->addFlash(FlashType::Success, $this->translator->trans('Season code regenerated'));
 
         return $this->redirectToRoute('tvdt_backoffice_season_settings', ['seasonCode' => $season->seasonCode]);
+    }
+
+    #[IsCsrfTokenValid('rename_season')]
+    #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
+    #[Route(
+        '/backoffice/season/{seasonCode:season}/rename',
+        name: 'tvdt_backoffice_season_rename',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX],
+        methods: ['POST'],
+    )]
+    public function renameSeason(Season $season, Request $request): RedirectResponse
+    {
+        $name = mb_trim($request->request->getString('name'));
+
+        if ('' === $name || mb_strlen($name) > 64) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('The season name must be between 1 and 64 characters'));
+
+            return $this->redirectToRoute('tvdt_backoffice_season', ['seasonCode' => $season->seasonCode]);
+        }
+
+        $season->name = $name;
+        $this->em->flush();
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Season renamed'));
+
+        return $this->redirectToRoute('tvdt_backoffice_season', ['seasonCode' => $season->seasonCode]);
     }
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -256,7 +286,7 @@ class SeasonController extends AbstractController
                     new Length(max: 64),
                 ],
             ])
-            ->add('save', SubmitType::class, ['label' => 'Create'])
+            ->add('save', SubmitType::class, ['label' => $this->translator->trans('Create'), 'translation_domain' => false])
             ->getForm();
 
         $form->handleRequest($request);

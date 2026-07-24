@@ -306,6 +306,12 @@ question counts as covered more than once).
 - Sass sources in `assets/styles/`, compiled via `bin/console sass:build`
 - Production: Assets precompiled during Docker build
 - Development: Watch mode enabled in FrankenPHP container
+- **Modals containing a form**: always wire up the `bo--modal` Stimulus controller's dirty-tracking, even when the
+  modal is opened via plain `data-bs-toggle="modal"` rather than `bo--modal#open`'s turbo-frame loading. Add
+  `data-controller="bo--modal" data-bo--modal-target="modal"` and `data-action="hidden.bs.modal->bo--modal#resetDirty"`
+  on the modal element, and `data-action="input->bo--modal#markDirty change->bo--modal#markDirty"` on each form
+  field. This blocks backdrop-click/Escape dismissal once the user has typed something, so in-progress edits aren't
+  silently discarded. See `templates/backoffice/partials/rename_control.html.twig` for a reusable example.
 
 ## CI/CD Pipeline
 

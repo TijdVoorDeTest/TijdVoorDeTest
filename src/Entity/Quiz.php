@@ -10,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
+use Tvdt\Enum\QuizStatus;
 use Tvdt\Repository\QuizRepository;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
@@ -77,6 +78,46 @@ class Quiz
     /** A locked quiz can no longer be altered: it is either explicitly finalized or a candidate has already started filling it in. */
     public bool $isLocked {
         get => $this->isFinalized || $this->hasStartedCandidates;
+    }
+
+    /** Whether every active candidate has answered every enabled question. False if there are no active candidates (vacuously "not done"). */
+    public bool $allActiveCandidatesFinished {
+        get {
+            $activeCandidates = $this->candidateData->filter(static fn (QuizCandidate $quizCandidate): bool => $quizCandidate->active);
+
+            if ($activeCandidates->isEmpty()) {
+                return false;
+            }
+
+            $enabledQuestionCount = $this->questions->filter(static fn (Question $question): bool => $question->enabled)->count();
+
+            if (0 === $enabledQuestionCount) {
+                return false;
+            }
+
+            return $activeCandidates->forAll(
+                fn (int $key, QuizCandidate $quizCandidate): bool => $quizCandidate->candidate->givenAnswers->filter(
+                    fn (GivenAnswer $givenAnswer): bool => $givenAnswer->quiz === $this && $givenAnswer->question->enabled,
+                )->count() >= $enabledQuestionCount,
+            );
+        }
+    }
+
+    /** Whether an elimination has been prepared for this quiz and at least one candidate has been shown their screen. */
+    public bool $hasRevealedElimination {
+        get => $this->eliminations->exists(static fn (int $key, Elimination $elimination): bool => !$elimination->screenViews->isEmpty());
+    }
+
+    public QuizStatus $status {
+        get => match (true) {
+            $this->hasRevealedElimination => QuizStatus::Revealed,
+            $this->season->activeQuiz === $this && $this->allActiveCandidatesFinished => QuizStatus::Done,
+            $this->season->activeQuiz === $this => QuizStatus::Active,
+            $this->questions->isEmpty() => QuizStatus::New,
+            !$this->isFinalized => QuizStatus::Concept,
+            $this->allActiveCandidatesFinished => QuizStatus::Finished,
+            default => QuizStatus::Ready,
+        };
     }
 
     public function addElimination(Elimination $elimination): self

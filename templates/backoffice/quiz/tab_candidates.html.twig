@@ -32,7 +32,7 @@
     </div>
 </div>
 
-<form method="post">
+<form method="post" action="{{ path('tvdt_backoffice_quiz_candidates_question_save', {seasonCode: season.seasonCode, quiz: quiz.id, question: question.id}) }}">
     <input type="hidden" name="_token" value="{{ csrf_token('candidate_answer') }}">
     <table class="table table-hover table-striped mb-3">
         <thead>

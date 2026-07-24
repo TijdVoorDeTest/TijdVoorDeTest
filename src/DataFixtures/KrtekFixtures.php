@@ -13,11 +13,16 @@ use Tvdt\Entity\BankAnswer;
 use Tvdt\Entity\BankQuestion;
 use Tvdt\Entity\BankQuestionUsage;
 use Tvdt\Entity\Candidate;
+use Tvdt\Entity\EliminationScreenView;
+use Tvdt\Entity\GivenAnswer;
 use Tvdt\Entity\Question;
 use Tvdt\Entity\QuestionLabel;
 use Tvdt\Entity\Quiz;
+use Tvdt\Entity\QuizCandidate;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\SeasonSettings;
+use Tvdt\Enum\ScreenColour;
+use Tvdt\Factory\EliminationFactory;
 
 final class KrtekFixtures extends Fixture implements FixtureGroupInterface
 {
@@ -32,6 +37,10 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
     public const string BANK_QUESTION_USED = 'bank-question-used';
 
     public const string BANK_QUESTION_UNUSED = 'bank-question-unused';
+
+    public function __construct(
+        private readonly EliminationFactory $eliminationFactory,
+    ) {}
 
     public static function getGroups(): array
     {
@@ -76,6 +85,23 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
         $quiz5 = $this->createQuiz5($season);
         $season->addQuiz($quiz5);
 
+        // Quiz 6-9 exist purely so every Quiz::$status value has a live example in this season:
+        // Quiz 1 above is already Active. "Done" (Active + everyone finished) has no example here
+        // since it would require the season's activeQuiz to have baseline candidates/answers,
+        // which several QuizRepositoryTest/QuizControllerTest tests add their own scratch data to
+        // and assert exact counts/ordering on.
+        $quiz6 = $this->createQuiz6($season); // New: no questions yet.
+        $season->addQuiz($quiz6);
+
+        $quiz7 = $this->createQuiz7($season); // Ready: finalized, nobody started.
+        $season->addQuiz($quiz7);
+
+        $quiz8 = $this->createQuiz8($season); // Finished: finalized, not active, everyone done.
+        $season->addQuiz($quiz8);
+
+        $quiz9 = $this->createQuiz9($season); // Revealed: finalized, elimination screen shown.
+        $season->addQuiz($quiz9);
+
         \assert($season->settings instanceof SeasonSettings);
 
         $season->settings->confirmAnswers = true;
@@ -84,11 +110,58 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
         $this->createQuestionBank($season, $quiz2);
         $this->bindQuizQuestionsToBank($season);
 
+        $this->finishQuizForCandidate($manager, $quiz8, $this->getCandidateByName($season, 'Gert-Jan'), answersCorrectly: true);
+        $this->finishQuizForCandidate($manager, $quiz8, $this->getCandidateByName($season, 'Jari'), answersCorrectly: true);
+
+        // Quiz 9's elimination is built the same way the real "prepare elimination" flow does
+        // (EliminationFactory, from real getScores() data), so it isn't a screen shown for a
+        // candidate who never took the test: Lara answers correctly and stays safe, Myrthe
+        // answers wrong and is the dropout (quiz.dropouts defaults to 1) whose red screen has
+        // already been shown.
+        $this->finishQuizForCandidate($manager, $quiz9, $this->getCandidateByName($season, 'Lara'), answersCorrectly: true);
+        $this->finishQuizForCandidate($manager, $quiz9, $this->getCandidateByName($season, 'Myrthe'), answersCorrectly: false);
+        $manager->flush();
+
+        $elimination = $this->eliminationFactory->createEliminationFromQuiz($quiz9);
+        $eliminatedName = array_search(ScreenColour::Red->value, $elimination->data, true);
+        \assert(\is_string($eliminatedName));
+
+        $screenView = new EliminationScreenView($elimination, $this->getCandidateByName($season, $eliminatedName), ScreenColour::Red);
+        $elimination->screenViews->add($screenView);
+        $manager->persist($screenView);
+
         $manager->flush();
 
         $this->addReference(self::KRTEK_SEASON, $season);
         $this->addReference(self::KRTEK_QUIZ_1, $quiz1);
         $this->addReference(self::KRTEK_QUIZ_2, $quiz2);
+    }
+
+    private function getCandidateByName(Season $season, string $name): Candidate
+    {
+        $candidate = $season->candidates->filter(static fn (Candidate $candidate): bool => $name === $candidate->name)->first();
+        \assert($candidate instanceof Candidate);
+
+        return $candidate;
+    }
+
+    /**
+     * Marks $candidate as having started and answered every question of $quiz, so Quiz::$status
+     * reaches Finished (or Done, if $quiz is also the season's active quiz) and, if scored, real
+     * candidate.givenAnswers exist for an Elimination to be built from via getScores().
+     */
+    private function finishQuizForCandidate(ObjectManager $manager, Quiz $quiz, Candidate $candidate, bool $answersCorrectly): void
+    {
+        $quizCandidate = new QuizCandidate($quiz, $candidate);
+        $quizCandidate->started = new DateTimeImmutable();
+
+        $manager->persist($quizCandidate);
+
+        foreach ($quiz->questions as $question) {
+            $answer = $question->answers->filter(static fn (Answer $answer): bool => $answer->isRightAnswer === $answersCorrectly)->first();
+            \assert($answer instanceof Answer);
+            $manager->persist(new GivenAnswer($candidate, $quiz, $answer));
+        }
     }
 
     private function createQuestionBank(Season $season, Quiz $usedInQuiz): void
@@ -1011,6 +1084,69 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
           ->addAnswer(new Answer('Tom'));
         $q->ordering = 15;
         $quiz->addQuestion($q);
+
+        return $quiz;
+    }
+
+    private function createQuiz6(Season $season): Quiz
+    {
+        $quiz = new Quiz();
+        $quiz->name = 'Quiz 6';
+        $quiz->season = $season;
+
+        return $quiz;
+    }
+
+    private function createQuiz7(Season $season): Quiz
+    {
+        $quiz = new Quiz();
+        $quiz->name = 'Quiz 7';
+        $quiz->season = $season;
+
+        $q = new Question();
+        $q->question = 'Is de Krtek een man of een vrouw?';
+        $q->addAnswer(new Answer('Man'))
+          ->addAnswer(new Answer('Vrouw', true));
+        $q->ordering = 1;
+        $quiz->addQuestion($q);
+
+        $quiz->finalizedAt = new DateTimeImmutable();
+
+        return $quiz;
+    }
+
+    private function createQuiz8(Season $season): Quiz
+    {
+        $quiz = new Quiz();
+        $quiz->name = 'Quiz 8';
+        $quiz->season = $season;
+
+        $q = new Question();
+        $q->question = 'Is de Krtek een man of een vrouw?';
+        $q->addAnswer(new Answer('Man'))
+          ->addAnswer(new Answer('Vrouw', true));
+        $q->ordering = 1;
+        $quiz->addQuestion($q);
+
+        $quiz->finalizedAt = new DateTimeImmutable();
+
+        return $quiz;
+    }
+
+    private function createQuiz9(Season $season): Quiz
+    {
+        $quiz = new Quiz();
+        $quiz->name = 'Quiz 9';
+        $quiz->season = $season;
+
+        $q = new Question();
+        $q->question = 'Is de Krtek een man of een vrouw?';
+        $q->addAnswer(new Answer('Man'))
+          ->addAnswer(new Answer('Vrouw', true));
+        $q->ordering = 1;
+        $quiz->addQuestion($q);
+
+        $quiz->finalizedAt = new DateTimeImmutable();
 
         return $quiz;
     }

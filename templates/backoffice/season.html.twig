@@ -1,4 +1,7 @@
 {% extends 'backoffice/base.html.twig' %}
+
+{% import 'backoffice/partials/rename_control.html.twig' as rename %}
+
 {% block title %}{{ parent() }}{{ season.name }}{% endblock %}
 
 {% block breadcrumbs %}
@@ -18,7 +21,13 @@
         {id: 'settings', label: 'Settings'|trans, route: 'tvdt_backoffice_season_settings'},
     ] %}
 
-    <h2 class="mb-3">{{ 'Season'|trans }}: {{ season.name }}</h2>
+    <h2 class="mb-3 d-flex align-items-center gap-2 rename-trigger-host">
+        {{ 'Season'|trans }}: {{ season.name }}
+        {{ rename.trigger('renameSeasonModal') }}
+    </h2>
+
+    {{ rename.modal('renameSeasonModal', 'Rename season'|trans, path('tvdt_backoffice_season_rename', {seasonCode: season.seasonCode}), csrf_token('rename_season'), season.name, 64) }}
+
     <ul class="nav nav-tabs mb-3">
         {% for tab in tabs %}
             <li class="nav-item">

@@ -4,6 +4,15 @@
 
 .modal-content > turbo-frame { display: contents; }
 
+.rename-trigger {
+  opacity: 0;
+
+  .rename-trigger-host:hover &,
+  &:focus {
+    opacity: 1;
+  }
+}
+
 .colour-select {
   &:has(option[value="green"]:checked) {
     background-color: var(--bs-success);
