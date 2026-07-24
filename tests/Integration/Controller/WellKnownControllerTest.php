@@ -16,7 +16,7 @@ final class WellKnownControllerTest extends AbstractControllerWebTestCase
     {
         $this->client->request(Request::METHOD_GET, '/.well-known/change-password');
 
-        self::assertResponseRedirects('/backoffice/settings');
+        self::assertResponseRedirects('/molshoop/settings');
     }
 
     /** @throws \Exception */

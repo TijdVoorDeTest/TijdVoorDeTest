@@ -1,0 +1,73 @@
+<div class="row">
+<div class="col-xl-9 col-12">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        {% set questions = quiz.questions %}
+        {% set currentIndex = null %}
+        {% for index, q in questions %}
+            {% if q.id.toString == question.id.toString %}
+                {% set currentIndex = index %}
+            {% endif %}
+        {% endfor %}
+
+        {% if currentIndex > 0 %}
+            {% set prevQuestion = questions[currentIndex - 1] %}
+            <a href="{{ path('tvdt_molshoop_quiz_candidates_question', {seasonCode: season.seasonCode, quiz: quiz.id, question: prevQuestion.id}) }}"
+               class="btn btn-secondary">
+                {{ 'Previous'|trans }}
+            </a>
+        {% endif %}
+    </div>
+
+    <h4 class="mb-0">{{ currentIndex + 1 }}. {{ question }}</h4>
+
+    <div>
+        {% if currentIndex is not null and currentIndex < (questions|length - 1) %}
+            {% set nextQuestion = questions[currentIndex + 1] %}
+            <a href="{{ path('tvdt_molshoop_quiz_candidates_question', {seasonCode: season.seasonCode, quiz: quiz.id, question: nextQuestion.id}) }}"
+               class="btn btn-secondary">
+                {{ 'Next'|trans }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<form method="post" action="{{ path('tvdt_molshoop_quiz_candidates_question_save', {seasonCode: season.seasonCode, quiz: quiz.id, question: question.id}) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('candidate_answer') }}">
+    <table class="table table-hover table-striped mb-3">
+        <thead>
+            <tr>
+                <th scope="col">{{ 'Candidate'|trans }}</th>
+                {% for answer in question.answers %}
+                    <th scope="col">{{ answer }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for candidate in candidates %}
+                <tr>
+                    <th scope="row">{{ candidate.name }}</th>
+                    {% for answer in question.answers %}
+                        <td>
+                            <input type="checkbox"
+                                   id="candidate_{{ candidate.id }}_answer_{{ answer.id }}"
+                                   name="candidate_answer[{{ candidate.id }}][]"
+                                   value="{{ answer.id }}"
+                                   class="form-check-input"
+                                   {{ answer.candidates.contains(candidate) ? 'checked' : '' }}>
+                            <label for="candidate_{{ candidate.id }}_answer_{{ answer.id }}" class="visually-hidden">
+                                {{ candidate.name }} - {{ answer }}
+                            </label>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">{{ 'Save'|trans }}</button>
+</form>
+</div>
+<div class="col-xl-3 col-12">
+    {{ include('molshoop/help/quiz_answer_mapping.html.twig') }}
+</div>
+</div>

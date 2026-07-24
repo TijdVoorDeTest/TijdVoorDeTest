@@ -20,13 +20,13 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorExists('form');
     }
 
-    public function testRegisterRedirectsToBackofficeWhenAlreadyAuthenticated(): void
+    public function testRegisterRedirectsToMolshoopWhenAlreadyAuthenticated(): void
     {
         $this->loginAs('test@example.org');
 
         $this->client->request(Request::METHOD_GET, '/register');
 
-        self::assertResponseRedirects('/backoffice/');
+        self::assertResponseRedirects('/molshoop/');
     }
 
     public function testRegisterCreatesUserSendsConfirmationAndLogsIn(): void
@@ -39,7 +39,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/backoffice/');
+        self::assertResponseRedirects('/molshoop/');
         self::assertEmailCount(1);
 
         $this->entityManager->clear();
@@ -72,7 +72,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
 
         $this->client->request(Request::METHOD_GET, $signature->getSignedUrl());
 
-        self::assertResponseRedirects('/backoffice/');
+        self::assertResponseRedirects('/molshoop/');
 
         $this->entityManager->clear();
         $updatedUser = $this->getUserByEmail('test@example.org');

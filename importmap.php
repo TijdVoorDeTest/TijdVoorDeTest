@@ -26,7 +26,7 @@ declare(strict_types=1);
  */
 return [
     'quiz' => ['path' => './assets/quiz.ts', 'entrypoint' => true],
-    'backoffice' => ['path' => './assets/backoffice.ts', 'entrypoint' => true],
+    'molshoop' => ['path' => './assets/molshoop.ts', 'entrypoint' => true],
     '@symfony/stimulus-bundle' => ['path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js'],
     'bootstrap' => ['version' => '5.3.8'],
     '@popperjs/core' => ['version' => '2.11.8'],

@@ -20,7 +20,7 @@ final class QuestionEditModalE2ETest extends AbstractE2ETestCase
     public function testEditingLastAnswerAutoExpandsANewRowAndSavesThroughTheTurboFrame(): void
     {
         $client = $this->loginAsAdmin();
-        $client->request('GET', '/backoffice/season/krtek');
+        $client->request('GET', '/molshoop/season/krtek');
 
         // Quiz 3 is still a Concept (not finalized), so its questions are editable — Quiz 1 is
         // finalized/locked and would only offer a read-only "View" modal, no form.

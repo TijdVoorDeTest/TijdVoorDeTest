@@ -1,0 +1,107 @@
+{% extends 'molshoop/base.html.twig' %}
+
+{% block title %}{{ parent() }}{{ 'Prepare Elimination'|trans }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: elimination.quiz.season.seasonCode}) }}">{{ elimination.quiz.season.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_quiz', {seasonCode: elimination.quiz.season.seasonCode, quiz: elimination.quiz.id}) }}">{{ elimination.quiz.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ 'Prepare Elimination'|trans }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div data-controller="bo--prepare-elimination">
+        <h2 class="mb-3">{{ 'Prepare Elimination'|trans }}: {{ elimination.quiz.season.name }} - {{ elimination.quiz.name }}</h2>
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <form method="post">
+                    <input type="hidden" name="_token" value="{{ csrf_token('prepare_elimination') }}">
+                    <div class="row mb-2 fw-bold">
+                        <div class="col-4">{{ 'Candidate'|trans }}</div>
+                        <div class="col-2">{{ 'Score'|trans }}</div>
+                        <div class="col-2">{{ 'Time'|trans }}</div>
+                        <div class="col-4">{{ 'Colour'|trans }}</div>
+                    </div>
+                    {%~ for name, result in candidates %}
+                        <div class="row mb-3 align-items-center">
+                            <label for="colour-{{ name|lower }}" class="col-4 col-form-label">{{ name }}</label>
+                            <div class="col-2">{{ result ? result.score : '-' }}</div>
+                            <div class="col-2">{{ result ? result.time.format('%i:%S') : '-' }}</div>
+                            <div class="col-4">
+                                <select id="colour-{{ name|lower }}" class="form-select colour-select"
+                                        name="colour-{{ name|lower }}">
+                                    <option
+                                        value="green"{% if elimination.data[name] == 'green' %} selected{% endif %}>{{ 'Green'|trans }}</option>
+                                    <option
+                                        value="red"{% if elimination.data[name] == 'red' %} selected{% endif %}>{{ 'Red'|trans }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="btn-group mb-3">
+                        <button type="submit" class="btn btn-primary" name="start" value="0">{{ 'Save'|trans }}</button>
+                        <button type="submit" class="btn btn-success" name="start"
+                                value="1">{{ 'Save and start elimination'|trans }}</button>
+                        <a href="{{ path('tvdt_molshoop_quiz', {seasonCode: elimination.quiz.season.seasonCode, quiz: elimination.quiz.id}) }}"
+                           class="btn btn-secondary">{{ 'Back'|trans }}</a>
+                        <button type="button" class="btn btn-danger"
+                                data-action="click->bo--prepare-elimination#deleteElimination">{{ 'Delete...'|trans }}</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="mb-4">
+                    {{ include('molshoop/help/prepare_elimination.html.twig') }}
+                </div>
+
+                {% if not elimination.screenViews.empty %}
+                    <h4 class="mb-3">{{ 'Screens shown'|trans }}</h4>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">{{ 'Candidate'|trans }}</th>
+                            <th scope="col">{{ 'Colour'|trans }}</th>
+                            <th scope="col">{{ 'Shown at'|trans }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {%~ for screenView in elimination.screenViews %}
+                            <tr>
+                                <td>{{ screenView.candidate.name }}</td>
+                                <td>{{ screenView.colour.label|trans }}</td>
+                                <td>{{ screenView.created|format_datetime() }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modal fade" data-bo--prepare-elimination-target="deleteModal" data-bs-backdrop="static"
+             tabindex="-1"
+             aria-labelledby="deleteEliminationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="deleteEliminationModalLabel">{{ 'Please Confirm'|trans }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">{{ 'Are you sure you want to delete this elimination?'|trans }}</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
+                        <form action="{{ path('tvdt_prepare_elimination_delete', {elimination: elimination.id}) }}" method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_elimination') }}">
+                            <button type="submit" class="btn btn-danger">{{ 'Yes'|trans }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

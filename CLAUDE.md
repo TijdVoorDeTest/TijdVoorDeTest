@@ -13,7 +13,7 @@ eliminated. This app replicates that quiz format with:
 - Season management with active test controls
 - Candidate answer tracking with automatic timing
 - Elimination tracking with joker adjustments
-- Backoffice management for quiz administration and statistics
+- Molshoop, the admin backoffice, for quiz administration and statistics
 
 Tech Stack:
 
@@ -100,7 +100,7 @@ All code quality checks run in CI/CD (.github/workflows/ci.yml) and should pass 
 ```
 src/
   Controller/             # HTTP request handlers (attribute-routed)
-    Backoffice/           # Admin panel controllers
+    Molshoop/             # Admin panel controllers
   Entity/                 # Doctrine ORM entities
   Repository/             # Database queries
   Service/                # Business logic
@@ -122,7 +122,7 @@ config/
   routes.yaml             # Main route entry point
 
 templates/
-  backoffice/             # Admin UI templates
+  molshoop/               # Admin UI templates
   quiz/                   # Public quiz UI templates
   base.html.twig          # Main layout
 
@@ -256,7 +256,7 @@ question counts as covered more than once).
   test if the bug is in markup/DOM wiring that isn't worth a test per the rule below.
 - Don't write tests for trivial presentational markup (e.g. asserting a tooltip/popover attribute or a CSS class exists
   in a template). Tests cover behavior: routing, forms, persistence, authorization.
-- Follow the pattern in `tests/Controller/Backoffice/` for controller/integration tests: log in, GET for CSRF token,
+- Follow the pattern in `tests/Controller/Molshoop/` for controller/integration tests: log in, GET for CSRF token,
   POST form data, assert redirect, clear entity manager, assert DB state.
 - **Prefer `TestCase` over `WebTestCase`/`KernelTestCase`.** Reach for the full kernel/DB boot only when the test
   genuinely needs routing, persistence, or the container — pure logic (services, listeners, helpers) should be tested
@@ -311,7 +311,7 @@ question counts as covered more than once).
   `data-controller="bo--modal" data-bo--modal-target="modal"` and `data-action="hidden.bs.modal->bo--modal#resetDirty"`
   on the modal element, and `data-action="input->bo--modal#markDirty change->bo--modal#markDirty"` on each form
   field. This blocks backdrop-click/Escape dismissal once the user has typed something, so in-progress edits aren't
-  silently discarded. See `templates/backoffice/partials/rename_control.html.twig` for a reusable example.
+  silently discarded. See `templates/molshoop/partials/rename_control.html.twig` for a reusable example.
 
 ## CI/CD Pipeline
 
@@ -367,7 +367,7 @@ Auto-executed scripts on install/update:
 
 ## Writing Style (Help Content & UI Text)
 
-When writing Dutch help content in `templates/backoffice/help/nl/`:
+When writing Dutch help content in `templates/molshoop/help/nl/`:
 
 - **No em-dashes** (—): use a comma or restructure the sentence instead.
 - **No semicolons** (;): use a comma. Semicolons are technically correct but read as AI-generated text.
@@ -376,7 +376,7 @@ When writing Dutch help content in `templates/backoffice/help/nl/`:
 
 ## Notes for Future Work
 
-- The backoffice elimination logic is in `Controller/Backoffice/PrepareEliminationController.php`
+- The molshoop (backoffice) elimination logic is in `Controller/Molshoop/PrepareEliminationController.php`
 - Quiz timing logic starts on candidate start click and stops on final answer selection
 - Background music feature noted but not yet implemented (requirements only)
 - Statistics module (per-quiz statistics page, candidate accusation matrix, caching) is planned per GitHub issue #199 —

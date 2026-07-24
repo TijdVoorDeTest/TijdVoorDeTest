@@ -1,0 +1,27 @@
+{% extends 'molshoop/base.html.twig' %}
+{% import 'molshoop/partials/answer_row.html.twig' as macros %}
+
+{% block title %}{{ parent() }}{{ 'Edit question'|trans }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ season.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_quiz_overview', {seasonCode: season.seasonCode, quiz: quiz.id}) }}">{{ quiz.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ 'Edit question'|trans }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-6 col-12">
+            <h2 class="mb-3">{{ 'Edit question'|trans }}</h2>
+            {{ include('molshoop/quiz/_question_form_body.html.twig') }}
+        </div>
+        <div class="col-md-6 col-12">
+            {{ include('molshoop/help/quiz_question_bank_form.html.twig') }}
+        </div>
+    </div>
+{% endblock body %}

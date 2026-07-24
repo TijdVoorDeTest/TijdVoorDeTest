@@ -11,7 +11,7 @@ framework:
         #fragments: true
     rate_limiter:
         # Throttles guesses against the public season-code entry point (config/packages/security.yaml
-        # handles throttling for the backoffice /login form separately).
+        # handles throttling for the molshoop /login form separately).
         season_code:
             policy: sliding_window
             limit: 20

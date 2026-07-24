@@ -1,0 +1,70 @@
+{% extends 'molshoop/base.html.twig' %}
+
+{% block title %}{{ parent() }}{{ 'Molehill'|trans }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">{{ 'Home'|trans }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 col-12">
+            <div class="d-flex flex-row align-items-center mb-3">
+                <h2 class="mb-0 pe-2">
+                    {{ is_granted('ROLE_ADMIN') ? 'All Seasons'|trans : 'Your Seasons'|trans }}
+                </h2>
+                <a class="link" href="{{ path('tvdt_molshoop_season_add') }}">
+                    {{ 'Add'|trans }}
+                </a>
+            </div>
+            {% if seasons %}
+                <table class="table table-hover mb-3">
+                    <thead>
+                    <tr>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <th scope="col">{{ 'Owner(s)'|trans }}</th>
+                        {% endif %}
+                        <th scope="col">{{ 'Name'|trans }}</th>
+                        <th scope="col">{{ 'Active Quiz'|trans }}</th>
+                        <th scope="col">{{ 'Season Code'|trans }}</th>
+                        <th scope="col">{{ 'Manage'|trans }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for season in seasons %}
+                        <tr class="align-middle">
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <td>{{ season.owners|map(o => o.email)|join(', ') }}</td>
+                            {% endif %}
+                            <td>{{ season.name }}</td>
+                            <td>
+                                {% if season.activeQuiz %}
+                                    {{ season.activeQuiz.name }}
+                                {% else %}
+                                    {{ 'No active quiz'|trans }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a {% if season.activeQuiz %}href="{{ path('tvdt_quiz_enter_name', {seasonCode: season.seasonCode}) }}"
+                                   {% else %}class="disabled" {% endif %}>{{ season.seasonCode }}</a>
+                            </td>
+                            <td>
+                                <a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ 'Manage'|trans }}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                {{ 'You have no seasons yet.'|trans }}
+            {% endif %}
+        </div>
+        <div class="col-md-4 col-12">
+            {{ include('molshoop/help/index.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

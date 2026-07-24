@@ -1,0 +1,139 @@
+{% set canRemoveOwner = season.owners|length > 1 %}
+<div class="row">
+    <div class="col-md-6 col-12">
+        {{ form(form) }}
+
+        <hr>
+
+        <h4>{{ 'Owners'|trans }}</h4>
+        <ul class="list-group mb-3">
+            {% for owner in season.owners %}
+                <li class="list-group-item d-flex align-items-center justify-content-between gap-2">
+                    {{ owner.email }}
+                    {% if canRemoveOwner %}
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#removeOwner-{{ owner.id }}">{{ 'Remove'|trans }}</button>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <form action="{{ path('tvdt_molshoop_season_add_owner', {seasonCode: season.seasonCode}) }}" method="POST" class="mb-3">
+            <input type="hidden" name="_token" value="{{ csrf_token('add_season_owner') }}">
+            <div class="input-group">
+                <input type="email" name="email" class="form-control" placeholder="{{ 'Email address'|trans }}" required>
+                <button type="submit" class="btn btn-outline-primary">{{ 'Add owner'|trans }}</button>
+            </div>
+        </form>
+
+        <hr>
+
+        <h4 class="text-danger">{{ 'Danger zone'|trans }}</h4>
+
+        <p><strong>{{ 'Season code'|trans }}:</strong> {{ season.seasonCode }}</p>
+        <p>{{ 'The season code is used by candidates to join this season. Regenerating it invalidates the current code, so make sure to share the new one.'|trans }}</p>
+        <button type="button" class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#regenerateSeasonCodeModal">
+            {{ 'Regenerate season code...'|trans }}
+        </button>
+
+        <p>{{ 'Leaving this season removes your ownership. You need at least one other owner before you can leave.'|trans }}</p>
+        <form action="{{ path('tvdt_molshoop_season_remove_owner', {seasonCode: season.seasonCode, owner: app.user.id}) }}" method="POST" class="mb-3">
+            <input type="hidden" name="_token" value="{{ csrf_token('remove_season_owner') }}">
+            <button type="submit" class="btn btn-danger" {{ canRemoveOwner ? '' : 'disabled' }}>
+                {{ 'Leave season'|trans }}
+            </button>
+        </form>
+
+        <p>{{ 'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.'|trans }}</p>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteSeasonModal">
+            {{ 'Delete season...'|trans }}
+        </button>
+    </div>
+    <div class="col-md-6 col-12">
+        {{ include('molshoop/help/season_settings.html.twig') }}
+    </div>
+</div>
+
+{% for owner in season.owners %}
+    {% if canRemoveOwner %}
+        <div class="modal fade" id="removeOwner-{{ owner.id }}" data-bs-backdrop="static"
+             tabindex="-1" aria-labelledby="removeOwner-{{ owner.id }}Label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="removeOwner-{{ owner.id }}Label">{{ 'Please Confirm'|trans }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-start">
+                        {{ 'Are you sure you want to remove {email} as an owner of this season?'|trans({email: owner.email}) }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
+                        <form action="{{ path('tvdt_molshoop_season_remove_owner', {seasonCode: season.seasonCode, owner: owner.id}) }}"
+                              method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('remove_season_owner') }}">
+                            <button type="submit" class="btn btn-danger">{{ 'Yes'|trans }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+<div class="modal fade" id="regenerateSeasonCodeModal" data-bs-backdrop="static"
+     tabindex="-1"
+     aria-labelledby="regenerateSeasonCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ path('tvdt_molshoop_season_regenerate_code', {seasonCode: season.seasonCode}) }}" method="POST">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="regenerateSeasonCodeModalLabel">{{ 'Regenerate season code'|trans }}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{{ 'This invalidates the current season code. Anyone using the old code will no longer be able to join this season.'|trans }}</p>
+                    <input type="hidden" name="_token" value="{{ csrf_token('regenerate_season_code') }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-danger">{{ 'Regenerate season code'|trans }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteSeasonModal" data-bs-backdrop="static"
+     data-controller="bo--modal bo--type-to-confirm" data-bo--modal-target="modal"
+     data-bo--type-to-confirm-words-value="{{ ['verwijderen', 'delete']|json_encode }}"
+     data-action="hidden.bs.modal->bo--modal#resetDirty"
+     tabindex="-1" aria-labelledby="deleteSeasonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ path('tvdt_molshoop_season_delete', {seasonCode: season.seasonCode}) }}" method="POST">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deleteSeasonModalLabel">{{ 'Delete season'|trans }}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <p>{{ 'This hides this season, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.'|trans }}</p>
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_season') }}">
+                    <label class="form-label" for="deleteSeasonConfirmation">
+                        {{ 'Type delete to confirm'|trans }}
+                    </label>
+                    <input type="text" class="form-control" id="deleteSeasonConfirmation" name="confirmation"
+                           autocomplete="off" autofocus
+                           data-bo--type-to-confirm-target="input"
+                           data-action="input->bo--modal#markDirty change->bo--modal#markDirty input->bo--type-to-confirm#check">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-danger" disabled data-bo--type-to-confirm-target="submit">
+                        {{ 'Delete season'|trans }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

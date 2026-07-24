@@ -30,7 +30,7 @@ final class RegistrationController extends AbstractController
         Request $request,
     ): Response {
         if ($this->getUser() instanceof UserInterface) {
-            return $this->redirectToRoute('tvdt_backoffice_index');
+            return $this->redirectToRoute('tvdt_molshoop_index');
         }
 
         $user = new User();
@@ -55,7 +55,7 @@ final class RegistrationController extends AbstractController
             return $response;
         }
 
-        return $this->render('backoffice/registration/register.html.twig', [
+        return $this->render('molshoop/registration/register.html.twig', [
             'registrationForm' => $form,
         ]);
     }
@@ -86,6 +86,6 @@ final class RegistrationController extends AbstractController
 
         $this->addFlash(FlashType::Success->value, $this->translator->trans('Your email address has been verified.'));
 
-        return $this->redirectToRoute('tvdt_backoffice_index');
+        return $this->redirectToRoute('tvdt_molshoop_index');
     }
 }

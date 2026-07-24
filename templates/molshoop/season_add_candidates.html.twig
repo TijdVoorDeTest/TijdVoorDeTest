@@ -1,0 +1,30 @@
+{% extends 'molshoop/base.html.twig' %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ season.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ 'Add Candidates'|trans }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-6 col-12">
+            <h2 class="mb-3">{{ 'Add Candidates'|trans }}</h2>
+            {{ form_start(form) }}
+            {{ form_row(form.candidates) }}
+            <button type="submit" class="btn btn-primary">{{ 'Submit'|trans }}</button>
+            {{ form_end(form) }}
+        </div>
+        <div class="col-md-6 col-12">
+            {{ include('molshoop/help/season_add_candidates.html.twig') }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block title %}
+
+{% endblock %}

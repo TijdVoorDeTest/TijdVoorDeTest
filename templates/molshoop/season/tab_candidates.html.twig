@@ -1,0 +1,81 @@
+{% import 'molshoop/partials/rename_control.html.twig' as rename %}
+
+<div class="row" data-controller="bo--modal" data-action="turbo:submit-end->bo--modal#frameSubmitEnd">
+    <div class="col-md-6 col-12">
+        <div class="mb-3">
+            <button type="button" class="btn btn-sm btn-outline-primary"
+                    data-action="click->bo--modal#open"
+                    data-src="{{ path('tvdt_molshoop_add_candidates', {seasonCode: season.seasonCode}) }}"
+                    data-modal-title="{{ 'Add Candidate'|trans }}">{{ 'Add Candidate'|trans }}</button>
+        </div>
+        <ul class="list-group mb-3">
+            {% for candidate in season.candidates %}
+                <li class="list-group-item d-flex align-items-center justify-content-between gap-2">
+                    {{ candidate.name }}
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                data-bs-target="#renameCandidate-{{ candidate.id }}"
+                                title="{{ 'Rename'|trans }}"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteCandidate-{{ candidate.id }}"
+                                title="{{ 'Delete'|trans }}"><i class="bi bi-trash"></i></button>
+                    </div>
+
+                    {{ rename.modal(
+                        'renameCandidate-' ~ candidate.id,
+                        'Rename candidate'|trans,
+                        path('tvdt_molshoop_candidate_rename', {seasonCode: season.seasonCode, candidate: candidate.id}),
+                        csrf_token('rename_candidate'),
+                        candidate.name,
+                        16,
+                    ) }}
+
+                    <div class="modal fade" id="deleteCandidate-{{ candidate.id }}" data-bs-backdrop="static"
+                         tabindex="-1" aria-labelledby="deleteCandidate-{{ candidate.id }}Label" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deleteCandidate-{{ candidate.id }}Label">{{ 'Please Confirm'|trans }}</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start">
+                                    {{ 'Are you sure you want to delete this candidate? All their answers will be lost.'|trans }}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
+                                    <form action="{{ path('tvdt_molshoop_candidate_delete', {seasonCode: season.seasonCode, candidate: candidate.id}) }}"
+                                          method="POST">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_candidate') }}">
+                                        <button type="submit" class="btn btn-danger">{{ 'Yes'|trans }}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% else %}
+                {{ 'No candidates'|trans }}
+            {% endfor %}
+        </ul>
+
+        <div class="modal fade" tabindex="-1"
+             data-bo--modal-target="modal"
+             data-action="hidden.bs.modal->bo--modal#resetDirty"
+             aria-labelledby="addCandidatesModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="addCandidatesModalLabel">{{ 'Add Candidate'|trans }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <turbo-frame id="add-candidates-modal-frame"
+                                 data-bo--modal-target="frame"
+                                 data-action="input->bo--modal#markDirty change->bo--modal#markDirty"></turbo-frame>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-12">
+        {{ include('molshoop/help/season_candidates.html.twig') }}
+    </div>
+</div>

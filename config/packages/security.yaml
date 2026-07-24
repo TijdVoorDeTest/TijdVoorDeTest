@@ -21,7 +21,7 @@ security:
                 login_path: tvdt_login_login
                 check_path: tvdt_login_login
                 enable_csrf: true
-                default_target_path: tvdt_backoffice_index
+                default_target_path: tvdt_molshoop_index
             logout:
                 path: tvdt_login_logout
             remember_me:
@@ -32,8 +32,8 @@ security:
 
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/backoffice/releases$, roles: PUBLIC_ACCESS }
-        - { path: ^/backoffice, roles: IS_AUTHENTICATED }
+        - { path: ^/molshoop/releases$, roles: PUBLIC_ACCESS }
+        - { path: ^/molshoop, roles: IS_AUTHENTICATED }
 
 when@test:
     security:

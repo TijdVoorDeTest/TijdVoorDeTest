@@ -33,7 +33,6 @@ All: Alle
 Assign: Toewijzen
 Back: Terug
 'Back to login': 'Terug naar inloggen'
-Backoffice: Backoffice
 Blue: Blauw
 Cancel: Annuleren
 Candidate: Kandidaat
@@ -137,7 +136,7 @@ Language: Taal
 Logout: Uitloggen
 'Make active': 'Maak actief'
 Manage: Beheren
-'Manage Quiz': 'Beheer test'
+Molehill: Molshoop
 Name: Naam
 New: Nieuw
 'New email address': 'Nieuw e-mailadres'
