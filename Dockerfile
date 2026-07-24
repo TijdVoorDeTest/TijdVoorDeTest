@@ -76,12 +76,22 @@ ENV DENO_INSTALL=/usr/local
 # hadolint ignore=DL4006
 RUN curl -fsSL https://deno.land/install.sh | sh -s v2.9.2
 
-# Chromium + ChromeDriver for Symfony Panther browser tests, dev-only tooling so it's not
+# Firefox + geckodriver for Symfony Panther browser tests, dev-only tooling so it's not
 # installed in the prod stage.
-ENV PANTHER_NO_SANDBOX=1
-ENV PANTHER_CHROME_ARGUMENTS='--disable-dev-shm-usage'
+ENV PANTHER_FIREFOX_BINARY=/usr/bin/firefox-esr
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends chromium chromium-driver && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends firefox-esr && rm -rf /var/lib/apt/lists/*
+# hadolint ignore=DL4006
+RUN set -eux; \
+	arch="$(uname -m)"; \
+	case "$arch" in \
+		aarch64) geckoArch='linux-aarch64' ;; \
+		x86_64) geckoArch='linux64' ;; \
+		*) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
+	esac; \
+	curl -fsSL "https://github.com/mozilla/geckodriver/releases/download/v0.37.1/geckodriver-v0.37.1-${geckoArch}.tar.gz" \
+		| tar -xzf - -C /usr/local/bin geckodriver; \
+	chmod +x /usr/local/bin/geckodriver
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 

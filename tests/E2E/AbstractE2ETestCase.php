@@ -29,7 +29,7 @@ abstract class AbstractE2ETestCase extends PantherTestCase
      */
     protected function visitLoginPageLoggedOut(): Client
     {
-        $client = self::createPantherClient();
+        $client = self::createPantherClient(['browser' => self::FIREFOX]);
         $client->request('GET', '/logout');
         $client->request('GET', '/login');
 
