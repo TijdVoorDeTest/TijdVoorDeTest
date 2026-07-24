@@ -13,7 +13,6 @@ use Tvdt\Entity\BankAnswer;
 use Tvdt\Entity\BankQuestion;
 use Tvdt\Entity\BankQuestionUsage;
 use Tvdt\Entity\Candidate;
-use Tvdt\Entity\Elimination;
 use Tvdt\Entity\EliminationScreenView;
 use Tvdt\Entity\GivenAnswer;
 use Tvdt\Entity\Question;
@@ -23,6 +22,7 @@ use Tvdt\Entity\QuizCandidate;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\SeasonSettings;
 use Tvdt\Enum\ScreenColour;
+use Tvdt\Factory\EliminationFactory;
 
 final class KrtekFixtures extends Fixture implements FixtureGroupInterface
 {
@@ -37,6 +37,10 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
     public const string BANK_QUESTION_USED = 'bank-question-used';
 
     public const string BANK_QUESTION_UNUSED = 'bank-question-unused';
+
+    public function __construct(
+        private readonly EliminationFactory $eliminationFactory,
+    ) {}
 
     public static function getGroups(): array
     {
@@ -106,11 +110,25 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
         $this->createQuestionBank($season, $quiz2);
         $this->bindQuizQuestionsToBank($season);
 
-        $this->finishQuiz($manager, $quiz8, [
-            $this->getCandidateByName($season, 'Gert-Jan'),
-            $this->getCandidateByName($season, 'Jari'),
-        ]);
-        $this->revealElimination($manager, $quiz9, $this->getCandidateByName($season, 'Lara'));
+        $this->finishQuizForCandidate($manager, $quiz8, $this->getCandidateByName($season, 'Gert-Jan'), answersCorrectly: true);
+        $this->finishQuizForCandidate($manager, $quiz8, $this->getCandidateByName($season, 'Jari'), answersCorrectly: true);
+
+        // Quiz 9's elimination is built the same way the real "prepare elimination" flow does
+        // (EliminationFactory, from real getScores() data), so it isn't a screen shown for a
+        // candidate who never took the test: Lara answers correctly and stays safe, Myrthe
+        // answers wrong and is the dropout (quiz.dropouts defaults to 1) whose red screen has
+        // already been shown.
+        $this->finishQuizForCandidate($manager, $quiz9, $this->getCandidateByName($season, 'Lara'), answersCorrectly: true);
+        $this->finishQuizForCandidate($manager, $quiz9, $this->getCandidateByName($season, 'Myrthe'), answersCorrectly: false);
+        $manager->flush();
+
+        $elimination = $this->eliminationFactory->createEliminationFromQuiz($quiz9);
+        $eliminatedName = array_search(ScreenColour::Red->value, $elimination->data, true);
+        \assert(\is_string($eliminatedName));
+
+        $screenView = new EliminationScreenView($elimination, $this->getCandidateByName($season, $eliminatedName), ScreenColour::Red);
+        $elimination->screenViews->add($screenView);
+        $manager->persist($screenView);
 
         $manager->flush();
 
@@ -128,37 +146,22 @@ final class KrtekFixtures extends Fixture implements FixtureGroupInterface
     }
 
     /**
-     * Marks each candidate as having started and fully answered every question of $quiz, so
-     * Quiz::$status reaches Finished (or Done, if $quiz is also the season's active quiz).
-     *
-     * @param list<Candidate> $candidates
+     * Marks $candidate as having started and answered every question of $quiz, so Quiz::$status
+     * reaches Finished (or Done, if $quiz is also the season's active quiz) and, if scored, real
+     * candidate.givenAnswers exist for an Elimination to be built from via getScores().
      */
-    private function finishQuiz(ObjectManager $manager, Quiz $quiz, array $candidates): void
+    private function finishQuizForCandidate(ObjectManager $manager, Quiz $quiz, Candidate $candidate, bool $answersCorrectly): void
     {
-        foreach ($candidates as $candidate) {
-            $quizCandidate = new QuizCandidate($quiz, $candidate);
-            $quizCandidate->started = new DateTimeImmutable();
-            $manager->persist($quizCandidate);
+        $quizCandidate = new QuizCandidate($quiz, $candidate);
+        $quizCandidate->started = new DateTimeImmutable();
 
-            foreach ($quiz->questions as $question) {
-                $answer = $question->answers->first();
-                \assert($answer instanceof Answer);
-                $manager->persist(new GivenAnswer($candidate, $quiz, $answer));
-            }
+        $manager->persist($quizCandidate);
+
+        foreach ($quiz->questions as $question) {
+            $answer = $question->answers->filter(static fn (Answer $answer): bool => $answer->isRightAnswer === $answersCorrectly)->first();
+            \assert($answer instanceof Answer);
+            $manager->persist(new GivenAnswer($candidate, $quiz, $answer));
         }
-    }
-
-    /** Prepares an elimination for $quiz with one screen already shown, so Quiz::$status reaches Revealed. */
-    private function revealElimination(ObjectManager $manager, Quiz $quiz, Candidate $candidate): void
-    {
-        $elimination = new Elimination($quiz);
-        $quiz->addElimination($elimination);
-
-        $screenView = new EliminationScreenView($elimination, $candidate, ScreenColour::Green);
-        $elimination->screenViews->add($screenView);
-
-        $manager->persist($elimination);
-        $manager->persist($screenView);
     }
 
     private function createQuestionBank(Season $season, Quiz $usedInQuiz): void
