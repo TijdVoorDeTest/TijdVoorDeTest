@@ -25,7 +25,7 @@
         tests/Unit: plain PHPUnit TestCase, no kernel, DB, or browser. Fast, no I/O.
         tests/Integration: KernelTestCase/WebTestCase-based (DB, routing, the container). DAMA
         rolls back each test's transaction, so these stay isolated and fast enough for every run.
-        tests/E2E: Symfony Panther driving a real Chromium browser. Runs in a separate process
+        tests/E2E: Symfony Panther driving a real Firefox browser. Runs in a separate process
         DAMA can't wrap, so it's kept out of the default suite, run explicitly with `just test-e2e`.
         "default" is unit+integration together and is what bare `just test` runs; passing an
         explicit testsuite, file, or directory argument to phpunit overrides this.

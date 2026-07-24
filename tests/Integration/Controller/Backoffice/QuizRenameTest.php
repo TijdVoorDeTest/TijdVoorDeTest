@@ -88,4 +88,23 @@ final class QuizRenameTest extends AbstractControllerWebTestCase
         $this->entityManager->clear();
         $this->assertSame('Quiz 2', $this->getQuizByName('Quiz 2')->name);
     }
+
+    public function testRenameIsDeniedForNonOwner(): void
+    {
+        $quiz = $this->getQuizByName('Quiz 2');
+
+        $token = $this->getCsrfTokenFromOverview($quiz, '/rename');
+
+        $this->loginAs('test@example.org');
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/quiz/%s/rename', $quiz->id), [
+            '_token' => $token,
+            'name' => 'Hijacked Quiz',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+
+        $this->entityManager->clear();
+        $this->assertSame('Quiz 2', $this->getQuizByName('Quiz 2')->name);
+    }
 }
