@@ -31,6 +31,7 @@ All: Alle
 'Are you sure you want to remove {email} as an owner of this season?': 'Weet je zeker dat je {email} wilt verwijderen als eigenaar van dit seizoen?'
 'Are you sure you want to reset progress for this candidate? Their given answers for this quiz will be deleted.': 'Weet je zeker dat je de voortgang van deze kandidaat wilt resetten? De ingevulde antwoorden voor deze test worden verwijderd.'
 Assign: Toewijzen
+Auto: Automatisch
 Back: Terug
 'Back to login': 'Terug naar inloggen'
 Blue: Blauw
@@ -72,6 +73,7 @@ Create: Aanmaken
 'Current version': 'Huidige versie'
 Cyan: Cyaan
 'Danger zone': Gevarenzone
+Dark: Donker
 Deactivate: Deactiveren
 'Deactivate Quiz': 'Deactiveer test'
 'Deactivate the quiz before undoing the finalization': 'Deactiveer de test voordat je het afronden ongedaan maakt'
@@ -130,6 +132,7 @@ Language: Taal
 'Language saved': 'Taal opgeslagen'
 'Leave season': 'Seizoen verlaten'
 'Leaving this season removes your ownership. You need at least one other owner before you can leave.': 'Als je dit seizoen verlaat, ben je geen eigenaar meer. Er moet minimaal één andere eigenaar zijn voordat je kunt vertrekken.'
+Light: Licht
 'Load Prepared Elimination': 'Laad voorbereide eliminatie'
 'Locked (answers given)': 'Vergrendeld (antwoorden gegeven)'
 'Locks the quiz so it can no longer be edited and makes it ready for candidates to take.': 'Vergrendelt de test zodat deze niet meer bewerkt kan worden en maakt deze klaar voor deelnemers.'
@@ -257,6 +260,7 @@ Submit: Verstuur
 'The quiz name must be between 1 and 64 characters': 'De naam van de test moet tussen de 1 en 64 tekens zijn'
 'The season code is used by candidates to join this season. Regenerating it invalidates the current code, so make sure to share the new one.': 'De seizoenscode wordt door kandidaten gebruikt om dit seizoen te vinden. Als je een nieuwe code genereert, werkt de oude niet meer, dus deel de nieuwe code opnieuw.'
 'The season name must be between 1 and 64 characters': 'De naam van het seizoen moet tussen de 1 en 64 tekens zijn'
+Theme: Thema
 'There are no answers for this question': 'Er zijn geen antwoorden voor deze vraag'
 'There is already an account with this email': 'Er is al een account met dit e-mailadres'
 'There is no active quiz': 'Er is geen test actief'
