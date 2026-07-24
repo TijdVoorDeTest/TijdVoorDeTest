@@ -14,7 +14,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class GitHubReleasesService
 {
-    private const string RELEASES_URL = 'https://api.github.com/repos/MarijnDoeve/TijdVoorDeTest/releases';
+    private const string RELEASES_URL = 'https://api.github.com/repos/TijdVoorDeTest/TijdVoorDeTest/releases';
 
     public function __construct(
         private HttpClientInterface $httpClient,

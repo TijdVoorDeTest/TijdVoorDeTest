@@ -78,6 +78,51 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         $this->assertStringContainsString('/candidates/', (string) $this->client->getResponse()->headers->get('Location'));
     }
 
+    public function testIndexRejectsQuizFromAnotherSeason(): void
+    {
+        $foreignQuiz = $this->getQuizByName('Doomed Quiz', 'doomd');
+
+        $this->client->request(Request::METHOD_GET, \sprintf('/backoffice/season/krtek/quiz/%s', $foreignQuiz->id));
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    public function testOverviewRejectsQuizFromAnotherSeason(): void
+    {
+        $foreignQuiz = $this->getQuizByName('Doomed Quiz', 'doomd');
+
+        $this->client->request(Request::METHOD_GET, \sprintf('/backoffice/season/krtek/quiz/%s/overview', $foreignQuiz->id));
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    public function testResultRejectsQuizFromAnotherSeason(): void
+    {
+        $foreignQuiz = $this->getQuizByName('Doomed Quiz', 'doomd');
+
+        $this->client->request(Request::METHOD_GET, \sprintf('/backoffice/season/krtek/quiz/%s/result', $foreignQuiz->id));
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    public function testCandidatesTabRejectsQuizFromAnotherSeason(): void
+    {
+        $foreignQuiz = $this->getQuizByName('Doomed Quiz', 'doomd');
+
+        $this->client->request(Request::METHOD_GET, \sprintf('/backoffice/season/krtek/quiz/%s/candidates-list', $foreignQuiz->id));
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    public function testAnswerMappingRejectsQuizFromAnotherSeason(): void
+    {
+        $foreignQuiz = $this->getQuizByName('Doomed Quiz', 'doomd');
+
+        $this->client->request(Request::METHOD_GET, \sprintf('/backoffice/season/krtek/quiz/%s/answer-mapping', $foreignQuiz->id));
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
     public function testCandidatesQuestionTabLoadsSuccessfully(): void
     {
         $quiz = $this->getQuizByName('Quiz 1');
@@ -134,6 +179,27 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         ));
     }
 
+    public function testEnableQuizRejectsQuizFromAnotherSeason(): void
+    {
+        $originalActiveQuizId = $this->getSeasonByCode('krtek')->activeQuiz?->id;
+        $foreignQuiz = $this->getQuizByName('Doomed Quiz', 'doomd');
+
+        $token = $this->getCsrfTokenFromPage(
+            \sprintf('/backoffice/season/krtek/quiz/%s/overview', $this->getQuizByName('Quiz 1')->id),
+            '/enable',
+        );
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/season/krtek/quiz/%s/enable', $foreignQuiz->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseStatusCodeSame(400);
+        $this->entityManager->clear();
+
+        $updated = $this->getSeasonByCode('krtek');
+        $this->assertSame($originalActiveQuizId?->toString(), $updated->activeQuiz?->id?->toString());
+    }
+
     public function testToggleCandidateCreatesInactiveQuizCandidate(): void
     {
         $quiz = $this->getQuizByName('Quiz 1');
@@ -185,6 +251,87 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         ]);
         $this->assertInstanceOf(QuizCandidate::class, $updated);
         $this->assertTrue($updated->active);
+    }
+
+    public function testToggleCandidateRejectsCandidateFromAnotherSeason(): void
+    {
+        $quiz = $this->getQuizByName('Quiz 1');
+        $foreignCandidate = $this->getCandidate('Vera', 'doomd');
+
+        $token = $this->getCsrfTokenFromPage(\sprintf('/backoffice/season/krtek/quiz/%s/candidates-list', $quiz->id), '/toggle');
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/quiz/%s/candidate/%s/toggle', $quiz->id, $foreignCandidate->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseStatusCodeSame(400);
+        $this->entityManager->clear();
+
+        $quizCandidate = $this->entityManager->getRepository(QuizCandidate::class)->findOneBy([
+            'quiz' => $quiz,
+            'candidate' => $foreignCandidate,
+        ]);
+        $this->assertNotInstanceOf(QuizCandidate::class, $quizCandidate);
+    }
+
+    public function testResetCandidateProgressRejectsCandidateFromAnotherSeason(): void
+    {
+        $quiz = $this->getQuizByName('Quiz 1');
+        $candidate = $this->getCandidate('Tom');
+        $foreignCandidate = $this->getCandidate('Vera', 'doomd');
+
+        // A reset-progress form only renders for a candidate that has started, so give Tom
+        // that state purely to make the (candidate-agnostic) CSRF token appear on the page.
+        $quizCandidate = new QuizCandidate($quiz, $candidate);
+        $quizCandidate->started = new DateTimeImmutable();
+
+        $this->entityManager->persist($quizCandidate);
+        $this->entityManager->flush();
+
+        $token = $this->getCsrfTokenFromPage(\sprintf('/backoffice/season/krtek/quiz/%s/candidates-list', $quiz->id), '/reset');
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/quiz/%s/candidate/%s/reset', $quiz->id, $foreignCandidate->id), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    public function testModifyResultRejectsCandidateFromAnotherSeason(): void
+    {
+        $quiz = $this->getQuizByName('Quiz 1');
+        $candidate = $this->getCandidate('Tom');
+        $foreignCandidate = $this->getCandidate('Vera', 'doomd');
+
+        // getScores() requires started IS NOT NULL and at least one GivenAnswer, purely to make
+        // the (candidate-agnostic) modify_result CSRF token appear on the result page.
+        $quizCandidate = new QuizCandidate($quiz, $candidate);
+        $quizCandidate->started = new DateTimeImmutable();
+
+        $this->entityManager->persist($quizCandidate);
+        $firstQuestion = $quiz->questions->first();
+        $this->assertInstanceOf(Question::class, $firstQuestion);
+        $answer = $firstQuestion->answers->first();
+        $this->assertInstanceOf(Answer::class, $answer);
+        $this->entityManager->persist(new GivenAnswer($candidate, $quiz, $answer));
+        $this->entityManager->flush();
+
+        $token = $this->getCsrfTokenFromPage(\sprintf('/backoffice/season/krtek/quiz/%s/result', $quiz->id), '/modify_result');
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/backoffice/quiz/%s/candidate/%s/modify_result', $quiz->id, $foreignCandidate->id), [
+            '_token' => $token,
+            'corrections' => '1.5',
+            'penalty' => '30',
+        ]);
+
+        self::assertResponseStatusCodeSame(400);
+        $this->entityManager->clear();
+
+        $updated = $this->entityManager->getRepository(QuizCandidate::class)->findOneBy([
+            'quiz' => $quiz,
+            'candidate' => $foreignCandidate,
+        ]);
+        $this->assertNotInstanceOf(QuizCandidate::class, $updated);
     }
 
     public function testResetCandidateProgressDeletesGivenAnswersAndClearsStarted(): void

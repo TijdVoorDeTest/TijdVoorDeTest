@@ -22,6 +22,7 @@ use Tvdt\Entity\User;
 use Tvdt\Enum\ScreenColour;
 use Tvdt\Helpers\FilenameSanitizer;
 use Tvdt\Helpers\FormulaInjectionSafeValueBinder;
+use Tvdt\Helpers\SoftDeleteableFilter;
 use Tvdt\Repository\QuizRepository;
 
 use function Safe\tempnam;
@@ -41,14 +42,7 @@ class DataExportService
     /** @throws FilesystemException @return string path to a temp zip file; caller is responsible for removing it */
     public function exportForUser(User $user): string
     {
-        $filter = $this->entityManager->getFilters();
-        $filter->disable('softdeleteable');
-
-        try {
-            return $this->buildZip($user);
-        } finally {
-            $filter->enable('softdeleteable');
-        }
+        return SoftDeleteableFilter::withDisabled($this->entityManager, fn (): string => $this->buildZip($user));
     }
 
     private function buildZip(User $user): string
@@ -120,7 +114,7 @@ class DataExportService
 
         $seasons = $spreadsheet->createSheet();
         $seasons->setTitle('Seasons');
-        $seasons->fromArray(['Season', 'Season code', 'Quizzes', 'Candidates', 'Shared with other owners'], null, 'A1');
+        $seasons->fromArray(['Season', 'Season code', 'Quizzes', 'Candidates', 'Shared with other owners', 'Deleted'], null, 'A1');
         $seasons->getStyle('1:1')->getFont()->setBold(true);
 
         $row = 2;
@@ -131,11 +125,12 @@ class DataExportService
                 $season->quizzes->count(),
                 $season->candidates->count(),
                 $season->owners->count() > 1 ? 'Yes' : 'No',
+                $season->getDeletedAt()?->format(\DateTimeInterface::ATOM) ?? '',
             ], null, 'A'.$row);
             ++$row;
         }
 
-        foreach (['A', 'B', 'C', 'D', 'E'] as $column) {
+        foreach (['A', 'B', 'C', 'D', 'E', 'F'] as $column) {
             $seasons->getColumnDimension($column)->setAutoSize(true);
         }
 
@@ -377,6 +372,7 @@ class DataExportService
             ['Show numbers', $season->settings?->showNumbers ? 'Yes' : 'No'],
             ['Confirm answers', $season->settings?->confirmAnswers ? 'Yes' : 'No'],
             ['Shared with other owners', $season->owners->count() > 1 ? 'Yes' : 'No'],
+            ['Deleted', $season->getDeletedAt()?->format(\DateTimeInterface::ATOM) ?? ''],
         ], null, 'A1');
         $infoSheet->getColumnDimension('A')->setAutoSize(true);
         $infoSheet->getColumnDimension('B')->setAutoSize(true);
