@@ -1,14 +1,8 @@
 <turbo-frame id="releases-modal-frame">
-    <div class="modal-header">
-        <h1 class="modal-title fs-5" id="releasesModalLabel">
-            {{ 'Releases'|trans }}
-            {% if releases[0] is defined %}
-                <span class="text-muted fs-6 ms-2">{{ 'Current version'|trans }}: {{ releases[0].tagName }}</span>
-            {% endif %}
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
     <div class="modal-body">
+        {% if releases[0] is defined %}
+            <p class="text-muted mb-3" id="currentReleaseVersion">{{ 'Current version'|trans }}: {{ releases[0].tagName }}</p>
+        {% endif %}
         {% if releases is empty %}
             <p class="text-muted mb-0">{{ 'Could not load releases from GitHub.'|trans }}</p>
         {% else %}

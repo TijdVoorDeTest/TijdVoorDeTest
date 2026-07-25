@@ -9,7 +9,7 @@
         </form>
         {%~ if not quiz.eliminations.empty %}
             <button class="btn btn-secondary dropdown-toggle"
-                    data-bs-toggle="dropdown">{{ 'Load Prepared Elimination'|trans }}</button>
+                    data-bs-toggle="dropdown" aria-expanded="false">{{ 'Load Prepared Elimination'|trans }}</button>
             <ul class="dropdown-menu">
                 {%~ for elimination in quiz.eliminations %}
                     <li><a class="dropdown-item"

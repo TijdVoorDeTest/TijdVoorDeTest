@@ -12,10 +12,12 @@
 
     <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
         <a class="badge rounded-pill text-decoration-none text-bg-primary{% if activeLabel is not null %} opacity-50{% endif %}"
+           aria-current="{{ activeLabel is null ? 'true' : 'false' }}"
            href="{{ path('tvdt_molshoop_question_bank', {seasonCode: season.seasonCode}) }}">{{ 'All'|trans }}</a>
         {% for label in season.questionLabels %}
             <span class="d-inline-flex align-items-center gap-1">
                 <a class="badge rounded-pill text-decoration-none text-bg-{{ label.colour.value }}{% if activeLabel is not same as (label) %} opacity-50{% endif %}"
+                   aria-current="{{ activeLabel is same as (label) ? 'true' : 'false' }}"
                    href="{{ path('tvdt_molshoop_question_bank', {seasonCode: season.seasonCode, label: label.slug}) }}">{{ label.name }}</a>
                 <form action="{{ path('tvdt_molshoop_question_bank_label_delete', {seasonCode: season.seasonCode, labelSlug: label.slug}) }}"
                       method="POST" class="d-inline">
@@ -37,10 +39,10 @@
                     <input type="hidden" name="_token" value="{{ csrf_token('add_question_label') }}">
                     <div class="mb-3">
                         <label for="addLabelName" class="form-label">{{ 'Name'|trans }}</label>
-                        <input type="text" class="form-control" id="addLabelName" name="name" maxlength="64" required autofocus>
+                        <input type="text" class="form-control" id="addLabelName" name="name" maxlength="64" required>
                     </div>
-                    <div class="mb-1">
-                        <label class="form-label d-block">{{ 'Colour'|trans }}</label>
+                    <fieldset class="mb-1">
+                        <legend class="form-label">{{ 'Colour'|trans }}</legend>
                         <style>
                             .colour-swatch { opacity: .35; cursor: pointer; transition: opacity .1s, box-shadow .1s; font-size: .875rem; }
                             .btn-check:checked + .colour-swatch { opacity: 1; box-shadow: 0 0 0 3px rgba(255,255,255,.6); }
@@ -58,7 +60,7 @@
                                 </label>
                             {% endfor %}
                         </div>
-                    </div>
+                    </fieldset>
                 </form>
             {% endblock %}
             {% block modal_footer %}
@@ -99,13 +101,13 @@
                             <form action="{{ path('tvdt_molshoop_question_bank_unassign', {seasonCode: season.seasonCode, bankQuestion: bank_question.id, usage: usage.id}) }}"
                                   method="POST" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('unassign_bank_question') }}">
-                                <button type="submit" class="btn btn-sm btn-link p-0 text-danger" title="{{ 'Unassign'|trans }}">&times;</button>
+                                <button type="submit" class="btn btn-sm btn-link p-0 text-danger" aria-label="{{ 'Unassign'|trans }}" title="{{ 'Unassign'|trans }}">&times;</button>
                             </form>
                             {% if usage.quiz.isFinalized %}
                                 <form action="{{ path('tvdt_molshoop_question_bank_sync', {seasonCode: season.seasonCode, bankQuestion: bank_question.id, usage: usage.id}) }}"
                                       method="POST" class="d-inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token('sync_bank_question') }}">
-                                    <button type="submit" class="btn btn-sm btn-link p-0 text-primary" title="{{ 'Sync latest changes to this quiz'|trans }}">&#8635;</button>
+                                    <button type="submit" class="btn btn-sm btn-link p-0 text-primary" aria-label="{{ 'Sync latest changes to this quiz'|trans }}" title="{{ 'Sync latest changes to this quiz'|trans }}">&#8635;</button>
                                 </form>
                             {% endif %}
                         </div>
@@ -122,7 +124,7 @@
                                         <option value="{{ quiz.id }}">{{ quiz.name }}</option>
                                     {% endfor %}
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary" title="{{ 'Assign'|trans }}"><i class="bi bi-plus-lg"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" aria-label="{{ 'Assign'|trans }}" title="{{ 'Assign'|trans }}"><i class="bi bi-plus-lg"></i></button>
                             </form>
                         {% endif %}
                         <div class="btn-group btn-group-sm" role="group">
@@ -130,9 +132,11 @@
                                     data-action="click->bo--modal#open"
                                     data-src="{{ path('tvdt_molshoop_question_bank_edit', {seasonCode: season.seasonCode, bankQuestion: bank_question.id}) }}"
                                     data-modal-title="{{ 'Edit question'|trans }}"
+                                    aria-label="{{ 'Edit'|trans }}"
                                     title="{{ 'Edit'|trans }}"><i class="bi bi-pencil"></i></button>
                             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                                     data-bs-target="#deleteBankQuestion-{{ bank_question.id }}"
+                                    aria-label="{{ 'Delete'|trans }}"
                                     title="{{ 'Delete'|trans }}"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
@@ -142,7 +146,7 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="deleteBankQuestion-{{ bank_question.id }}Label">{{ 'Please Confirm'|trans }}</h1>
+                                    <h5 class="modal-title fs-5" id="deleteBankQuestion-{{ bank_question.id }}Label">{{ 'Please Confirm'|trans }}</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body text-start">

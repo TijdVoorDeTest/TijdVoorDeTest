@@ -1,12 +1,15 @@
 {% extends 'quiz/base.html.twig' %}
 
+{% block title %}{{ parent() }}{{ 'Result'|trans }}{% endblock %}
 {% block nav %}{% endblock %}
 {% block body %}
     <img src="{{ asset("img/#{colour}.png") }}"
          class="elimination-screen" id="{{ colour }}"
          alt="Screen with colour {{ colour }}"
+         role="button"
+         aria-label="{{ 'Press to continue'|trans }}"
          data-controller="elimination"
-         data-action="click->elimination#next keydown@document->elimination#next"
+         data-action="click->elimination#next keydown.enter@document->elimination#next keydown.space@document->elimination#next:prevent"
          tabindex="0"
     >
 

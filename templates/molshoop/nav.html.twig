@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg bg-body-tertiary" aria-label="{{ 'Main navigation'|trans }}">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ path('tvdt_molshoop_index') }}">Tijd voor de test</a>
         <button class="navbar-toggler"
@@ -36,6 +36,10 @@
                          aria-labelledby="releasesModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-scrollable">
                             <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="releasesModalLabel">{{ 'Releases'|trans }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
                                 <turbo-frame id="releases-modal-frame" data-bo--modal-target="frame"></turbo-frame>
                             </div>
                         </div>
@@ -55,28 +59,28 @@
                     <button type="button" class="nav-link dropdown-toggle border-0 bg-transparent"
                             data-bs-toggle="dropdown" aria-expanded="false"
                             aria-label="{{ 'Theme'|trans }}">
-                        <i class="bi bi-circle-half" data-bo--theme-target="icon"></i>
+                        <i class="bi bi-circle-half" aria-hidden="true" data-bo--theme-target="icon"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <button type="button" class="dropdown-item" data-theme="auto"
                                     data-bo--theme-target="option"
                                     data-action="click->bo--theme#select">
-                                <i class="bi bi-circle-half me-1"></i> {{ 'Auto'|trans }}
+                                <i class="bi bi-circle-half me-1" aria-hidden="true"></i> {{ 'Auto'|trans }}
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item" data-theme="light"
                                     data-bo--theme-target="option"
                                     data-action="click->bo--theme#select">
-                                <i class="bi bi-sun-fill me-1"></i> {{ 'Light'|trans }}
+                                <i class="bi bi-sun-fill me-1" aria-hidden="true"></i> {{ 'Light'|trans }}
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item" data-theme="dark"
                                     data-bo--theme-target="option"
                                     data-action="click->bo--theme#select">
-                                <i class="bi bi-moon-stars-fill me-1"></i> {{ 'Dark'|trans }}
+                                <i class="bi bi-moon-stars-fill me-1" aria-hidden="true"></i> {{ 'Dark'|trans }}
                             </button>
                         </li>
                     </ul>

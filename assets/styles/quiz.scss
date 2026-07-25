@@ -66,14 +66,23 @@ body {
     }
 
     &:hover,
-    &:focus {
+    &:focus-visible {
         color: #7ed45a;
-        outline: none;
 
         &::before {
             background: radial-gradient(ellipse at 35% 30%, #86d45f, #3d9c2a);
         }
     }
+
+    &:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 2px;
+    }
+}
+
+input.btn-check:focus-visible + label.answer-btn {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
 }
 
 input.btn-check:checked + label.answer-btn {
@@ -110,9 +119,13 @@ input.btn-check:checked + label.answer-btn {
     cursor: pointer;
 
     &:hover,
-    &:focus {
+    &:focus-visible {
         color: rgba(255, 255, 255, 0.8);
-        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(255, 255, 255, 0.8);
+        outline-offset: 2px;
     }
 }
 

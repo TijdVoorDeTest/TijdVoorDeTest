@@ -20,8 +20,9 @@
 
         <form action="{{ path('tvdt_molshoop_season_add_owner', {seasonCode: season.seasonCode}) }}" method="POST" class="mb-3">
             <input type="hidden" name="_token" value="{{ csrf_token('add_season_owner') }}">
+            <label for="addOwnerEmail" class="visually-hidden">{{ 'Email address'|trans }}</label>
             <div class="input-group">
-                <input type="email" name="email" class="form-control" placeholder="{{ 'Email address'|trans }}" required>
+                <input type="email" name="email" id="addOwnerEmail" class="form-control" placeholder="{{ 'Email address'|trans }}" required>
                 <button type="submit" class="btn btn-outline-primary">{{ 'Add owner'|trans }}</button>
             </div>
         </form>
@@ -61,7 +62,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="removeOwner-{{ owner.id }}Label">{{ 'Please Confirm'|trans }}</h1>
+                        <h5 class="modal-title fs-5" id="removeOwner-{{ owner.id }}Label">{{ 'Please Confirm'|trans }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-start">
@@ -88,7 +89,7 @@
         <div class="modal-content">
             <form action="{{ path('tvdt_molshoop_season_regenerate_code', {seasonCode: season.seasonCode}) }}" method="POST">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="regenerateSeasonCodeModalLabel">{{ 'Regenerate season code'|trans }}</h1>
+                    <h5 class="modal-title fs-5" id="regenerateSeasonCodeModalLabel">{{ 'Regenerate season code'|trans }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -113,7 +114,7 @@
         <div class="modal-content">
             <form action="{{ path('tvdt_molshoop_season_delete', {seasonCode: season.seasonCode}) }}" method="POST">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="deleteSeasonModalLabel">{{ 'Delete season'|trans }}</h1>
+                    <h5 class="modal-title fs-5" id="deleteSeasonModalLabel">{{ 'Delete season'|trans }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-start">
@@ -123,7 +124,7 @@
                         {{ 'Type delete to confirm'|trans }}
                     </label>
                     <input type="text" class="form-control" id="deleteSeasonConfirmation" name="confirmation"
-                           autocomplete="off" autofocus
+                           autocomplete="off"
                            data-bo--type-to-confirm-target="input"
                            data-action="input->bo--modal#markDirty change->bo--modal#markDirty input->bo--type-to-confirm#check">
                 </div>

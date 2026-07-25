@@ -3,8 +3,8 @@
 {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
 {{ form_row(form.question) }}
 {{ form_row(form.reusable) }}
-<div class="mb-3">
-    {{ form_label(form.labels) }}
+<fieldset class="mb-3">
+    <legend class="form-label">{{ 'Labels'|trans }}</legend>
     {{ form_errors(form.labels) }}
     {% for label_choice in form.labels %}
         <div class="form-check">
@@ -19,7 +19,7 @@
         </div>
     {% endfor %}
     {% do form.labels.setRendered %}
-</div>
+</fieldset>
 
 <div data-controller="bo--form-collection"
      data-bo--form-collection-prototype-value="{{ macros.answer_row(form.answers.vars.prototype)|e('html_attr') }}">

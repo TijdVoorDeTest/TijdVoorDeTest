@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% block title %}{{ parent() }} | {% endblock %}
 {% block head_extra %}<meta name="turbo-refresh-method" content="replace">{% endblock %}
 {% block importmap %}{{ importmap('quiz') }}{% endblock %}
 {% block nav %}{{ include('quiz/nav.html.twig') }}{% endblock %}
@@ -6,9 +7,10 @@
     <div data-controller="fullscreen">
         <button type="button"
                 class="fullscreen-btn"
+                data-fullscreen-target="button"
                 data-action="fullscreen#toggle"
                 aria-label="{{ 'Fullscreen'|trans }}"
-                title="{{ 'Fullscreen'|trans }}">⛶</button>
+                aria-pressed="false">⛶</button>
         {{ parent() }}
     </div>
 {% endblock %}

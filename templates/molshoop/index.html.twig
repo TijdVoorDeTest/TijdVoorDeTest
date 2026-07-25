@@ -43,15 +43,18 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <span class="badge {{ season.activeQuiz ? 'text-bg-success' : 'text-bg-secondary' }}"
-                                  role="button"
-                                  tabindex="0"
-                                  aria-label="{{ 'Copy join link'|trans }}"
-                                  data-controller="bo--copy-link"
+                            <span data-controller="bo--copy-link"
                                   data-bo--copy-link-url-value="{{ url('tvdt_quiz_enter_name', {seasonCode: season.seasonCode}) }}"
                                   data-bo--copy-link-hint-label-value="{{ 'Copy join link'|trans }}"
-                                  data-bo--copy-link-copied-label-value="{{ 'Link copied to clipboard'|trans }}"
-                                  data-action="click->bo--copy-link#copy:prevent keydown.enter->bo--copy-link#copy:prevent keydown.space->bo--copy-link#copy:prevent">{{ season.seasonCode }}</span>
+                                  data-bo--copy-link-copied-label-value="{{ 'Link copied to clipboard'|trans }}">
+                                <span class="badge {{ season.activeQuiz ? 'text-bg-success' : 'text-bg-secondary' }}"
+                                      role="button"
+                                      tabindex="0"
+                                      aria-label="{{ season.activeQuiz ? 'Copy join link (active season)'|trans : 'Copy join link (inactive season)'|trans }}"
+                                      data-bo--copy-link-target="trigger"
+                                      data-action="click->bo--copy-link#copy:prevent keydown.enter->bo--copy-link#copy:prevent keydown.space->bo--copy-link#copy:prevent">{{ season.seasonCode }}</span>
+                                <span class="visually-hidden" data-bo--copy-link-target="status" aria-live="polite"></span>
+                            </span>
                         </a>
                     {% endfor %}
                 </div>

@@ -24,7 +24,6 @@ class SelectSeasonType extends AbstractType
                 'constraints' => new Regex(pattern: "/^[A-Za-z\d]{5}$/"),
                 'label' => $this->translator->trans('Season Code'),
                 'translation_domain' => false,
-                'attr' => ['autofocus' => true],
             ]);
     }
 

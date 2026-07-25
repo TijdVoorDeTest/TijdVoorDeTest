@@ -4,8 +4,11 @@ import { Tooltip } from 'bootstrap';
 const TOOLTIP_DURATION_MS = 1500;
 
 export default class extends Controller {
+    static targets = ['trigger', 'status'];
     static values = { url: String, hintLabel: String, copiedLabel: String };
 
+    declare readonly triggerTarget: HTMLElement;
+    declare readonly statusTarget: HTMLElement;
     declare readonly urlValue: string;
     declare readonly hintLabelValue: string;
     declare readonly copiedLabelValue: string;
@@ -14,7 +17,7 @@ export default class extends Controller {
     hideTimeout?: ReturnType<typeof setTimeout>;
 
     connect(): void {
-        this.tooltip = new Tooltip(this.element, {
+        this.tooltip = new Tooltip(this.triggerTarget, {
             title: this.hintLabelValue,
         });
     }
@@ -26,6 +29,7 @@ export default class extends Controller {
 
     copy(): void {
         this.tooltip?.setContent({ '.tooltip-inner': this.copiedLabelValue });
+        this.statusTarget.textContent = this.copiedLabelValue;
 
         try {
             void navigator.clipboard.writeText(this.urlValue);
@@ -36,6 +40,7 @@ export default class extends Controller {
         clearTimeout(this.hideTimeout);
         this.hideTimeout = setTimeout(() => {
             this.tooltip?.setContent({ '.tooltip-inner': this.hintLabelValue });
+            this.statusTarget.textContent = '';
         }, TOOLTIP_DURATION_MS);
     }
 }

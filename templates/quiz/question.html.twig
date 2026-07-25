@@ -1,11 +1,12 @@
 {% extends 'quiz/base.html.twig' %}
+{% block title %}{{ parent() }}{{ question.ordering }}/{{ question.quiz.questions.count }}{% endblock %}
 {% block body %}
     <div class="quiz-content">
-        <h4>
+        <h1 class="fs-4" id="question-heading">
             {% if season.settings.showNumbers %}
                 ({{ question.ordering }}/{{ question.quiz.questions.count }})
             {% endif %}{{ question.question }}<br/>
-        </h4>
+        </h1>
         <form method="post">
             <input type="hidden" name="token" value="{{ csrf_token('question') }}">
             {% set two_col = question.answers|length >= 6 %}
@@ -21,7 +22,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="{{ two_col ? 'quiz-answers-grid' : '' }}">
+                <div class="{{ two_col ? 'quiz-answers-grid' : '' }}" role="radiogroup" aria-labelledby="question-heading">
                     {% for answer in question.answers %}
                         <div class="py-1">
                             <input required="required" type="radio" class="btn-check" name="answer"

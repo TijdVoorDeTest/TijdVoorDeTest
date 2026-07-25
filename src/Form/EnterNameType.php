@@ -22,7 +22,7 @@ class EnterNameType extends AbstractType
                     'required' => true,
                     'label' => $this->translator->trans('Enter your name'),
                     'translation_domain' => false,
-                    'attr' => ['autofocus' => true, 'autocomplete' => 'off'],
+                    'attr' => ['autocomplete' => 'name'],
                 ],
             )
         ;
