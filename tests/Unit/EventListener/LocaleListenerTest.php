@@ -31,7 +31,7 @@ final class LocaleListenerTest extends TestCase
         yield 'molshoop + no user + season: untouched, season ignored on molshoop' => ['tvdt_molshoop_season_settings', null, 'nl', null];
         yield 'molshoop + no user + no season: untouched' => ['tvdt_molshoop_index', null, null, null];
         yield 'non-molshoop + user + season: season wins over user' => ['tvdt_elimination', 'nl', 'en', 'en'];
-        yield 'non-molshoop + user + no season: untouched, user ignored off molshoop' => ['tvdt_quiz_select_season', 'en', null, null];
+        yield 'non-molshoop + user + no season: user wins (e.g. homepage)' => ['tvdt_quiz_select_season', 'en', null, 'en'];
         yield 'non-molshoop + no user + season: season wins' => ['tvdt_quiz_enter_name', null, 'en', 'en'];
         yield 'non-molshoop + no user + no season: untouched' => ['tvdt_quiz_select_season', null, null, null];
     }
