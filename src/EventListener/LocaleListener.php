@@ -12,11 +12,7 @@ use Symfony\Component\Translation\LocaleSwitcher;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\User;
 
-/**
- * Overrides the Accept-Language-derived locale: with the authenticated user's profile
- * language on Molshoop (backoffice) pages, or with the resolved season's configured
- * language everywhere else (public quiz, elimination view, ...).
- */
+/** Overrides the Accept-Language-derived locale with the user's profile locale on Molshoop pages, or the viewed season's locale elsewhere. See LocaleListenerTest for the exact precedence per scenario. */
 final readonly class LocaleListener implements EventSubscriberInterface
 {
     public function __construct(
@@ -46,9 +42,6 @@ final readonly class LocaleListener implements EventSubscriberInterface
     {
         $route = (string) $event->getRequest()->attributes->get('_route');
 
-        // Molshoop is the only backoffice context, so the user's profile language always wins there.
-        // Everywhere else (public quiz, elimination view, ...) the season being viewed wins, even for
-        // an authenticated owner previewing it, since that content is scoped to the season, not to them.
         if (!str_starts_with($route, 'tvdt_molshoop_')) {
             foreach ($event->getArguments() as $argument) {
                 if ($argument instanceof Season) {
