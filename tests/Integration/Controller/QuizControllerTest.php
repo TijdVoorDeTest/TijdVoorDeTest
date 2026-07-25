@@ -131,6 +131,24 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorExists('html[lang="en"]');
     }
 
+    public function testEnterNamePageUsesTheSeasonsLanguageEvenForAnAuthenticatedOwner(): void
+    {
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = 'en';
+
+        $owner = $this->getUserByEmail('krtek-admin@example.org');
+        $owner->locale = 'nl';
+
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request(Request::METHOD_GET, '/krtek');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('html[lang="en"]');
+    }
+
     public function testQuizPageUsesTheSeasonsLanguage(): void
     {
         $season = $this->getSeasonByCode('krtek');

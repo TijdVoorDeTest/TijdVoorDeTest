@@ -20,21 +20,28 @@ use Tvdt\EventListener\LocaleListener;
 final class LocaleListenerTest extends TestCase
 {
     /** @param list<mixed> $arguments */
-    private function makeEvent(Request $request, array $arguments): ControllerArgumentsEvent
+    private function makeEvent(string $route, array $arguments): ControllerArgumentsEvent
     {
         $kernel = $this->createStub(HttpKernelInterface::class);
+        $request = Request::create('/');
+        $request->attributes->set('_route', $route);
 
         return new ControllerArgumentsEvent($kernel, static fn (): \stdClass => new \stdClass(), $arguments, $request, null);
     }
 
-    public function testAuthenticatedUsersLocaleWinsOverEverythingElse(): void
+    private function seasonWithLocale(string $locale): Season
+    {
+        $season = new Season();
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = $locale;
+
+        return $season;
+    }
+
+    public function testMolshoopPageUsesTheAuthenticatedUsersLocaleEvenWithASeasonResolved(): void
     {
         $user = new User();
         $user->locale = 'en';
-
-        $season = new Season();
-        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->locale = 'nl';
 
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn($user);
@@ -43,20 +50,29 @@ final class LocaleListenerTest extends TestCase
         $localeSwitcher->expects($this->once())->method('setLocale')->with('en');
 
         $listener = new LocaleListener($security, $localeSwitcher);
-        $request = Request::create('/molshoop/');
-        $event = $this->makeEvent($request, [$season]);
+        $event = $this->makeEvent('tvdt_molshoop_season_settings', [$this->seasonWithLocale('nl')]);
 
         $listener->onControllerArguments($event);
 
-        $this->assertSame('en', $request->getLocale());
+        $this->assertSame('en', $event->getRequest()->getLocale());
     }
 
-    public function testSeasonLanguageIsUsedWhenNoUserIsAuthenticated(): void
+    public function testMolshoopPageIsUntouchedWhenNoUserIsAuthenticated(): void
     {
-        $season = new Season();
-        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->locale = 'en';
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn(null);
 
+        $localeSwitcher = $this->createMock(LocaleSwitcher::class);
+        $localeSwitcher->expects($this->never())->method('setLocale');
+
+        $listener = new LocaleListener($security, $localeSwitcher);
+        $event = $this->makeEvent('tvdt_molshoop_index', []);
+
+        $listener->onControllerArguments($event);
+    }
+
+    public function testNonMolshoopPageUsesTheSeasonsLocaleWhenNoUserIsAuthenticated(): void
+    {
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn(null);
 
@@ -64,12 +80,30 @@ final class LocaleListenerTest extends TestCase
         $localeSwitcher->expects($this->once())->method('setLocale')->with('en');
 
         $listener = new LocaleListener($security, $localeSwitcher);
-        $request = Request::create('/krtek/some-candidate');
-        $event = $this->makeEvent($request, ['some-candidate', $season]);
+        $event = $this->makeEvent('tvdt_quiz_enter_name', ['some-candidate', $this->seasonWithLocale('en')]);
 
         $listener->onControllerArguments($event);
 
-        $this->assertSame('en', $request->getLocale());
+        $this->assertSame('en', $event->getRequest()->getLocale());
+    }
+
+    public function testNonMolshoopPageUsesTheSeasonsLocaleEvenForAnAuthenticatedUser(): void
+    {
+        $user = new User();
+        $user->locale = 'nl';
+
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($user);
+
+        $localeSwitcher = $this->createMock(LocaleSwitcher::class);
+        $localeSwitcher->expects($this->once())->method('setLocale')->with('en');
+
+        $listener = new LocaleListener($security, $localeSwitcher);
+        $event = $this->makeEvent('tvdt_elimination', [$this->seasonWithLocale('en')]);
+
+        $listener->onControllerArguments($event);
+
+        $this->assertSame('en', $event->getRequest()->getLocale());
     }
 
     public function testLocaleIsUntouchedWhenNoUserOrSeasonIsResolved(): void
@@ -81,13 +115,11 @@ final class LocaleListenerTest extends TestCase
         $localeSwitcher->expects($this->never())->method('setLocale');
 
         $listener = new LocaleListener($security, $localeSwitcher);
-        $request = Request::create('/');
-        $request->setLocale('nl');
-
-        $event = $this->makeEvent($request, []);
+        $event = $this->makeEvent('tvdt_quiz_select_season', []);
+        $event->getRequest()->setLocale('nl');
 
         $listener->onControllerArguments($event);
 
-        $this->assertSame('nl', $request->getLocale());
+        $this->assertSame('nl', $event->getRequest()->getLocale());
     }
 }

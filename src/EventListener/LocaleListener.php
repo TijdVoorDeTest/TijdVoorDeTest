@@ -13,8 +13,9 @@ use Tvdt\Entity\Season;
 use Tvdt\Entity\User;
 
 /**
- * Overrides the Accept-Language-derived locale with the authenticated user's profile
- * language (backoffice), or failing that, the season's configured language (public quiz).
+ * Overrides the Accept-Language-derived locale: with the authenticated user's profile
+ * language on Molshoop (backoffice) pages, or with the resolved season's configured
+ * language everywhere else (public quiz, elimination view, ...).
  */
 final readonly class LocaleListener implements EventSubscriberInterface
 {
@@ -43,18 +44,23 @@ final readonly class LocaleListener implements EventSubscriberInterface
 
     private function resolveLocale(ControllerArgumentsEvent $event): ?string
     {
+        $route = (string) $event->getRequest()->attributes->get('_route');
+
+        // Molshoop is the only backoffice context, so the user's profile language always wins there.
+        // Everywhere else (public quiz, elimination view, ...) the season being viewed wins, even for
+        // an authenticated owner previewing it, since that content is scoped to the season, not to them.
+        if (!str_starts_with($route, 'tvdt_molshoop_')) {
+            foreach ($event->getArguments() as $argument) {
+                if ($argument instanceof Season) {
+                    return $argument->settings?->locale;
+                }
+            }
+
+            return null;
+        }
+
         $user = $this->security->getUser();
 
-        if ($user instanceof User) {
-            return $user->locale;
-        }
-
-        foreach ($event->getArguments() as $argument) {
-            if ($argument instanceof Season) {
-                return $argument->settings?->locale;
-            }
-        }
-
-        return null;
+        return $user instanceof User ? $user->locale : null;
     }
 }
