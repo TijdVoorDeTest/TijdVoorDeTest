@@ -58,6 +58,7 @@ Concept: Concept
 'Confirm your email address to enable this feature.': 'Bevestig je e-mailadres om deze functie te kunnen gebruiken.'
 'Confirm your email address to enable this.': 'Bevestig je e-mailadres om dit te gebruiken.'
 Confirmed: Bevestigd
+'Copy join link': 'Kopieer deelnamelink'
 'Correct Answers': 'Goede antwoorden'
 Corrections: Jokers
 'Could not find candidate with name {name}': 'Kon kandidaat met naam {name} niet vinden'
@@ -133,6 +134,7 @@ Language: Taal
 'Leave season': 'Seizoen verlaten'
 'Leaving this season removes your ownership. You need at least one other owner before you can leave.': 'Als je dit seizoen verlaat, ben je geen eigenaar meer. Er moet minimaal één andere eigenaar zijn voordat je kunt vertrekken.'
 Light: Licht
+'Link copied to clipboard': 'Link gekopieerd naar klembord'
 'Load Prepared Elimination': 'Laad voorbereide eliminatie'
 'Locked (answers given)': 'Vergrendeld (antwoorden gegeven)'
 'Locks the quiz so it can no longer be edited and makes it ready for candidates to take.': 'Vergrendelt de test zodat deze niet meer bewerkt kan worden en maakt deze klaar voor deelnemers.'
@@ -163,7 +165,6 @@ Open: Openen
 Overview: Overzicht
 'Owner added': 'Eigenaar toegevoegd'
 'Owner removed': 'Eigenaar verwijderd'
-Owner(s): Eigenaar/Eigenaren
 Owners: Eigenaren
 Password: Wachtwoord
 Penalty: Straftijd
@@ -302,3 +303,4 @@ Yellow: Geel
 'Your password has been changed.': 'Je wachtwoord is gewijzigd.'
 'Your password reset request': 'Verzoek tot wachtwoordreset'
 'try again': 'probeer opnieuw'
+'{count, plural, one {Owner} other {Owners}}': '{count, plural, one {Eigenaar} other {Eigenaren}}'

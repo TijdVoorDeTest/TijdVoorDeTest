@@ -22,43 +22,39 @@
                 </a>
             </div>
             {% if seasons %}
-                <table class="table table-hover mb-3">
-                    <thead>
-                    <tr>
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <th scope="col">{{ 'Owner(s)'|trans }}</th>
-                        {% endif %}
-                        <th scope="col">{{ 'Name'|trans }}</th>
-                        <th scope="col">{{ 'Active Quiz'|trans }}</th>
-                        <th scope="col">{{ 'Season Code'|trans }}</th>
-                        <th scope="col">{{ 'Manage'|trans }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                <div class="list-group mb-3">
                     {% for season in seasons %}
-                        <tr class="align-middle">
-                            {% if is_granted('ROLE_ADMIN') %}
-                                <td>{{ season.owners|map(o => o.email)|join(', ') }}</td>
-                            {% endif %}
-                            <td>{{ season.name }}</td>
-                            <td>
-                                {% if season.activeQuiz %}
-                                    {{ season.activeQuiz.name }}
-                                {% else %}
-                                    {{ 'No active quiz'|trans }}
+                        <a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <div class="fw-semibold">{{ season.name }}</div>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <div class="text-body-secondary small">
+                                        <strong>{{ t('{count, plural, one {Owner} other {Owners}}', {count: season.owners|length})|trans }}:</strong>
+                                        {{ season.owners|map(o => o.email)|join(', ') }}
+                                    </div>
                                 {% endif %}
-                            </td>
-                            <td>
-                                <a {% if season.activeQuiz %}href="{{ path('tvdt_quiz_enter_name', {seasonCode: season.seasonCode}) }}"
-                                   {% else %}class="disabled" {% endif %}>{{ season.seasonCode }}</a>
-                            </td>
-                            <td>
-                                <a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ 'Manage'|trans }}</a>
-                            </td>
-                        </tr>
+                                <div class="text-body-secondary small">
+                                    <strong>{{ 'Active Quiz'|trans }}:</strong>
+                                    {% if season.activeQuiz %}
+                                        {{ season.activeQuiz.name }}
+                                    {% else %}
+                                        {{ 'No active quiz'|trans }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <span class="badge {{ season.activeQuiz ? 'text-bg-success' : 'text-bg-secondary' }}"
+                                  role="button"
+                                  tabindex="0"
+                                  aria-label="{{ 'Copy join link'|trans }}"
+                                  data-controller="bo--copy-link"
+                                  data-bo--copy-link-url-value="{{ url('tvdt_quiz_enter_name', {seasonCode: season.seasonCode}) }}"
+                                  data-bo--copy-link-hint-label-value="{{ 'Copy join link'|trans }}"
+                                  data-bo--copy-link-copied-label-value="{{ 'Link copied to clipboard'|trans }}"
+                                  data-action="click->bo--copy-link#copy:prevent keydown.enter->bo--copy-link#copy:prevent keydown.space->bo--copy-link#copy:prevent">{{ season.seasonCode }}</span>
+                        </a>
                     {% endfor %}
-                    </tbody>
-                </table>
+                </div>
             {% else %}
                 {{ 'You have no seasons yet.'|trans }}
             {% endif %}
