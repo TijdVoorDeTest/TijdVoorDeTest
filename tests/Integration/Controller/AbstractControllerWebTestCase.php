@@ -23,6 +23,11 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     protected function setUp(): void
     {
         $this->client = self::createClient();
+        // Symfony's Request::create() defaults to an English Accept-Language header when none is set,
+        // which would otherwise flip every anonymous request to English via set_locale_from_accept_language.
+        // Tests that specifically exercise browser-language detection can override this per-request.
+        $this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'nl');
+
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
     }
 

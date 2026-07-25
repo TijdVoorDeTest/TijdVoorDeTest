@@ -7,6 +7,7 @@ namespace Tvdt\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,19 @@ use Tvdt\Security\EmailVerifier;
 
 final class RegistrationController extends AbstractController
 {
-    public function __construct(private readonly EmailVerifier $emailVerifier, private readonly TranslatorInterface $translator, private readonly UserPasswordHasherInterface $userPasswordHasher, private readonly Security $security, private readonly UserRepository $userRepository, private readonly EntityManagerInterface $entityManager) {}
+    /** @param list<string> $enabledLocales */
+    public function __construct(
+        private readonly EmailVerifier $emailVerifier,
+        private readonly TranslatorInterface $translator,
+        private readonly UserPasswordHasherInterface $userPasswordHasher,
+        private readonly Security $security,
+        private readonly UserRepository $userRepository,
+        private readonly EntityManagerInterface $entityManager,
+        #[Autowire(param: 'kernel.enabled_locales')]
+        private readonly array $enabledLocales,
+        #[Autowire(param: 'kernel.default_locale')]
+        private readonly string $defaultLocale,
+    ) {}
 
     #[Route('/register', name: 'tvdt_register')]
     public function register(
@@ -42,6 +55,7 @@ final class RegistrationController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
 
             $user->password = $this->userPasswordHasher->hashPassword($user, $plainPassword);
+            $user->locale = $request->getPreferredLanguage($this->enabledLocales) ?? $this->defaultLocale;
 
             $this->entityManager->persist($user);
             $this->entityManager->flush();

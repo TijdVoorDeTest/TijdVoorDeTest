@@ -60,6 +60,38 @@ final class SettingsControllerTest extends AbstractControllerWebTestCase
         self::assertResponseRedirects('/molshoop/settings');
     }
 
+    public function testLanguageSavePersistsToUser(): void
+    {
+        $token = $this->getCsrfTokenFromSettings('/molshoop/settings/language');
+
+        $this->client->request(Request::METHOD_POST, '/molshoop/settings/language', [
+            '_token' => $token,
+            'language' => 'en',
+        ]);
+
+        self::assertResponseRedirects('/molshoop/settings');
+        $this->entityManager->clear();
+
+        $user = $this->getUserByEmail('test@example.org');
+        $this->assertSame('en', $user->locale);
+    }
+
+    public function testLanguageSaveIgnoresUnknownLanguage(): void
+    {
+        $token = $this->getCsrfTokenFromSettings('/molshoop/settings/language');
+
+        $this->client->request(Request::METHOD_POST, '/molshoop/settings/language', [
+            '_token' => $token,
+            'language' => 'fr',
+        ]);
+
+        self::assertResponseRedirects('/molshoop/settings');
+        $this->entityManager->clear();
+
+        $user = $this->getUserByEmail('test@example.org');
+        $this->assertSame('nl', $user->locale);
+    }
+
     public function testChangePassword(): void
     {
         $this->client->request(Request::METHOD_GET, '/molshoop/settings');

@@ -7,11 +7,34 @@ namespace Tvdt\Tests\Integration\Controller\Molshoop;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpFoundation\Request;
 use Tvdt\Controller\Molshoop\MolshoopController;
+use Tvdt\Entity\Season;
 use Tvdt\Tests\Integration\Controller\AbstractControllerWebTestCase;
 
 #[CoversClass(MolshoopController::class)]
 final class MolshoopControllerTest extends AbstractControllerWebTestCase
 {
+    public function testAddSeasonCopiesOwnersLocaleIntoSettings(): void
+    {
+        $user = $this->getUserByEmail('user2@example.org');
+        $user->locale = 'en';
+
+        $this->entityManager->flush();
+        $this->client->loginUser($user);
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/season/add');
+        $form = $crawler->filter('form')->form([
+            'create_season_form[name]' => 'A New Season',
+        ]);
+        $this->client->submit($form);
+
+        self::assertResponseRedirects();
+        $this->entityManager->clear();
+
+        $season = $this->entityManager->getRepository(Season::class)->findOneBy(['name' => 'A New Season']);
+        $this->assertInstanceOf(Season::class, $season);
+        $this->assertSame('en', $season->settings?->locale);
+    }
+
     public function testExportQuizFilenameIsSanitized(): void
     {
         $user = $this->getUserByEmail('user2@example.org');

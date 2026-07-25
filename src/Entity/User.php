@@ -49,6 +49,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     public bool $isVerified = false;
 
+    #[ORM\Column(length: 5, options: ['default' => 'nl'])]
+    public string $locale = 'nl';
+
     public bool $isAdmin {
         get => \in_array('ROLE_ADMIN', $this->getRoles(), true);
     }

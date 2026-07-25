@@ -25,6 +25,20 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         $this->loginAs('krtek-admin@example.org');
     }
 
+    public function testSettingsFormPersistsLanguage(): void
+    {
+        $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/settings');
+        $form = $crawler->filter('form[name="settings_form"]')->form([
+            'settings_form[locale]' => 'en',
+        ]);
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('/molshoop/season/krtek/settings');
+        $this->entityManager->clear();
+
+        $this->assertSame('en', $this->getSeasonByCode('krtek')->settings?->locale);
+    }
+
     public function testRegenerateSeasonCodeChangesTheCode(): void
     {
         $oldCode = 'krtek';

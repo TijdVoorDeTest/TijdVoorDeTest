@@ -12,6 +12,7 @@ use Tvdt\Entity\Candidate;
 use Tvdt\Entity\GivenAnswer;
 use Tvdt\Entity\Question;
 use Tvdt\Entity\QuizCandidate;
+use Tvdt\Entity\SeasonSettings;
 use Tvdt\Helpers\Base64;
 
 #[CoversClass(QuizController::class)]
@@ -103,6 +104,62 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
+    }
+
+    public function testSelectSeasonUsesBrowserLanguageNotSeasonLanguage(): void
+    {
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = 'en';
+        $this->entityManager->flush();
+
+        $this->client->request(Request::METHOD_GET, '/');
+
+        self::assertSelectorExists('html[lang="nl"]');
+    }
+
+    public function testEnterNamePageUsesTheSeasonsLanguage(): void
+    {
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = 'en';
+        $this->entityManager->flush();
+
+        $this->client->request(Request::METHOD_GET, '/krtek');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('html[lang="en"]');
+    }
+
+    public function testEnterNamePageUsesTheSeasonsLanguageEvenForAnAuthenticatedOwner(): void
+    {
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = 'en';
+
+        $owner = $this->getUserByEmail('krtek-admin@example.org');
+        $owner->locale = 'nl';
+
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request(Request::METHOD_GET, '/krtek');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('html[lang="en"]');
+    }
+
+    public function testQuizPageUsesTheSeasonsLanguage(): void
+    {
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = 'en';
+        $this->entityManager->flush();
+
+        $this->client->request(Request::METHOD_GET, \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('html[lang="en"]');
     }
 
     public function testEnterNameRedirectsToQuizPage(): void

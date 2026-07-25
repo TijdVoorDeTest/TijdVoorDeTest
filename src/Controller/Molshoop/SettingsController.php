@@ -8,6 +8,7 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Safe\DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -31,6 +32,7 @@ use Tvdt\Service\DataExportService;
 
 final class SettingsController extends AbstractController
 {
+    /** @param list<string> $enabledLocales */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
@@ -39,6 +41,8 @@ final class SettingsController extends AbstractController
         private readonly Security $security,
         private readonly TranslatorInterface $translator,
         private readonly DataExportService $dataExportService,
+        #[Autowire(param: 'kernel.enabled_locales')]
+        private readonly array $enabledLocales,
     ) {}
 
     #[Route('/molshoop/settings', name: 'tvdt_molshoop_settings', methods: ['GET'])]
@@ -49,9 +53,15 @@ final class SettingsController extends AbstractController
 
     #[IsCsrfTokenValid('settings_language')]
     #[Route('/molshoop/settings/language', name: 'tvdt_molshoop_settings_language', methods: ['POST'])]
-    public function saveLanguage(): RedirectResponse
+    public function saveLanguage(Request $request): RedirectResponse
     {
-        // Only Dutch is available for now, so saving is a noop.
+        $language = (string) $request->request->get('language', '');
+
+        if (\in_array($language, $this->enabledLocales, true)) {
+            $this->authenticatedUser->locale = $language;
+            $this->entityManager->flush();
+        }
+
         $this->addFlash(FlashType::Success, $this->translator->trans('Language saved'));
 
         return $this->redirectToRoute('tvdt_molshoop_settings');
