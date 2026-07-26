@@ -199,6 +199,95 @@ final class QuizSpreadsheetServiceTest extends TestCase
         $this->assertSame('First question', $first->question);
     }
 
+    public function testXlsxToQuizThrowsWithClearMessageOnInvalidBooleanValue(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('B1', 'Answer 1');
+        $sheet->setCellValue('C1', 'Correct');
+        $sheet->setCellValue('A2', 'Who is de Mol?');
+        $sheet->setCellValue('B2', 'Alice');
+        $sheet->setCellValueExplicit('C2', 'onwar', DataType::TYPE_STRING);
+
+        $path = $this->createTempPath('.xlsx');
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        try {
+            $this->subject->xlsxToQuiz(new Quiz(), new File($path));
+            $this->fail('Expected SpreadsheetDataException to be thrown');
+        } catch (SpreadsheetDataException $spreadsheetDataException) {
+            $this->assertCount(1, $spreadsheetDataException->errors);
+            $this->assertStringContainsString('onwar', $spreadsheetDataException->errors[0]);
+            $this->assertStringContainsString('WAAR/ONWAAR', $spreadsheetDataException->errors[0]);
+        }
+    }
+
+    public function testXlsxToQuizDoesNotCrashOnNumericCorrectValue(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('B1', 'Answer 1');
+        $sheet->setCellValue('C1', 'Correct');
+        $sheet->setCellValue('A2', 'Who is de Mol?');
+        $sheet->setCellValue('B2', 'Alice');
+        $sheet->setCellValue('C2', 1);
+
+        $path = $this->createTempPath('.xlsx');
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        $quiz = new Quiz();
+        $this->subject->xlsxToQuiz($quiz, new File($path));
+
+        /** @var Question $question */
+        $question = $quiz->questions->first();
+        /** @var Answer $answer */
+        $answer = $question->answers->first();
+        $this->assertTrue($answer->isRightAnswer);
+    }
+
+    /** @return \Iterator<string, array{string, bool}> */
+    public static function validBooleanTextProvider(): \Iterator
+    {
+        yield 'TRUE' => ['TRUE', true];
+        yield 'FALSE' => ['FALSE', false];
+        yield 'WAAR' => ['WAAR', true];
+        yield 'ONWAAR' => ['ONWAAR', false];
+        yield 'lowercase waar' => ['waar', true];
+    }
+
+    #[DataProvider('validBooleanTextProvider')]
+    public function testXlsxToQuizAcceptsBooleanValueTypedAsText(string $text, bool $expected): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('B1', 'Answer 1');
+        $sheet->setCellValue('C1', 'Correct');
+        $sheet->setCellValue('A2', 'Who is de Mol?');
+        $sheet->setCellValue('B2', 'Alice');
+        $sheet->setCellValueExplicit('C2', $text, DataType::TYPE_STRING);
+
+        $path = $this->createTempPath('.xlsx');
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        $quiz = new Quiz();
+        $this->subject->xlsxToQuiz($quiz, new File($path));
+
+        /** @var Question $question */
+        $question = $quiz->questions->first();
+        /** @var Answer $answer */
+        $answer = $question->answers->first();
+        $this->assertSame($expected, $answer->isRightAnswer);
+    }
+
     /** @return \Iterator<string, array{int, string, int, string, int, int}> */
     public static function answerCountHeaderProvider(): \Iterator
     {

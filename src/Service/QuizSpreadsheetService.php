@@ -83,7 +83,7 @@ class QuizSpreadsheetService
     }
 
     /**
-     * @param array<int, array<int, string|bool|null>> $sheet
+     * @param array<int, array<int, string|bool|int|float|null>> $sheet
      *
      * @throws SpreadsheetDataException
      */
@@ -105,7 +105,21 @@ class QuizSpreadsheetService
             $arrCounter = 1;
 
             while (\array_key_exists($arrCounter, $questionArr) && null !== $questionArr[$arrCounter]) {
-                $answer = new Answer((string) $questionArr[$arrCounter++], (bool) $questionArr[$arrCounter++]);
+                $text = (string) $questionArr[$arrCounter++];
+                $correctValue = $questionArr[$arrCounter++];
+                $isRightAnswer = $this->parseBoolean($correctValue);
+
+                if (null === $isRightAnswer) {
+                    $errors[] = \sprintf(
+                        'Question %d, answer %d: "%s" is not a valid value for the Correct column, expected TRUE/FALSE or WAAR/ONWAAR',
+                        $question->ordering,
+                        $answerCounter,
+                        (string) $correctValue,
+                    );
+                    $isRightAnswer = false;
+                }
+
+                $answer = new Answer($text, $isRightAnswer);
                 $answer->ordering = $answerCounter++;
                 $question->addAnswer($answer);
             }
@@ -120,6 +134,27 @@ class QuizSpreadsheetService
         if ([] !== $errors) {
             throw new SpreadsheetDataException($errors);
         }
+    }
+
+    private function parseBoolean(mixed $value): ?bool
+    {
+        if (\is_bool($value)) {
+            return $value;
+        }
+
+        if (\is_int($value) || \is_float($value)) {
+            return match ((float) $value) {
+                1.0 => true,
+                0.0 => false,
+                default => null,
+            };
+        }
+
+        return match (mb_strtoupper((string) $value)) {
+            'TRUE', 'WAAR' => true,
+            'FALSE', 'ONWAAR' => false,
+            default => null,
+        };
     }
 
     public function quizToXlsx(Quiz $quiz): \Closure
