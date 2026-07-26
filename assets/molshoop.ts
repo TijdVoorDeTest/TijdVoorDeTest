@@ -33,6 +33,9 @@ Sentry.init({
     dsn: effectiveDsn,
     tunnel: useSpotlight ? 'http://localhost:8969/stream' : undefined,
     integrations: [feedbackIntegration],
+    // Turbo aborts in-flight fetch() visits on navigation; Firefox reports
+    // that as this TypeError instead of an AbortError. Not an app bug.
+    ignoreErrors: ['NetworkError when attempting to fetch resource.'],
 });
 
 // autoInject is unreliable in Sentry v10 due to the setupOnce guard; mount manually.
