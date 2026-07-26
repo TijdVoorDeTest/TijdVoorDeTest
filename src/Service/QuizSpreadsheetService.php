@@ -92,8 +92,18 @@ class QuizSpreadsheetService
         $errors = [];
 
         $questionCounter = 1;
-        foreach ($sheet as $questionArr) {
+        foreach ($sheet as $rowIndex => $questionArr) {
             if (null === $questionArr[0]) {
+                $laterRowIndex = $this->findNextRowIndexWithAQuestion($sheet, $rowIndex + 1);
+
+                if (null !== $laterRowIndex) {
+                    $errors[] = \sprintf(
+                        'Row %d is blank, but row %d still contains a question; remove the blank row, or the questions after it will be ignored',
+                        $rowIndex + 2,
+                        $laterRowIndex + 2,
+                    );
+                }
+
                 break;
             }
 
@@ -103,14 +113,15 @@ class QuizSpreadsheetService
 
             $answerCounter = 1;
             $arrCounter = 1;
+            $invalidBooleanErrors = [];
 
             while (\array_key_exists($arrCounter, $questionArr) && null !== $questionArr[$arrCounter]) {
                 $text = (string) $questionArr[$arrCounter++];
-                $correctValue = $questionArr[$arrCounter++];
+                $correctValue = $questionArr[$arrCounter++] ?? null;
                 $isRightAnswer = $this->parseBoolean($correctValue);
 
                 if (null === $isRightAnswer) {
-                    $errors[] = \sprintf(
+                    $invalidBooleanErrors[] = \sprintf(
                         'Question %d, answer %d: "%s" is not a valid value for the Correct column, expected TRUE/FALSE or WAAR/ONWAAR',
                         $question->ordering,
                         $answerCounter,
@@ -124,8 +135,28 @@ class QuizSpreadsheetService
                 $question->addAnswer($answer);
             }
 
+            $answerCount = $answerCounter - 1;
+            if ($answerCount >= 2 && \count($invalidBooleanErrors) === $answerCount) {
+                $errors[] = \sprintf(
+                    'Question %d: none of its %d answers have a valid Correct value, its answer/Correct columns are probably missing or shifted',
+                    $question->ordering,
+                    $answerCount,
+                );
+            } else {
+                $errors = [...$errors, ...$invalidBooleanErrors];
+            }
+
             if (1 === $answerCounter) {
                 $errors[] = \sprintf('Question %d has no answers', $question->ordering);
+            }
+
+            $laterAnswerColumn = $this->findNextNonBlankColumn($questionArr, $arrCounter);
+            if (null !== $laterAnswerColumn) {
+                $errors[] = \sprintf(
+                    'Question %d: answer text is missing in column %s, so answers after it were ignored',
+                    $question->ordering,
+                    Coordinate::stringFromColumnIndex($laterAnswerColumn + 1),
+                );
             }
 
             $quiz->addQuestion($question);
@@ -134,6 +165,30 @@ class QuizSpreadsheetService
         if ([] !== $errors) {
             throw new SpreadsheetDataException($errors);
         }
+    }
+
+    /** @param array<int, array<int, string|bool|int|float|null>> $sheet */
+    private function findNextRowIndexWithAQuestion(array $sheet, int $fromRowIndex): ?int
+    {
+        foreach (\array_slice($sheet, $fromRowIndex, null, true) as $rowIndex => $row) {
+            if (null !== $row[0]) {
+                return $rowIndex;
+            }
+        }
+
+        return null;
+    }
+
+    /** @param array<int, string|bool|int|float|null> $row */
+    private function findNextNonBlankColumn(array $row, int $fromColumn): ?int
+    {
+        for ($column = $fromColumn; \array_key_exists($column, $row); ++$column) {
+            if (null !== $row[$column]) {
+                return $column;
+            }
+        }
+
+        return null;
     }
 
     private function parseBoolean(mixed $value): ?bool

@@ -170,7 +170,7 @@ final class QuizSpreadsheetServiceTest extends TestCase
         }
     }
 
-    public function testXlsxToQuizStopsAtBlankRow(): void
+    public function testXlsxToQuizStopsSilentlyAtTrailingBlankRowWithNoFurtherData(): void
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -180,10 +180,7 @@ final class QuizSpreadsheetServiceTest extends TestCase
         $sheet->setCellValue('A2', 'First question');
         $sheet->setCellValue('B2', 'Yes');
         $sheet->setCellValue('C2', true);
-        // Row 3 intentionally blank — should halt parsing
-        $sheet->setCellValue('A4', 'Second question');
-        $sheet->setCellValue('B4', 'No');
-        $sheet->setCellValue('C4', false);
+        // Row 3 intentionally blank, and nothing follows it — a harmless trailing row.
 
         $path = $this->createTempPath('.xlsx');
         ob_start();
@@ -197,6 +194,90 @@ final class QuizSpreadsheetServiceTest extends TestCase
         /** @var Question $first */
         $first = $quiz->questions->first();
         $this->assertSame('First question', $first->question);
+    }
+
+    public function testXlsxToQuizThrowsWhenBlankRowIsFollowedByMoreQuestions(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('B1', 'Answer 1');
+        $sheet->setCellValue('C1', 'Correct');
+        $sheet->setCellValue('A2', 'First question');
+        $sheet->setCellValue('B2', 'Yes');
+        $sheet->setCellValue('C2', true);
+        // Row 3 intentionally blank, but row 4 still has data — likely an accidental gap.
+        $sheet->setCellValue('A4', 'Second question');
+        $sheet->setCellValue('B4', 'No');
+        $sheet->setCellValue('C4', false);
+
+        $path = $this->createTempPath('.xlsx');
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        try {
+            $this->subject->xlsxToQuiz(new Quiz(), new File($path));
+            $this->fail('Expected SpreadsheetDataException to be thrown');
+        } catch (SpreadsheetDataException $spreadsheetDataException) {
+            $this->assertCount(1, $spreadsheetDataException->errors);
+            $this->assertStringContainsString('Row 3', $spreadsheetDataException->errors[0]);
+            $this->assertStringContainsString('row 4', $spreadsheetDataException->errors[0]);
+        }
+    }
+
+    public function testXlsxToQuizThrowsWhenAGapHidesLaterAnswers(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('A2', 'Who is de Mol?');
+        $sheet->setCellValue('B2', 'Alice');
+        $sheet->setCellValue('C2', false);
+        // D2/E2 (answer 2) intentionally left blank, but answer 3 is filled in — a gap.
+        $sheet->setCellValue('F2', 'Charlie');
+        $sheet->setCellValue('G2', true);
+
+        $path = $this->createTempPath('.xlsx');
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        try {
+            $this->subject->xlsxToQuiz(new Quiz(), new File($path));
+            $this->fail('Expected SpreadsheetDataException to be thrown');
+        } catch (SpreadsheetDataException $spreadsheetDataException) {
+            $this->assertCount(1, $spreadsheetDataException->errors);
+            $this->assertStringContainsString('Question 1', $spreadsheetDataException->errors[0]);
+        }
+    }
+
+    public function testXlsxToQuizThrowsClearlyWhenTheCorrectColumnIsMissingEntirely(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('B1', 'Answer 1');
+        $sheet->setCellValue('C1', 'Answer 2');
+        $sheet->setCellValue('D1', 'Answer 3');
+        $sheet->setCellValue('A2', 'Who is de Mol?');
+        $sheet->setCellValue('B2', 'Alice');
+        $sheet->setCellValue('C2', 'Bob');
+        $sheet->setCellValue('D2', 'Charlie');
+
+        $path = $this->createTempPath('.xlsx');
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        try {
+            $this->subject->xlsxToQuiz(new Quiz(), new File($path));
+            $this->fail('Expected SpreadsheetDataException to be thrown');
+        } catch (SpreadsheetDataException $spreadsheetDataException) {
+            $this->assertCount(1, $spreadsheetDataException->errors);
+            $this->assertStringContainsString('Question 1', $spreadsheetDataException->errors[0]);
+            $this->assertStringContainsString('missing or shifted', $spreadsheetDataException->errors[0]);
+        }
     }
 
     public function testXlsxToQuizThrowsWithClearMessageOnInvalidBooleanValue(): void

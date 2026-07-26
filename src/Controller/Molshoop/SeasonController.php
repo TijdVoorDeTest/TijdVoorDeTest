@@ -28,6 +28,7 @@ use Tvdt\Entity\Quiz;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\User;
 use Tvdt\Enum\FlashType;
+use Tvdt\Exception\SpreadsheetDataException;
 use Tvdt\Form\AddCandidatesFormType;
 use Tvdt\Form\SettingsForm;
 use Tvdt\Form\UploadQuizFormType;
@@ -359,7 +360,15 @@ class SeasonController extends AbstractController
             /* @var UploadedFile $sheet */
             $sheet = $form->get('sheet')->getData();
 
-            $this->quizSpreadsheet->xlsxToQuiz($quiz, $sheet);
+            try {
+                $this->quizSpreadsheet->xlsxToQuiz($quiz, $sheet);
+            } catch (SpreadsheetDataException $spreadsheetDataException) {
+                foreach ($spreadsheetDataException->errors as $error) {
+                    $this->addFlash(FlashType::Danger, $error);
+                }
+
+                return $this->redirectToRoute('tvdt_molshoop_quiz_add', ['seasonCode' => $season->seasonCode]);
+            }
 
             $quiz->season = $season;
             $this->em->persist($quiz);
