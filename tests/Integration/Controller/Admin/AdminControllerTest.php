@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tvdt\Tests\Integration\Controller\Admin;
 
+use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Profiler\Profile;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 use Tvdt\Controller\Admin\AdminController;
 use Tvdt\DataFixtures\TestFixtures;
+use Tvdt\Entity\Quiz;
+use Tvdt\Entity\Season;
 use Tvdt\Entity\User;
 use Tvdt\Tests\Integration\Controller\AbstractControllerWebTestCase;
 
@@ -46,6 +50,32 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
         $this->assertStringContainsString('Doomed Season', $crawler->filter('body')->text());
     }
 
+    public function testUsersTabQueryCountDoesNotGrowWithMoreUsers(): void
+    {
+        // A throwaway request first, so the assertion below isn't polluted by setUp()'s own writes.
+        $this->client->request(Request::METHOD_GET, '/admin');
+
+        for ($i = 0; $i < 20; ++$i) {
+            $user = new User();
+            $user->email = \sprintf('extra-user-%d@example.org', $i);
+            $user->password = 'irrelevant';
+            $user->addSeason($this->getSeasonByCode('krtek'));
+
+            $this->entityManager->persist($user);
+        }
+
+        $this->entityManager->flush();
+
+        $this->client->enableProfiler();
+        $this->client->request(Request::METHOD_GET, '/admin');
+
+        self::assertResponseIsSuccessful();
+        // A flat query count regardless of row count: one query to list users, one to hydrate
+        // every user's $seasons collection, plus the auth reload for the logged-in admin. If this
+        // creeps up, something reintroduced a per-row lazy load (N+1).
+        $this->assertLessThanOrEqual(5, $this->getQueryCount(), 'Adding more users should not add more queries (N+1 on the per-user season count).');
+    }
+
     public function testUsersTabIsDeniedForNonAdmin(): void
     {
         $this->loginAs('test@example.org');
@@ -53,6 +83,38 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
         $this->client->request(Request::METHOD_GET, '/admin');
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testSeasonsTabQueryCountDoesNotGrowWithMoreSeasons(): void
+    {
+        // A throwaway request first, so the assertion below isn't polluted by setUp()'s own writes.
+        $this->client->request(Request::METHOD_GET, '/admin/seasons');
+
+        $owner = $this->getUserByEmail('test@example.org');
+        for ($i = 0; $i < 20; ++$i) {
+            $season = new Season();
+            $season->name = \sprintf('Extra Season %d', $i);
+            $season->seasonCode = \sprintf('sn%03d', $i);
+            $season->addOwner($owner);
+
+            $quiz = new Quiz();
+            $quiz->name = 'Extra Quiz';
+            $season->addQuiz($quiz);
+            $season->activeQuiz = $quiz;
+
+            $this->entityManager->persist($season);
+        }
+
+        $this->entityManager->flush();
+
+        $this->client->enableProfiler();
+        $this->client->request(Request::METHOD_GET, '/admin/seasons');
+
+        self::assertResponseIsSuccessful();
+        // A flat query count regardless of row count: one query for the seasons + activeQuiz,
+        // one to hydrate owners, one to hydrate quizzes, plus the auth reload for the logged-in
+        // admin. If this creeps up, something reintroduced a per-row lazy load (N+1).
+        $this->assertLessThanOrEqual(5, $this->getQueryCount(), 'Adding more seasons should not add more queries (N+1 on owners/quizzes/activeQuiz).');
     }
 
     public function testSeasonsTabIsDeniedForNonAdmin(): void
@@ -135,5 +197,17 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
         $this->entityManager->clear();
 
         $this->assertInstanceOf(User::class, $this->entityManager->getRepository(User::class)->find($admin->id));
+    }
+
+    private function getQueryCount(): int
+    {
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile);
+        $this->assertInstanceOf(Profile::class, $profile);
+
+        $collector = $profile->getCollector('db');
+        $this->assertInstanceOf(DoctrineDataCollector::class, $collector);
+
+        return $collector->getQueryCount();
     }
 }

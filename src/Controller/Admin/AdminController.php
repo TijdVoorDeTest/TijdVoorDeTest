@@ -40,7 +40,7 @@ final class AdminController extends AbstractController
         return $this->render('admin/index.html.twig', [
             'activeTab' => 'users',
             'template' => 'admin/tab_users.html.twig',
-            'users' => $this->userRepository->findAll(),
+            'users' => $this->userRepository->findAllForAdminOverview(),
         ]);
     }
 
@@ -50,7 +50,7 @@ final class AdminController extends AbstractController
         return $this->render('admin/index.html.twig', [
             'activeTab' => 'seasons',
             'template' => 'admin/tab_seasons.html.twig',
-            'seasons' => $this->seasonRepository->findAll(),
+            'seasons' => $this->seasonRepository->findAllForAdminOverview(),
         ]);
     }
 
