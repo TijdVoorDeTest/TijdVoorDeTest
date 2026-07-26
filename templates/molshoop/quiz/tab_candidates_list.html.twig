@@ -13,24 +13,24 @@
     <tbody>
         {% for data in candidateData %}
             {% set candidate = data.candidate %}
-            {% set quizCandidate = data.quizCandidate %}
-            {% set givenAnswersCount = data.givenAnswersCount %}
+            {% set quiz_candidate = data.quizCandidate %}
+            {% set given_answers_count = data.givenAnswersCount %}
 
             <tr>
                 <td>{{ candidate.name }}</td>
                 <td>
-                    {% if quizCandidate and quizCandidate.started %}
-                        {% if givenAnswersCount >= quiz.questions|length %}
+                    {% if quiz_candidate and quiz_candidate.started %}
+                        {% if given_answers_count >= quiz.questions|length %}
                             <span class="badge text-bg-success">{{ 'Completed'|trans }}</span>
                         {% else %}
-                            <span class="badge text-bg-warning">{{ 'In Progress'|trans }} ({{ givenAnswersCount }}/{{ quiz.questions|length }})</span>
+                            <span class="badge text-bg-warning">{{ 'In Progress'|trans }} ({{ given_answers_count }}/{{ quiz.questions|length }})</span>
                         {% endif %}
                     {% else %}
                         <span class="badge text-bg-secondary">{{ 'Not Started'|trans }}</span>
                     {% endif %}
                 </td>
                 <td>
-                    {% if quizCandidate == null or quizCandidate.active %}
+                    {% if quiz_candidate == null or quiz_candidate.active %}
                         <span class="badge text-bg-success">{{ 'Active'|trans }}</span>
                     {% else %}
                         <span class="badge text-bg-secondary">{{ 'Inactive'|trans }}</span>
@@ -40,14 +40,14 @@
                     <form action="{{ path('tvdt_molshoop_toggle_candidate', {quiz: quiz.id, candidate: candidate.id}) }}" method="POST" class="d-inline">
                         <input type="hidden" name="_token" value="{{ csrf_token('toggle_candidate') }}">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            {% if quizCandidate == null or quizCandidate.active %}
+                            {% if quiz_candidate == null or quiz_candidate.active %}
                                 {{ 'Deactivate'|trans }}
                             {% else %}
                                 {{ 'Activate'|trans }}
                             {% endif %}
                         </button>
                     </form>
-                    {% if quizCandidate and quizCandidate.started %}
+                    {% if quiz_candidate and quiz_candidate.started %}
                         <form action="{{ path('tvdt_molshoop_reset_candidate_progress', {quiz: quiz.id, candidate: candidate.id}) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ 'Are you sure you want to reset progress for this candidate? Their given answers for this quiz will be deleted.'|trans|e('js') }}');">
                             <input type="hidden" name="_token" value="{{ csrf_token('reset_candidate_progress') }}">
                             <button type="submit" class="btn btn-sm btn-outline-danger">{{ 'Reset progress'|trans }}</button>

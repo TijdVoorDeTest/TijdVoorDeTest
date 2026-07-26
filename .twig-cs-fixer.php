@@ -11,4 +11,4 @@ $ruleset = new Ruleset();
 $ruleset->addStandard(new TwigCsFixer());
 $ruleset->addStandard(new Symfony());
 
-return new Config()->setRuleset($ruleset);
+return new Config()->setRuleset($ruleset)->allowNonFixableRules();

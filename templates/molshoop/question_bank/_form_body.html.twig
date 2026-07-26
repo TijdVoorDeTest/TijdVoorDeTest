@@ -6,15 +6,15 @@
 <div class="mb-3">
     {{ form_label(form.labels) }}
     {{ form_errors(form.labels) }}
-    {% for labelChoice in form.labels %}
+    {% for label_choice in form.labels %}
         <div class="form-check">
             <input type="checkbox" class="form-check-input"
-                   id="{{ labelChoice.vars.id }}"
-                   name="{{ labelChoice.vars.full_name }}"
-                   value="{{ labelChoice.vars.value }}"
-                   {% if labelChoice.vars.checked %}checked="checked"{% endif %}>
-            <label class="form-check-label" for="{{ labelChoice.vars.id }}">
-                <span class="badge rounded-pill text-bg-{{ labelChoice.vars.attr['data-colour'] }}">{{ labelChoice.vars.label }}</span>
+                   id="{{ label_choice.vars.id }}"
+                   name="{{ label_choice.vars.full_name }}"
+                   value="{{ label_choice.vars.value }}"
+                   {% if label_choice.vars.checked %}checked="checked"{% endif %}>
+            <label class="form-check-label" for="{{ label_choice.vars.id }}">
+                <span class="badge rounded-pill text-bg-{{ label_choice.vars.attr['data-colour'] }}">{{ label_choice.vars.label }}</span>
             </label>
         </div>
     {% endfor %}
@@ -27,8 +27,8 @@
     {{ form_errors(form.answers) }}
     <div data-bo--form-collection-target="collection"
          data-action="input->bo--form-collection#autoExpand">
-        {% for answerForm in form.answers %}
-            {{ macros.answer_row(answerForm) }}
+        {% for answer_form in form.answers %}
+            {{ macros.answer_row(answer_form) }}
         {% endfor %}
     </div>
     {% do form.answers.setRendered %}

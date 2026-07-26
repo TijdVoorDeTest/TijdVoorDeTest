@@ -70,11 +70,11 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {%~ for screenView in elimination.screenViews %}
+                        {%~ for screen_view in elimination.screenViews %}
                             <tr>
-                                <td>{{ screenView.candidate.name }}</td>
-                                <td>{{ screenView.colour.label|trans }}</td>
-                                <td>{{ screenView.created|format_datetime() }}</td>
+                                <td>{{ screen_view.candidate.name }}</td>
+                                <td>{{ screen_view.colour.label|trans }}</td>
+                                <td>{{ screen_view.created|format_datetime() }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>

@@ -1,4 +1,4 @@
-{% macro confirm_modal(id, target, body, formAction, csrfToken) %}
+{% macro confirm_modal(id, target, body, form_action, csrf_token) %}
     <div class="modal fade" id="{{ id }}" data-bs-backdrop="static"
          tabindex="-1"
          data-bo--quiz-target="{{ target }}"
@@ -12,8 +12,8 @@
                 <div class="modal-body">{{ body }}</div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
-                    <form action="{{ formAction }}" method="POST">
-                        <input type="hidden" name="_token" value="{{ csrfToken }}">
+                    <form action="{{ form_action }}" method="POST">
+                        <input type="hidden" name="_token" value="{{ csrf_token }}">
                         <button type="submit" class="btn btn-danger">{{ 'Yes'|trans }}</button>
                     </form>
                 </div>
@@ -108,9 +108,9 @@
                                 </span>
                             {% endif %}
                             <div class="flex-grow-1">
-                                {% set questionError = questionErrors[question.id.toString] ?? null %}
-                                <span class="badge rounded-pill me-1{% if questionError %} text-bg-danger{% else %} invisible{% endif %}"
-                                      {% if questionError %}data-bs-toggle="tooltip" title="{{ questionError }}"{% endif %}>!</span>
+                                {% set question_error = questionErrors[question.id.toString] ?? null %}
+                                <span class="badge rounded-pill me-1{% if question_error %} text-bg-danger{% else %} invisible{% endif %}"
+                                      {% if question_error %}data-bs-toggle="tooltip" title="{{ question_error }}"{% endif %}>!</span>
                                 <strong><span data-question-number>{{ loop.index }}</span>. {{ question.question }}</strong>
                             </div>
                             {% if is_granted('QUIZ_MODIFY_CONTENT', question) %}

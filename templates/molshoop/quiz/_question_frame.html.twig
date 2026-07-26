@@ -10,8 +10,8 @@
             {{ form_errors(form.answers) }}
             <div data-bo--form-collection-target="collection"
                  data-action="input->bo--form-collection#autoExpand">
-                {% for answerForm in form.answers %}
-                    {{ macros.answer_row(answerForm) }}
+                {% for answer_form in form.answers %}
+                    {{ macros.answer_row(answer_form) }}
                 {% endfor %}
             </div>
             {% do form.answers.setRendered %}

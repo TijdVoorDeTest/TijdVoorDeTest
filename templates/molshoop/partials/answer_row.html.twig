@@ -1,17 +1,17 @@
-{% macro answer_row(answerForm) %}
+{% macro answer_row(answer_form) %}
     <div class="d-flex align-items-center gap-2 mb-2" data-collection-item
          data-action="dragover->bo--form-collection#dragOver dragleave->bo--form-collection#dragLeave drop->bo--form-collection#drop">
-        {{ form_widget(answerForm.ordering) }}
+        {{ form_widget(answer_form.ordering) }}
         <span class="text-muted" data-drag-handle style="cursor: grab" title="{{ 'Drag to reorder'|trans }}"
               draggable="true"
               data-action="dragstart->bo--form-collection#dragStart dragend->bo--form-collection#dragEnd"><i class="bi bi-grip-vertical"></i></span>
-        <div class="flex-grow-1">{{ form_widget(answerForm.text) }}</div>
-        <div class="d-none">{{ form_widget(answerForm.isRightAnswer) }}</div>
+        <div class="flex-grow-1">{{ form_widget(answer_form.text) }}</div>
+        <div class="d-none">{{ form_widget(answer_form.isRightAnswer) }}</div>
         <button type="button"
-                class="btn btn-sm {{ answerForm.isRightAnswer.vars.checked ? 'btn-success' : 'btn-danger' }}"
+                class="btn btn-sm {{ answer_form.isRightAnswer.vars.checked ? 'btn-success' : 'btn-danger' }}"
                 title="{{ 'Toggle correct answer'|trans }}"
                 onclick="var cb=this.closest('[data-collection-item]').querySelector('input[type=checkbox]');cb.checked=!cb.checked;this.classList.toggle('btn-success',cb.checked);this.classList.toggle('btn-danger',!cb.checked);this.querySelector('i').className=cb.checked?'bi bi-check-lg':'bi bi-x-lg'">
-            <i class="{{ answerForm.isRightAnswer.vars.checked ? 'bi bi-check-lg' : 'bi bi-x-lg' }}"></i>
+            <i class="{{ answer_form.isRightAnswer.vars.checked ? 'bi bi-check-lg' : 'bi bi-x-lg' }}"></i>
         </button>
         <button type="button" tabindex="-1" class="btn btn-sm btn-outline-danger"
                 data-action="bo--form-collection#removeItem"><i class="bi bi-trash"></i></button>

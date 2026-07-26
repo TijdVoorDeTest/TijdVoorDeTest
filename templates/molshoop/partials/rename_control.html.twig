@@ -1,27 +1,27 @@
-{% macro trigger(modalId) %}
+{% macro trigger(modal_id) %}
     <button type="button" class="btn btn-sm btn-link p-0 rename-trigger"
-            data-bs-toggle="modal" data-bs-target="#{{ modalId }}" title="{{ 'Rename'|trans }}">
+            data-bs-toggle="modal" data-bs-target="#{{ modal_id }}" title="{{ 'Rename'|trans }}">
         <i class="bi bi-pencil"></i>
     </button>
 {% endmacro %}
 
-{% macro modal(id, modalTitle, formAction, csrfToken, currentName, maxlength) %}
+{% macro modal(id, modal_title, form_action, csrf_token, current_name, maxlength) %}
     <div class="modal fade" id="{{ id }}"
          data-controller="bo--modal" data-bo--modal-target="modal"
          data-action="hidden.bs.modal->bo--modal#resetDirty"
          tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ formAction }}" method="POST">
+                <form action="{{ form_action }}" method="POST">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="{{ id }}Label">{{ modalTitle }}</h1>
+                        <h1 class="modal-title fs-5" id="{{ id }}Label">{{ modal_title }}</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-start">
-                        <input type="hidden" name="_token" value="{{ csrfToken }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token }}">
                         <label class="form-label" for="{{ id }}Name">{{ 'Name'|trans }}</label>
                         <input type="text" class="form-control" id="{{ id }}Name"
-                               name="name" value="{{ currentName }}" maxlength="{{ maxlength }}" required autofocus
+                               name="name" value="{{ current_name }}" maxlength="{{ maxlength }}" required autofocus
                                data-action="input->bo--modal#markDirty change->bo--modal#markDirty">
                     </div>
                     <div class="modal-footer">
