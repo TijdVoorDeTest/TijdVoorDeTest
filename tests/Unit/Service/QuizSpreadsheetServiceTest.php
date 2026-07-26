@@ -302,11 +302,20 @@ final class QuizSpreadsheetServiceTest extends TestCase
         } catch (SpreadsheetDataException $spreadsheetDataException) {
             $this->assertCount(1, $spreadsheetDataException->errors);
             $this->assertStringContainsString('onwar', $spreadsheetDataException->errors[0]);
+            $this->assertStringContainsString('TRUE/FALSE', $spreadsheetDataException->errors[0]);
             $this->assertStringContainsString('WAAR/ONWAAR', $spreadsheetDataException->errors[0]);
         }
     }
 
-    public function testXlsxToQuizDoesNotCrashOnNumericCorrectValue(): void
+    /** @return \Iterator<string, array{int, bool}> */
+    public static function numericBooleanProvider(): \Iterator
+    {
+        yield '1 is true' => [1, true];
+        yield '0 is false' => [0, false];
+    }
+
+    #[DataProvider('numericBooleanProvider')]
+    public function testXlsxToQuizDoesNotCrashOnNumericCorrectValue(int $value, bool $expected): void
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -315,7 +324,7 @@ final class QuizSpreadsheetServiceTest extends TestCase
         $sheet->setCellValue('C1', 'Correct');
         $sheet->setCellValue('A2', 'Who is de Mol?');
         $sheet->setCellValue('B2', 'Alice');
-        $sheet->setCellValue('C2', 1);
+        $sheet->setCellValue('C2', $value);
 
         $path = $this->createTempPath('.xlsx');
         ob_start();
@@ -329,7 +338,7 @@ final class QuizSpreadsheetServiceTest extends TestCase
         $question = $quiz->questions->first();
         /** @var Answer $answer */
         $answer = $question->answers->first();
-        $this->assertTrue($answer->isRightAnswer);
+        $this->assertSame($expected, $answer->isRightAnswer);
     }
 
     /** @return \Iterator<string, array{string, bool}> */
@@ -339,7 +348,10 @@ final class QuizSpreadsheetServiceTest extends TestCase
         yield 'FALSE' => ['FALSE', false];
         yield 'WAAR' => ['WAAR', true];
         yield 'ONWAAR' => ['ONWAAR', false];
+        yield 'lowercase true' => ['true', true];
+        yield 'lowercase false' => ['false', false];
         yield 'lowercase waar' => ['waar', true];
+        yield 'lowercase onwaar' => ['onwaar', false];
     }
 
     #[DataProvider('validBooleanTextProvider')]
