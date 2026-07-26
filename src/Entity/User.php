@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -51,6 +52,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 5, options: ['default' => 'nl'])]
     public string $locale = 'nl';
+
+    #[Gedmo\Timestampable(on: 'create')]
+    #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE, nullable: false)]
+    public private(set) \DateTimeImmutable $created;
+
+    #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $lastActivity = null;
 
     public bool $isAdmin {
         get => \in_array('ROLE_ADMIN', $this->getRoles(), true);
@@ -101,15 +109,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->seasons->contains($season)) {
             $this->seasons->add($season);
             $season->addOwner($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSeason(Season $season): static
-    {
-        if ($this->seasons->removeElement($season)) {
-            $season->removeOwner($this);
         }
 
         return $this;

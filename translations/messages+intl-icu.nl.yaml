@@ -1,6 +1,7 @@
 'A candidate with this name already exists in this season': 'Er bestaat al een kandidaat met deze naam in dit seizoen'
 'A label with a similar name already exists': 'Er bestaat al een label met deze naam'
 'A new confirmation email has been sent. Please check your inbox.': 'Er is een nieuwe bevestigingsmail verstuurd. Check je inbox.'
+'A password reset email has been sent to this user.': 'Er is een wachtwoordherstel-e-mail naar deze gebruiker gestuurd.'
 'A quiz with this name already exists in this season': 'Er bestaat al een test met deze naam in dit seizoen'
 Actions: Acties
 Activate: Activeren
@@ -18,6 +19,7 @@ Add: Toevoegen
 'Add label': 'Label toevoegen'
 'Add owner': 'Eigenaar toevoegen'
 'Add question': 'Vraag toevoegen'
+Admin: Admin
 'After changing your email address you will receive a new confirmation email.': 'Na het wijzigen van je e-mailadres ontvang je een nieuwe bevestigingsmail.'
 All: Alle
 'All Seasons': 'Alle seizoenen'
@@ -51,6 +53,7 @@ Candidates: Kandidaten
 'Check your email': 'Controleer je e-mail'
 'Clear Quiz...': 'Test leegmaken...'
 Close: Sluiten
+Code: Code
 Colour: Kleur
 Completed: Voltooid
 Concept: Concept
@@ -66,6 +69,7 @@ Corrections: Jokers
 'Could not find candidate with name {name}': 'Kon kandidaat met naam {name} niet vinden'
 'Could not find candidate with name {name} in elimination.': 'Kon geen kandidaat vinden met de naam {name} in de eliminatie'
 'Could not load releases from GitHub.': 'Kan releases niet laden van GitHub.'
+'Could not send a password reset email to this user.': 'Het is niet gelukt om een wachtwoordherstel-e-mail naar deze gebruiker te sturen.'
 Create: Aanmaken
 'Create a season': 'Maak een seizoen aan'
 'Create an account': 'Maak een account aan'
@@ -86,6 +90,7 @@ Delete: Verwijderen
 'Delete account...': 'Account verwijderen...'
 'Delete season': 'Seizoen verwijderen'
 'Delete season...': 'Seizoen verwijderen...'
+'Delete user': 'Gebruiker verwijderen'
 Delete...: Verwijderen...
 'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
@@ -133,6 +138,7 @@ Inactive: Inactief
 Labels: Labels
 Language: Taal
 'Language saved': 'Taal opgeslagen'
+'Last activity': 'Laatste activiteit'
 'Leave season': 'Seizoen verlaten'
 'Leaving this season removes your ownership. You need at least one other owner before you can leave.': 'Als je dit seizoen verlaat, ben je geen eigenaar meer. Er moet minimaal één andere eigenaar zijn voordat je kunt vertrekken.'
 Light: Licht
@@ -146,6 +152,7 @@ Logout: Uitloggen
 Manage: Beheren
 Molehill: Molshoop
 Name: Naam
+Never: Nooit
 New: Nieuw
 'New email address': 'Nieuw e-mailadres'
 'New label': 'Nieuw label'
@@ -160,6 +167,7 @@ Next: Volgende
 'No results': 'Geen resultaten'
 'No user found with this email address': 'Geen gebruiker gevonden met dit e-mailadres'
 'Not Started': 'Niet gestart'
+'Not active': 'Niet actief'
 'Not confirmed': 'Niet bevestigd'
 'Number of dropouts:': 'Aantal afvallers:'
 'One candidate per line': 'Eén kandidaat per regel'
@@ -215,6 +223,7 @@ Red: Rood
 'Regenerate season code': 'Seizoenscode opnieuw genereren'
 'Regenerate season code...': 'Seizoenscode opnieuw genereren...'
 Register: Registreren
+Registered: Geregistreerd
 Releases: Releases
 'Remember me': 'Onthoud mij'
 Remove: Verwijderen
@@ -245,6 +254,7 @@ Season: Seizoen
 'Season deleted': 'Seizoen verwijderd'
 'Season renamed': 'Seizoen hernoemd'
 Seasons: Seizoenen
+'Send a password reset email to {email}?': 'Wachtwoordherstel-e-mail sturen naar {email}?'
 'Send password reset email': 'Stuur reset-e-mail'
 Settings: Instellingen
 'Show Numbers': 'Toon nummers'
@@ -276,6 +286,7 @@ Theme: Thema
 'This hides this season, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Dit verbergt dit seizoen overal, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
 'This invalidates the current season code. Anyone using the old code will no longer be able to join this season.': 'Hiermee wordt de huidige seizoenscode ongeldig. Iedereen die de oude code gebruikt, kan dit seizoen niet meer vinden.'
 'This link will expire in {count}.': 'Deze link verloopt over {count}.'
+'This permanently deletes {email} and every season they are the only owner of. There is no way to undo this.': 'Dit verwijdert {email} definitief, samen met elk seizoen waarvan deze gebruiker de enige eigenaar is. Dit kan niet ongedaan worden gemaakt.'
 'This question cannot be deleted because it is used in a locked or active quiz': 'Deze vraag kan niet verwijderd worden omdat die gebruik wordt in een vergrendelde of actieve test'
 'This question has already been used': 'Deze vraag is al gebruikt'
 'This question has been used in a quiz. The copy in the quiz will not be affected.': 'Deze vraag is gebruikt in een test. De kopie in de test blijft ongewijzigd.'
@@ -290,7 +301,10 @@ Time: Tijd
 'Type delete to confirm': 'Typ verwijderen om te bevestigen'
 Unassign: Ontkoppelen
 'Undo finalization': 'Afronden ongedaan maken'
+'Use Settings to delete your own account.': 'Gebruik Instellingen om je eigen account te verwijderen.'
 'Used in': 'Gebruikt in'
+'User deleted': 'Gebruiker verwijderd'
+Users: Gebruikers
 View: Bekijken
 'View on GitHub': 'Bekijk op GitHub'
 White: Wit

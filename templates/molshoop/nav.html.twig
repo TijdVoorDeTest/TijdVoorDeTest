@@ -45,6 +45,12 @@
                         </div>
                     </div>
                 </li>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <li class="nav-item">
+                        <a class="nav-link{% if app.current_route() starts with 'tvdt_admin_' %} active{% endif %}"
+                           href="{{ path('tvdt_admin_users') }}">{{ 'Admin'|trans }}</a>
+                    </li>
+                {% endif %}
                 {% if is_granted('IS_AUTHENTICATED') %}
                     <li class="nav-item">
                         <a class="nav-link{% if 'tvdt_molshoop_settings' == app.current_route() %} active{% endif %}"

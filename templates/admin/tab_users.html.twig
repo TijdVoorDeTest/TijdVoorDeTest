@@ -1,0 +1,99 @@
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>{{ 'Email'|trans }}</th>
+                <th>{{ 'Confirmed'|trans }}</th>
+                <th>{{ 'Registered'|trans }}</th>
+                <th>{{ 'Last activity'|trans }}</th>
+                <th>{{ 'Seasons'|trans }}</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.isVerified %}
+                            <i class="bi bi-check-lg text-success" aria-label="{{ 'Confirmed'|trans }}"></i>
+                        {% else %}
+                            <i class="bi bi-x-lg text-danger" aria-label="{{ 'Not confirmed'|trans }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.created|date('d-m-Y') }}</td>
+                    <td>{{ user.lastActivity ? user.lastActivity|date('d-m-Y H:i') : 'Never'|trans }}</td>
+                    <td>{{ user.seasons|length }}</td>
+                    <td class="text-end text-nowrap">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                                data-bs-target="#resetPassword-{{ user.id }}">{{ 'Send password reset email'|trans }}</button>
+                        {% if user.id != app.user.id %}
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteUser-{{ user.id }}">{{ 'Delete'|trans }}</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% for user in users %}
+    <div class="modal fade" id="resetPassword-{{ user.id }}" data-bs-backdrop="static"
+         tabindex="-1" aria-labelledby="resetPassword-{{ user.id }}Label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fs-5" id="resetPassword-{{ user.id }}Label">{{ 'Please Confirm'|trans }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    {{ 'Send a password reset email to {email}?'|trans({email: user.email}) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
+                    <form action="{{ path('tvdt_admin_user_reset_password', {user: user.id}) }}" method="POST">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_reset_password') }}">
+                        <button type="submit" class="btn btn-primary">{{ 'Yes'|trans }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.id != app.user.id %}
+        <div class="modal fade" id="deleteUser-{{ user.id }}" data-bs-backdrop="static"
+             data-controller="bo--modal bo--type-to-confirm" data-bo--modal-target="modal"
+             data-bo--type-to-confirm-words-value="{{ ['verwijderen', 'delete']|json_encode }}"
+             data-action="hidden.bs.modal->bo--modal#resetDirty"
+             tabindex="-1" aria-labelledby="deleteUser-{{ user.id }}Label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ path('tvdt_admin_user_delete', {user: user.id}) }}" method="POST">
+                        <div class="modal-header">
+                            <h5 class="modal-title fs-5" id="deleteUser-{{ user.id }}Label">{{ 'Delete user'|trans }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-start">
+                            <p>{{ 'This permanently deletes {email} and every season they are the only owner of. There is no way to undo this.'|trans({email: user.email}) }}</p>
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_user') }}">
+                            <label class="form-label" for="deleteUserConfirmation-{{ user.id }}">
+                                {{ 'Type delete to confirm'|trans }}
+                            </label>
+                            <input type="text" class="form-control" id="deleteUserConfirmation-{{ user.id }}" name="confirmation"
+                                   autocomplete="off"
+                                   data-bo--type-to-confirm-target="input"
+                                   data-action="input->bo--modal#markDirty change->bo--modal#markDirty input->bo--type-to-confirm#check">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Cancel'|trans }}</button>
+                            <button type="submit" class="btn btn-danger" disabled data-bo--type-to-confirm-target="submit">
+                                {{ 'Delete user'|trans }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
