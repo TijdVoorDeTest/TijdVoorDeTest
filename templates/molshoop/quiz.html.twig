@@ -1,17 +1,16 @@
 {% extends 'molshoop/base.html.twig' %}
 
 {% import 'molshoop/partials/rename_control.html.twig' as rename %}
+{% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
 
 {% block title %}{{ parent() }}{{ season.name }}{% endblock %}
 
 {% block breadcrumbs %}
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ season.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ quiz.name }}</li>
-        </ol>
-    </nav>
+    {{ breadcrumb.breadcrumb([
+        {label: 'Home'|trans, path: path('tvdt_molshoop_index')},
+        {label: season.name, path: path('tvdt_molshoop_season', {seasonCode: season.seasonCode})},
+        {label: quiz.name},
+    ]) }}
 {% endblock %}
 
 {% block body %}

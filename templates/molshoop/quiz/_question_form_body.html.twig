@@ -3,26 +3,7 @@
 {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
 {{ form_row(form.question) }}
 
-<div data-controller="bo--form-collection"
-     data-bo--form-collection-prototype-value="{{ macros.answer_row(form.answers.vars.prototype)|e('html_attr') }}">
-    {{ form_label(form.answers) }}
-    {{ form_errors(form.answers) }}
-    <div data-bo--form-collection-target="collection"
-         data-action="input->bo--form-collection#autoExpand">
-        {% for answer_form in form.answers %}
-            {{ macros.answer_row(answer_form) }}
-        {% endfor %}
-    </div>
-    {% do form.answers.setRendered %}
-    <div class="d-flex gap-2 mb-3">
-        <button type="button" class="btn btn-sm btn-outline-primary"
-                data-action="bo--form-collection#addItem">{{ 'Add answer'|trans }}</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary"
-                data-action="bo--form-collection#sortAlphabetically">{{ 'Sort A–Z'|trans }}</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary"
-                data-action="bo--form-collection#randomize">{{ 'Randomize'|trans }}</button>
-    </div>
-</div>
+{{ macros.answer_collection(form.answers) }}
 
 {% if isModal ?? false %}
     {% do form.save.setRendered %}

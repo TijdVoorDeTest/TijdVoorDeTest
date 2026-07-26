@@ -1,13 +1,13 @@
 {% extends 'molshoop/base.html.twig' %}
 
+{% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
+
 {% block breadcrumbs %}
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}">{{ season.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ 'Add Candidates'|trans }}</li>
-        </ol>
-    </nav>
+    {{ breadcrumb.breadcrumb([
+        {label: 'Home'|trans, path: path('tvdt_molshoop_index')},
+        {label: season.name, path: path('tvdt_molshoop_season', {seasonCode: season.seasonCode})},
+        {label: 'Add Candidates'|trans},
+    ]) }}
 {% endblock %}
 
 {% block body %}
