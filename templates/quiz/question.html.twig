@@ -8,9 +8,9 @@
         </h4>
         <form method="post">
             <input type="hidden" name="token" value="{{ csrf_token('question') }}">
-            {% set twoCol = question.answers|length >= 6 %}
+            {% set two_col = question.answers|length >= 6 %}
             {% if season.settings.confirmAnswers == false %}
-                <div class="{{ twoCol ? 'quiz-answers-grid' : '' }}">
+                <div class="{{ two_col ? 'quiz-answers-grid' : '' }}">
                     {% for answer in question.answers %}
                         <div class="py-2">
                             <button class="answer-btn"
@@ -21,7 +21,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="{{ twoCol ? 'quiz-answers-grid' : '' }}">
+                <div class="{{ two_col ? 'quiz-answers-grid' : '' }}">
                     {% for answer in question.answers %}
                         <div class="py-1">
                             <input required="required" type="radio" class="btn-check" name="answer"

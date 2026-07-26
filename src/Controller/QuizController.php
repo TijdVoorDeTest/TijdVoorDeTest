@@ -80,7 +80,7 @@ final class QuizController extends AbstractController
             return $this->redirectToRoute('tvdt_quiz_quiz_page', ['seasonCode' => $season->seasonCode, 'nameHash' => Base64::base64UrlEncode($name)]);
         }
 
-        return $this->render('quiz/enter_name.twig', ['season' => $season, 'form' => $form]);
+        return $this->render('quiz/enter_name.html.twig', ['season' => $season, 'form' => $form]);
     }
 
     #[IsCsrfTokenValid('question', tokenKey: 'token', methods: ['POST'])]
@@ -170,6 +170,6 @@ final class QuizController extends AbstractController
         }
 
         // end of extracting getting next question logic
-        return $this->render('quiz/question.twig', ['candidate' => $candidate, 'question' => $question, 'season' => $season]);
+        return $this->render('quiz/question.html.twig', ['candidate' => $candidate, 'question' => $question, 'season' => $season]);
     }
 }

@@ -1,4 +1,4 @@
-{% set canRemoveOwner = season.owners|length > 1 %}
+{% set can_remove_owner = season.owners|length > 1 %}
 <div class="row">
     <div class="col-md-6 col-12">
         {{ form(form) }}
@@ -10,7 +10,7 @@
             {% for owner in season.owners %}
                 <li class="list-group-item d-flex align-items-center justify-content-between gap-2">
                     {{ owner.email }}
-                    {% if canRemoveOwner %}
+                    {% if can_remove_owner %}
                         <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                                 data-bs-target="#removeOwner-{{ owner.id }}">{{ 'Remove'|trans }}</button>
                     {% endif %}
@@ -39,7 +39,7 @@
         <p>{{ 'Leaving this season removes your ownership. You need at least one other owner before you can leave.'|trans }}</p>
         <form action="{{ path('tvdt_molshoop_season_remove_owner', {seasonCode: season.seasonCode, owner: app.user.id}) }}" method="POST" class="mb-3">
             <input type="hidden" name="_token" value="{{ csrf_token('remove_season_owner') }}">
-            <button type="submit" class="btn btn-danger" {{ canRemoveOwner ? '' : 'disabled' }}>
+            <button type="submit" class="btn btn-danger" {{ can_remove_owner ? '' : 'disabled' }}>
                 {{ 'Leave season'|trans }}
             </button>
         </form>
@@ -55,7 +55,7 @@
 </div>
 
 {% for owner in season.owners %}
-    {% if canRemoveOwner %}
+    {% if can_remove_owner %}
         <div class="modal fade" id="removeOwner-{{ owner.id }}" data-bs-backdrop="static"
              tabindex="-1" aria-labelledby="removeOwner-{{ owner.id }}Label" aria-hidden="true">
             <div class="modal-dialog">
