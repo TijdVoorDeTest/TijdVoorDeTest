@@ -6,6 +6,7 @@ namespace Tvdt\Tests\Integration\Controller\Admin;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
@@ -63,11 +64,37 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
 
     public function testSeasonsTabListsAllSeasons(): void
     {
+        // Krtek Weekend: owned by krtek-admin@example.org and user2@example.org, active (Quiz 1
+        // of 9). Doomed Season: sole-owner@example.org's only season, no active quiz.
         $crawler = $this->client->request(Request::METHOD_GET, '/admin/seasons');
 
         self::assertResponseIsSuccessful();
-        $this->assertStringContainsString('Krtek', $crawler->filter('body')->text());
-        $this->assertStringContainsString('Doomed Season', $crawler->filter('body')->text());
+
+        $krtekCells = $this->seasonRowCells($crawler, 'Krtek Weekend');
+        $this->assertSame('krtek', $krtekCells[1]);
+        $this->assertStringContainsString('krtek-admin@example.org', $krtekCells[2]);
+        $this->assertStringContainsString('user2@example.org', $krtekCells[2]);
+        $this->assertSame('Active', $krtekCells[3]);
+        $this->assertSame('Quiz 1', $krtekCells[4]);
+        $this->assertSame('9', $krtekCells[5]);
+
+        $doomedCells = $this->seasonRowCells($crawler, 'Doomed Season');
+        $this->assertSame('doomd', $doomedCells[1]);
+        $this->assertSame('sole-owner@example.org', $doomedCells[2]);
+        $this->assertSame('Not active', $doomedCells[3]);
+        $this->assertSame('No active quiz', $doomedCells[4]);
+        $this->assertSame('1', $doomedCells[5]);
+    }
+
+    /** @return list<string> */
+    private function seasonRowCells(Crawler $crawler, string $seasonName): array
+    {
+        $row = $crawler->filter('table tbody tr')->reduce(
+            static fn ($node): bool => str_contains($node->text(), $seasonName),
+        );
+        $this->assertGreaterThan(0, $row->count(), \sprintf('No table row found for %s', $seasonName));
+
+        return $row->filter('td')->each(static fn ($node): string => mb_trim($node->text()));
     }
 
     public function testUsersTabQueryCountDoesNotGrowWithMoreUsers(): void
