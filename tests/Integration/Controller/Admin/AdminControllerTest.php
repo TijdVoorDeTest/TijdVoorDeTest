@@ -35,10 +35,30 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
 
     public function testUsersTabListsUsersWithExpectedColumns(): void
     {
+        // test@example.org: unverified, owns no seasons, never had activity recorded.
         $crawler = $this->client->request(Request::METHOD_GET, '/admin');
 
         self::assertResponseIsSuccessful();
-        $this->assertStringContainsString('test@example.org', $crawler->filter('body')->text());
+
+        $row = $crawler->filter('table tbody tr')->reduce(
+            static fn ($node): bool => str_contains($node->text(), 'test@example.org'),
+        );
+        $this->assertGreaterThan(0, $row->count(), 'No table row found for test@example.org');
+
+        $cells = $row->filter('td')->each(static fn ($node): string => mb_trim($node->text()));
+
+        $this->assertSame('test@example.org', $cells[0]);
+        $this->assertSame('', $cells[1]); // confirmed column renders an icon, not text
+        $this->assertMatchesRegularExpression('/^\d{2}-\d{2}-\d{4}$/', $cells[2]); // registered date
+        $this->assertSame('Never', $cells[3]); // last activity
+        $this->assertSame('0', $cells[4]); // season count
+
+        $this->assertCount(
+            0,
+            $row->filter('i.bi-check-lg'),
+            'test@example.org is not email-verified, so the confirmed column must show the "not confirmed" icon',
+        );
+        $this->assertGreaterThan(0, $row->filter('i.bi-x-lg')->count());
     }
 
     public function testSeasonsTabListsAllSeasons(): void
@@ -176,6 +196,37 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
         $this->entityManager->clear();
 
         $this->assertNotInstanceOf(User::class, $this->entityManager->getRepository(User::class)->find($userId));
+    }
+
+    public function testDeleteUserWithoutConfirmationKeepsUser(): void
+    {
+        $userId = $this->getUserByEmail('sole-owner@example.org')->id;
+        $token = $this->getCsrfTokenFromPage('/admin', \sprintf('%s/delete', $userId));
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/admin/users/%s/delete', $userId), [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/admin');
+        $this->entityManager->clear();
+
+        $this->assertInstanceOf(User::class, $this->entityManager->getRepository(User::class)->find($userId));
+    }
+
+    public function testDeleteUserWithWrongConfirmationKeepsUser(): void
+    {
+        $userId = $this->getUserByEmail('sole-owner@example.org')->id;
+        $token = $this->getCsrfTokenFromPage('/admin', \sprintf('%s/delete', $userId));
+
+        $this->client->request(Request::METHOD_POST, \sprintf('/admin/users/%s/delete', $userId), [
+            '_token' => $token,
+            'confirmation' => 'wrong',
+        ]);
+
+        self::assertResponseRedirects('/admin');
+        $this->entityManager->clear();
+
+        $this->assertInstanceOf(User::class, $this->entityManager->getRepository(User::class)->find($userId));
     }
 
     public function testAdminCannotDeleteTheirOwnAccountThroughThisRoute(): void

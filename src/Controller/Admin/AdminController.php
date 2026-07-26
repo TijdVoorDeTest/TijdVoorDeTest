@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Tvdt\Controller\Admin;
 
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
-use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
+use SymfonyCasts\Bundle\ResetPassword\Model\ResetPasswordToken;
 use Tvdt\Controller\AbstractController;
 use Tvdt\Entity\User;
 use Tvdt\Enum\FlashType;
 use Tvdt\Repository\SeasonRepository;
 use Tvdt\Repository\UserRepository;
+use Tvdt\Security\ResetPasswordMailer;
 
 #[AsController]
 #[IsGranted('ROLE_ADMIN')]
@@ -29,8 +29,7 @@ final class AdminController extends AbstractController
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly SeasonRepository $seasonRepository,
-        private readonly ResetPasswordHelperInterface $resetPasswordHelper,
-        private readonly MailerInterface $mailer,
+        private readonly ResetPasswordMailer $resetPasswordMailer,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -68,20 +67,16 @@ final class AdminController extends AbstractController
         $this->userRepository->invalidateResetPasswordRequests($user);
 
         try {
-            $resetToken = $this->resetPasswordHelper->generateResetToken($user);
+            $resetToken = $this->resetPasswordMailer->send($user);
         } catch (ResetPasswordExceptionInterface) {
+            $resetToken = null;
+        }
+
+        if (!$resetToken instanceof ResetPasswordToken) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('Could not send a password reset email to this user.'));
 
             return $this->redirectToRoute('tvdt_admin_users');
         }
-
-        $email = new TemplatedEmail()
-            ->to($user->getUserIdentifier())
-            ->subject($this->translator->trans('Your password reset request'))
-            ->htmlTemplate('reset_password/email.html.twig')
-            ->context(['resetToken' => $resetToken]);
-
-        $this->mailer->send($email);
 
         $this->addFlash(FlashType::Success, $this->translator->trans('A password reset email has been sent to this user.'));
 
@@ -95,10 +90,18 @@ final class AdminController extends AbstractController
         requirements: ['user' => Requirement::UUID],
         methods: ['POST'],
     )]
-    public function deleteUser(User $user): RedirectResponse
+    public function deleteUser(User $user, Request $request): RedirectResponse
     {
         if ($user === $this->authenticatedUser) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('Use Settings to delete your own account.'));
+
+            return $this->redirectToRoute('tvdt_admin_users');
+        }
+
+        $confirmation = mb_strtolower(mb_trim($request->request->getString('confirmation')));
+
+        if (!\in_array($confirmation, ['verwijderen', 'delete'], true)) {
+            $this->addFlash(FlashType::Danger, $this->translator->trans('Type delete to confirm'));
 
             return $this->redirectToRoute('tvdt_admin_users');
         }
