@@ -12,11 +12,54 @@
                 title="{{ 'Toggle correct answer'|trans }}"
                 aria-label="{{ 'Toggle correct answer'|trans }}"
                 aria-pressed="{{ answer_form.isRightAnswer.vars.checked ? 'true' : 'false' }}"
-                onclick="var cb=this.closest('[data-collection-item]').querySelector('input[type=checkbox]');cb.checked=!cb.checked;this.classList.toggle('btn-success',cb.checked);this.classList.toggle('btn-danger',!cb.checked);this.setAttribute('aria-pressed',cb.checked);this.querySelector('i').className=cb.checked?'bi bi-check-lg':'bi bi-x-lg'">
+                onclick="var cb=this.closest('[data-collection-item]').querySelector('input[type=checkbox]');cb.checked=!cb.checked;cb.dispatchEvent(new Event('change',{bubbles:true}));this.classList.toggle('btn-success',cb.checked);this.classList.toggle('btn-danger',!cb.checked);this.setAttribute('aria-pressed',cb.checked);this.querySelector('i').className=cb.checked?'bi bi-check-lg':'bi bi-x-lg'">
             <i class="{{ answer_form.isRightAnswer.vars.checked ? 'bi bi-check-lg' : 'bi bi-x-lg' }}"></i>
         </button>
         <button type="button" class="btn btn-sm btn-outline-danger"
                 aria-label="{{ 'Remove answer'|trans }}"
                 data-action="bo--form-collection#removeItem"><i class="bi bi-trash"></i></button>
     </div>
+{% endmacro %}
+
+{% macro answer_collection(answers_field) %}
+    {# import must stay inside the macro: a top-level import only binds during
+       doDisplay(), which never runs for a partial that's only ever imported #}
+    {% import _self as self_macros %}
+    <div data-controller="bo--form-collection"
+         data-bo--form-collection-prototype-value="{{ self_macros.answer_row(answers_field.vars.prototype)|e('html_attr') }}">
+        {{ form_label(answers_field) }}
+        {{ form_errors(answers_field) }}
+        <div data-bo--form-collection-target="collection"
+             data-action="input->bo--form-collection#autoExpand">
+            {% for answer_form in answers_field %}
+                {{ self_macros.answer_row(answer_form) }}
+            {% endfor %}
+        </div>
+        {% do answers_field.setRendered %}
+        <div class="d-flex gap-2 mb-3">
+            <button type="button" class="btn btn-sm btn-outline-primary"
+                    data-action="bo--form-collection#addItem">{{ 'Add answer'|trans }}</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary"
+                    data-action="bo--form-collection#sortAlphabetically">{{ 'Sort A–Z'|trans }}</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary"
+                    data-action="bo--form-collection#randomize">{{ 'Randomize'|trans }}</button>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro label_checkboxes(labels_field) %}
+    {{ form_errors(labels_field) }}
+    {% for label_choice in labels_field %}
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input"
+                   id="{{ label_choice.vars.id }}"
+                   name="{{ label_choice.vars.full_name }}"
+                   value="{{ label_choice.vars.value }}"
+                   {% if label_choice.vars.checked %}checked="checked"{% endif %}>
+            <label class="form-check-label" for="{{ label_choice.vars.id }}">
+                <span class="badge rounded-pill text-bg-{{ label_choice.vars.attr['data-colour'] }}">{{ label_choice.vars.label }}</span>
+            </label>
+        </div>
+    {% endfor %}
+    {% do labels_field.setRendered %}
 {% endmacro %}

@@ -7,41 +7,9 @@
         {{ form_row(form.reusable) }}
         <div class="mb-3">
             {{ form_label(form.labels) }}
-            {{ form_errors(form.labels) }}
-            {% for label_choice in form.labels %}
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input"
-                           id="{{ label_choice.vars.id }}"
-                           name="{{ label_choice.vars.full_name }}"
-                           value="{{ label_choice.vars.value }}"
-                           {% if label_choice.vars.checked %}checked="checked"{% endif %}>
-                    <label class="form-check-label" for="{{ label_choice.vars.id }}">
-                        <span class="badge rounded-pill text-bg-{{ label_choice.vars.attr['data-colour'] }}">{{ label_choice.vars.label }}</span>
-                    </label>
-                </div>
-            {% endfor %}
-            {% do form.labels.setRendered %}
+            {{ macros.label_checkboxes(form.labels) }}
         </div>
-        <div data-controller="bo--form-collection"
-             data-bo--form-collection-prototype-value="{{ macros.answer_row(form.answers.vars.prototype)|e('html_attr') }}">
-            {{ form_label(form.answers) }}
-            {{ form_errors(form.answers) }}
-            <div data-bo--form-collection-target="collection"
-                 data-action="input->bo--form-collection#autoExpand">
-                {% for answer_form in form.answers %}
-                    {{ macros.answer_row(answer_form) }}
-                {% endfor %}
-            </div>
-            {% do form.answers.setRendered %}
-            <div class="d-flex gap-2 mb-3">
-                <button type="button" class="btn btn-sm btn-outline-primary"
-                        data-action="bo--form-collection#addItem">{{ 'Add answer'|trans }}</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        data-action="bo--form-collection#sortAlphabetically">{{ 'Sort A–Z'|trans }}</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        data-action="bo--form-collection#randomize">{{ 'Randomize'|trans }}</button>
-            </div>
-        </div>
+        {{ macros.answer_collection(form.answers) }}
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Cancel'|trans }}</button>

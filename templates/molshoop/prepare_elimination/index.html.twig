@@ -1,16 +1,16 @@
 {% extends 'molshoop/base.html.twig' %}
 
+{% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
+
 {% block title %}{{ parent() }}{{ 'Prepare Elimination'|trans }}{% endblock %}
 
 {% block breadcrumbs %}
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_index') }}">{{ 'Home'|trans }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_season', {seasonCode: elimination.quiz.season.seasonCode}) }}">{{ elimination.quiz.season.name }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('tvdt_molshoop_quiz', {seasonCode: elimination.quiz.season.seasonCode, quiz: elimination.quiz.id}) }}">{{ elimination.quiz.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ 'Prepare Elimination'|trans }}</li>
-        </ol>
-    </nav>
+    {{ breadcrumb.breadcrumb([
+        {label: 'Home'|trans, path: path('tvdt_molshoop_index')},
+        {label: elimination.quiz.season.name, path: path('tvdt_molshoop_season', {seasonCode: elimination.quiz.season.seasonCode})},
+        {label: elimination.quiz.name, path: path('tvdt_molshoop_quiz', {seasonCode: elimination.quiz.season.seasonCode, quiz: elimination.quiz.id})},
+        {label: 'Prepare Elimination'|trans},
+    ]) }}
 {% endblock %}
 
 {% block body %}

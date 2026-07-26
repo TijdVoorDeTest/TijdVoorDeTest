@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tvdt\Tests\E2E;
 
 use Facebook\WebDriver\WebDriverElement;
+use Facebook\WebDriver\WebDriverKeys;
 
 /**
  * The question-edit modal loads its form via a turbo-frame (`data-src` + Turbo, not static
@@ -51,5 +52,38 @@ final class QuestionEditModalE2ETest extends AbstractE2ETestCase
 
         self::assertSelectorTextContains('h2', 'Quiz 3');
         self::assertSelectorTextContains('body', 'Is de Krtek een man of een vrouw?');
+    }
+
+    /**
+     * The toggle button flips the hidden checkbox's `.checked` property directly via plain JS
+     * (see answer_row.html.twig), rather than through user interaction or a Stimulus action, so
+     * it must dispatch its own bubbling change event for bo--modal's markDirty to see it — a
+     * WebTestCase crawler never executes this client-side wiring, only a real browser does.
+     */
+    public function testTogglingCorrectAnswerBlocksEscapeDismissal(): void
+    {
+        $client = $this->loginAsAdmin();
+        $client->request('GET', '/molshoop/season/krtek');
+
+        $link = $client->getCrawler()->selectLink('Quiz 3')->link();
+        $client->click($link);
+        $client->waitForElementToContain('h2', 'Quiz 3');
+
+        $questionCard = $client->getCrawler()->filterXPath(
+            "//div[@data-question-id][contains(., 'Is de Krtek een man of een vrouw?')]",
+        );
+        $questionCard->filter('button')->click();
+
+        $client->waitFor('#question_form_question');
+
+        $toggleButton = $client->getCrawler()
+            ->filter('[data-collection-item] button.btn-success, [data-collection-item] button.btn-danger')
+            ->getElement(0);
+        $this->assertInstanceOf(WebDriverElement::class, $toggleButton);
+        $toggleButton->click();
+        $toggleButton->sendKeys(WebDriverKeys::ESCAPE);
+
+        self::assertSelectorExists('#question-modal-frame');
+        self::assertSelectorExists('.modal.show');
     }
 }
