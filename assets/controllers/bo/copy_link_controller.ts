@@ -27,15 +27,15 @@ export default class extends Controller {
         this.tooltip?.dispose();
     }
 
-    copy(): void {
+    async copy(): Promise<void> {
+        try {
+            await navigator.clipboard.writeText(this.urlValue);
+        } catch {
+            return;
+        }
+
         this.tooltip?.setContent({ '.tooltip-inner': this.copiedLabelValue });
         this.statusTarget.textContent = this.copiedLabelValue;
-
-        try {
-            void navigator.clipboard.writeText(this.urlValue);
-        } catch {
-            /* clipboard access unavailable; tooltip feedback already shown */
-        }
 
         clearTimeout(this.hideTimeout);
         this.hideTimeout = setTimeout(() => {

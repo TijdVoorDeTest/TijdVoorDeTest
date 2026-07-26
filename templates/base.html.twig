@@ -19,7 +19,7 @@
 <a class="visually-hidden-focusable" href="#main-content">{{ 'Skip to content'|trans }}</a>
 {% block nav %}
 {% endblock nav %}
-<main id="main-content">
+<main id="main-content" tabindex="-1">
     {% block main %}
         <div class="container">
             {{ include('flashes.html.twig') }}

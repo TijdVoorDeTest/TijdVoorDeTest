@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Translation\LocaleSwitcher;
+use Tvdt\Entity\Elimination;
+use Tvdt\Entity\Quiz;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\SeasonSettings;
 use Tvdt\Entity\User;
@@ -73,5 +75,62 @@ final class LocaleListenerTest extends TestCase
         new LocaleListener($security, $localeSwitcher)->onControllerArguments($event);
 
         $this->assertSame($expectedLocale ?? self::UNTOUCHED_SENTINEL, $request->getLocale());
+    }
+
+    public function testEliminationRouteResolvesLocaleFromArgumentsSeasonViaQuiz(): void
+    {
+        $season = new Season();
+        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
+        $season->settings->locale = 'en';
+        $quiz = new Quiz();
+        $quiz->season = $season;
+
+        $elimination = new Elimination($quiz);
+
+        $user = new User();
+        $user->locale = 'nl';
+
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($user);
+
+        $localeSwitcher = $this->createMock(LocaleSwitcher::class);
+        $localeSwitcher->expects($this->once())->method('setLocale')->with('en');
+
+        $kernel = $this->createStub(HttpKernelInterface::class);
+        $request = Request::create('/');
+        $request->attributes->set('_route', 'tvdt_elimination_candidate');
+        $request->setLocale(self::UNTOUCHED_SENTINEL);
+
+        $event = new ControllerArgumentsEvent($kernel, static fn (): \stdClass => new \stdClass(), [$elimination], $request, null);
+
+        new LocaleListener($security, $localeSwitcher)->onControllerArguments($event);
+
+        $this->assertSame('en', $request->getLocale());
+    }
+
+    public function testSeasonWithoutSettingsFallsBackToUserLocale(): void
+    {
+        $season = new Season();
+        $season->settings = null;
+
+        $user = new User();
+        $user->locale = 'en';
+
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($user);
+
+        $localeSwitcher = $this->createMock(LocaleSwitcher::class);
+        $localeSwitcher->expects($this->once())->method('setLocale')->with('en');
+
+        $kernel = $this->createStub(HttpKernelInterface::class);
+        $request = Request::create('/');
+        $request->attributes->set('_route', 'tvdt_quiz_enter_name');
+        $request->setLocale(self::UNTOUCHED_SENTINEL);
+
+        $event = new ControllerArgumentsEvent($kernel, static fn (): \stdClass => new \stdClass(), [$season], $request, null);
+
+        new LocaleListener($security, $localeSwitcher)->onControllerArguments($event);
+
+        $this->assertSame('en', $request->getLocale());
     }
 }

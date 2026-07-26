@@ -58,7 +58,7 @@ export default class extends Controller {
         this.optionTargets.forEach((option) => {
             const isCurrent = option.dataset.theme === current;
             option.classList.toggle('active', isCurrent);
-            option.setAttribute('aria-current', isCurrent ? 'true' : 'false');
+            option.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
         });
         this.iconTarget.className = `bi ${ICON_CLASSES[current]}`;
     }
