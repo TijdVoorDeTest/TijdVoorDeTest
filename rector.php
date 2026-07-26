@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\AddSeeTestAnnotationRector;
 use Rector\Symfony\Bridge\Symfony\Routing\SymfonyRoutesProvider;
 use Rector\Symfony\Contract\Bridge\Symfony\Routing\SymfonyRoutesProviderInterface;
+use Tvdt\Rector\NoSafeNamespaceTypeHintRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -18,6 +19,7 @@ return RectorConfig::configure()
     ->withSymfonyContainerXml(__DIR__.'/var/cache/dev/Tvdt_KernelDevDebugContainer.xml')
     ->withSymfonyContainerPhp(__DIR__.'/tests/symfony-container.php')
     ->registerService(SymfonyRoutesProvider::class, SymfonyRoutesProviderInterface::class)
+    ->withRules([NoSafeNamespaceTypeHintRector::class])
     ->withParallel()
     ->withPhpSets()
     ->withPreparedSets(

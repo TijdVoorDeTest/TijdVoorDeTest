@@ -239,6 +239,35 @@ question counts as covered more than once).
 - Test fixtures in `src/DataFixtures/` (loaded with `--group=test`)
 - Test database configured separately via `.env.test`
 
+### Avoiding N+1 queries
+
+All associations in this codebase default to Doctrine's `LAZY` fetch mode (no entity declares `fetch: 'EAGER'`).
+Whenever a repository method returns a **list** of entities that a controller/template then iterates to read an
+association (a collection's `|length`, a `ManyToOne` field, `->map()` over owners, etc.), that association gets
+lazy-loaded **once per row** unless the repository explicitly eager-loads it — this is the classic N+1 pattern, and
+it's the single most common perf bug to introduce in this codebase.
+
+- **Be suspicious of `findAll()`/`findBy()`/`findOneBy()` feeding a list view.** They're the easiest way to introduce
+  N+1: they return fully-lazy entities with no eager-loaded associations, so any association access afterwards
+  (in a controller, a repository post-processing step, or a Twig template) triggers one query per row. If a list
+  view needs an association, add a dedicated repository method that eager-loads it instead of reaching for these
+  directly. They're still fine for single-entity lookups or callers that never touch an association on the result.
+- **Never join two collections in the same query.** Joining two `OneToMany`/`ManyToMany` collections on the same
+  root entity at once produces a cartesian product (row count = product of both collection sizes), corrupting
+  counts and wasting bandwidth even worse than N+1 would. Instead, run one main query, then one follow-up query
+  *per collection* using `select('partial root.{id}', 'assoc')` + `leftJoin` to populate each collection into the
+  identity map without duplicating rows. A `ManyToOne`/`OneToOne` (to-one) association has no such risk and can be
+  joined into the main query directly. See `BankQuestionRepository::findBySeason()` for the canonical multi-collection
+  version of this pattern, and `UserRepository::findAllForAdminOverview()` /
+  `SeasonRepository::findAllForAdminOverview()` for a simpler one-collection-plus-one-to-one version.
+- **Test it**: assert the query count doesn't grow when the row count does, using the profiler's `db` collector
+  rather than a fixed magic number tied to current fixture size — enable it with `$this->client->enableProfiler()`
+  before the request, then read `$this->client->getProfile()->getCollector('db')->getQueryCount()`. Insert extra
+  rows directly via the entity manager, make one more request, and assert the count stays flat (an equality
+  assertion between two `getQueryCount()` calls that straddle unrelated setup/insert work is unreliable — the `db`
+  collector accumulates everything logged on the connection since it was last read, so bracket the assertion
+  tightly around just the request being measured). See `AdminControllerTest`'s `*QueryCountDoesNotGrowWith*` tests.
+
 ### Testing Infrastructure
 
 - **PHPUnit 13** with DAMA Doctrine Test Bundle for transaction rollback

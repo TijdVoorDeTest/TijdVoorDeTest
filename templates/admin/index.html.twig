@@ -1,0 +1,34 @@
+{% extends 'molshoop/base.html.twig' %}
+
+{% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
+
+{% block title %}{{ parent() }}{{ 'Admin'|trans }}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ breadcrumb.breadcrumb([
+        {label: 'Home'|trans, path: path('tvdt_molshoop_index')},
+        {label: 'Admin'|trans},
+    ]) }}
+{% endblock %}
+
+{% block body %}
+    {% set tabs = [
+        {id: 'users', label: 'Users'|trans, route: 'tvdt_admin_users'},
+        {id: 'seasons', label: 'Seasons'|trans, route: 'tvdt_admin_seasons'},
+    ] %}
+
+    <h2 class="mb-3">{{ 'Admin'|trans }}</h2>
+
+    <ul class="nav nav-tabs mb-3">
+        {% for tab in tabs %}
+            <li class="nav-item">
+                <a class="nav-link{{ activeTab == tab.id ? ' active' }}" href="{{ path(tab.route) }}">
+                    {{ tab.label }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="pt-3">
+        {{ include(template) }}
+    </div>
+{% endblock body %}

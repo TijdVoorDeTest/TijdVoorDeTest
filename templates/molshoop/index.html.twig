@@ -15,7 +15,7 @@
         <div class="col-md-8 col-12">
             <div class="d-flex flex-row align-items-center mb-3">
                 <h2 class="mb-0 pe-2">
-                    {{ is_granted('ROLE_ADMIN') ? 'All Seasons'|trans : 'Your Seasons'|trans }}
+                    {{ 'Your Seasons'|trans }}
                 </h2>
                 <a class="link" href="{{ path('tvdt_molshoop_season_add') }}">
                     {{ 'Add'|trans }}
@@ -28,12 +28,6 @@
                             <div>
                                 <a href="{{ path('tvdt_molshoop_season', {seasonCode: season.seasonCode}) }}"
                                    class="stretched-link text-reset text-decoration-none fw-semibold">{{ season.name }}</a>
-                                {% if is_granted('ROLE_ADMIN') %}
-                                    <div class="text-body-secondary small">
-                                        <strong>{{ t('{count, plural, one {Owner} other {Owners}}', {count: season.owners|length})|trans }}:</strong>
-                                        {{ season.owners|map(o => o.email)|join(', ') }}
-                                    </div>
-                                {% endif %}
                                 <div class="text-body-secondary small">
                                     <strong>{{ 'Active Quiz'|trans }}:</strong>
                                     {% if season.activeQuiz %}

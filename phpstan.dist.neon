@@ -9,6 +9,7 @@ parameters:
         - tests/
     excludePaths:
         - config/reference.php
+        - rector.php
     treatPhpDocTypesAsCertain: false
     symfony:
         containerXmlPath: var/cache/dev/Tvdt_KernelDevDebugContainer.xml

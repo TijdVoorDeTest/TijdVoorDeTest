@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tvdt\Controller\Molshoop;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +31,6 @@ final class MolshoopController extends AbstractController
 {
     public function __construct(
         private readonly SeasonRepository $seasonRepository,
-        private readonly Security $security,
         private readonly QuizSpreadsheetService $excel,
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
@@ -41,12 +39,8 @@ final class MolshoopController extends AbstractController
     #[Route('/molshoop/', name: 'tvdt_molshoop_index')]
     public function index(): Response
     {
-        $seasons = $this->security->isGranted('ROLE_ADMIN')
-            ? $this->seasonRepository->findAll()
-            : $this->seasonRepository->getSeasonsForUser($this->authenticatedUser);
-
         return $this->render('molshoop/index.html.twig', [
-            'seasons' => $seasons,
+            'seasons' => $this->seasonRepository->getSeasonsForUser($this->authenticatedUser),
         ]);
     }
 

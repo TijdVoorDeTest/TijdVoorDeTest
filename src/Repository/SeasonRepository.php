@@ -43,6 +43,43 @@ class SeasonRepository extends ServiceEntityRepository
         )->setParameter('user', $user)->getResult();
     }
 
+    /** Every season, with $owners, $quizzes, and $activeQuiz already initialized so the admin
+     * overview's per-season owners/quiz-count/active-quiz columns don't trigger a lazy-loading
+     * query per row. $owners and $quizzes are hydrated in separate follow-up queries rather than
+     * joined together with the main query, to avoid the cartesian-product row explosion that
+     * occurs when joining multiple collections at once (see BankQuestionRepository::findBySeason()).
+     *
+     * @return list<Season>
+     */
+    public function findAllForAdminOverview(): array
+    {
+        /** @var list<Season> $seasons */
+        $seasons = $this->createQueryBuilder('s')
+            ->leftJoin('s.activeQuiz', 'aq')
+            ->addSelect('aq')
+            ->orderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        if ([] === $seasons) {
+            return [];
+        }
+
+        $this->createQueryBuilder('s')
+            ->select('partial s.{id}', 'o')
+            ->leftJoin('s.owners', 'o')
+            ->getQuery()
+            ->getResult();
+
+        $this->createQueryBuilder('s')
+            ->select('partial s.{id}', 'q')
+            ->leftJoin('s.quizzes', 'q')
+            ->getQuery()
+            ->getResult();
+
+        return $seasons;
+    }
+
     /** Permanently deletes the season and every row tied to it — including the season itself,
      * which is Gedmo\SoftDeleteable and would otherwise only get its deletedAt set. Used as the
      * single-season entry point for permanent purges (currently exercised directly by

@@ -23,6 +23,8 @@ final class TestFixtures extends Fixture implements FixtureGroupInterface, Depen
 {
     public const string PASSWORD = 'test1234';
 
+    public const string ADMIN_EMAIL = 'admin@example.org';
+
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
     ) {}
@@ -50,6 +52,13 @@ final class TestFixtures extends Fixture implements FixtureGroupInterface, Depen
         $user->password = $this->passwordHasher->hashPassword($user, self::PASSWORD);
 
         $manager->persist($user);
+
+        $admin = new User();
+        $admin->email = self::ADMIN_EMAIL;
+        $admin->password = $this->passwordHasher->hashPassword($admin, self::PASSWORD);
+        $admin->roles = ['ROLE_ADMIN'];
+
+        $manager->persist($admin);
 
         $krtek = $this->getReference(KrtekFixtures::KRTEK_SEASON, Season::class);
         $krtek->addOwner($user);

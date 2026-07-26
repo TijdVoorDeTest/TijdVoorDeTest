@@ -74,6 +74,32 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         });
     }
 
+    /** Every user, with $seasons already initialized so the admin overview's per-user season
+     * count doesn't trigger a lazy-loading query per row.
+     *
+     * @return list<User>
+     */
+    public function findAllForAdminOverview(): array
+    {
+        /** @var list<User> $users */
+        $users = $this->createQueryBuilder('u')
+            ->orderBy('u.email', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        if ([] === $users) {
+            return [];
+        }
+
+        $this->createQueryBuilder('u')
+            ->select('partial u.{id}', 's')
+            ->leftJoin('u.seasons', 's')
+            ->getQuery()
+            ->getResult();
+
+        return $users;
+    }
+
     public function makeAdmin(string $email): void
     {
         $user = $this->findOneBy(['email' => $email]);
