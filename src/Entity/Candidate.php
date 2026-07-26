@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
-use Tvdt\Helpers\Base64;
 use Tvdt\Repository\CandidateRepository;
 
 #[ORM\Entity(repositoryClass: CandidateRepository::class)]
@@ -38,10 +37,6 @@ class Candidate
     #[ORM\OneToMany(targetEntity: QuizCandidate::class, mappedBy: 'candidate', orphanRemoval: true)]
     public private(set) Collection $quizData;
 
-    public string $nameHash {
-        get => Base64::base64UrlEncode($this->name);
-    }
-
     public function __construct(
         #[ORM\Column(length: 16)]
         public string $name,
@@ -49,20 +44,5 @@ class Candidate
         $this->answersOnCandidate = new ArrayCollection();
         $this->givenAnswers = new ArrayCollection();
         $this->quizData = new ArrayCollection();
-    }
-
-    public function addAnswersOnCandidate(Answer $answersOnCandidate): void
-    {
-        if (!$this->answersOnCandidate->contains($answersOnCandidate)) {
-            $this->answersOnCandidate->add($answersOnCandidate);
-            $answersOnCandidate->addCandidate($this);
-        }
-    }
-
-    public function removeAnswersOnCandidate(Answer $answersOnCandidate): void
-    {
-        if ($this->answersOnCandidate->removeElement($answersOnCandidate)) {
-            $answersOnCandidate->removeCandidate($this);
-        }
     }
 }
