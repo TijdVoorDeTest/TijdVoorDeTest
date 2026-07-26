@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tvdt\Tests\Integration\Controller\Molshoop;
 
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpFoundation\Request;
 use Tvdt\Controller\Molshoop\SeasonController;
@@ -14,6 +17,11 @@ use Tvdt\Entity\Quiz;
 use Tvdt\Entity\Season;
 use Tvdt\Enum\ScreenColour;
 use Tvdt\Tests\Integration\Controller\AbstractControllerWebTestCase;
+
+use function Safe\file_put_contents;
+use function Safe\ob_get_clean;
+use function Safe\ob_start;
+use function Safe\unlink;
 
 #[CoversClass(SeasonController::class)]
 final class SeasonControllerTest extends AbstractControllerWebTestCase
@@ -392,5 +400,38 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         ]);
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testAddQuizWithInvalidBooleanShowsErrorAndDoesNotPersist(): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Question');
+        $sheet->setCellValue('B1', 'Answer 1');
+        $sheet->setCellValue('C1', 'Correct');
+        $sheet->setCellValue('A2', 'Who is de Mol?');
+        $sheet->setCellValue('B2', 'Alice');
+        $sheet->setCellValueExplicit('C2', 'onwar', DataType::TYPE_STRING);
+
+        $path = sys_get_temp_dir().\DIRECTORY_SEPARATOR.uniqid('tvdt_test_', more_entropy: true).'.xlsx';
+        ob_start();
+        new Writer\Xlsx($spreadsheet)->save('php://output');
+        file_put_contents($path, ob_get_clean());
+
+        $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/add-quiz');
+        $form = $this->client->getCrawler()->filter('form')->form([
+            'upload_quiz_form[name]' => 'Broken quiz',
+            'upload_quiz_form[sheet]' => $path,
+        ]);
+        $this->client->submit($form);
+
+        unlink($path);
+
+        self::assertResponseRedirects('/molshoop/season/krtek/add-quiz');
+        $this->client->followRedirect();
+        $this->assertStringContainsString('onwar', (string) $this->client->getResponse()->getContent());
+
+        $this->entityManager->clear();
+        $this->assertNotInstanceOf(Quiz::class, $this->entityManager->getRepository(Quiz::class)->findOneBy(['name' => 'Broken quiz']));
     }
 }
