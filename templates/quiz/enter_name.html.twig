@@ -1,4 +1,5 @@
 {% extends 'quiz/base.html.twig' %}
+{% block title %}{{ parent() }}{{ 'Enter your name'|trans }}{% endblock %}
 {% block body %}
     <div class="quiz-form-narrow">
         {{ form(form) }}

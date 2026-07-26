@@ -3,6 +3,10 @@ import { Controller } from '@hotwired/stimulus';
 const STORAGE_KEY = 'tvdt-fullscreen';
 
 export default class extends Controller {
+    static targets = ['button'];
+
+    declare readonly buttonTarget: HTMLElement;
+
     connect(): void {
         document.addEventListener('fullscreenchange', this.onFullscreenChange);
         this.syncState();
@@ -43,9 +47,11 @@ export default class extends Controller {
     };
 
     syncState(): void {
+        const isFullscreen = Boolean(document.fullscreenElement);
         document.documentElement.classList.toggle(
             'is-fullscreen',
-            Boolean(document.fullscreenElement),
+            isFullscreen,
         );
+        this.buttonTarget.setAttribute('aria-pressed', String(isFullscreen));
     }
 }

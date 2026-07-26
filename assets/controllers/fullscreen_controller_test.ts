@@ -45,21 +45,35 @@ const { default: FullscreenController } = await import(
     './fullscreen_controller.ts'
 );
 
-// deno-lint-ignore no-explicit-any
-function makeController(): any {
-    return new FullscreenController({} as never);
+class FakeButton {
+    attrs = new Map<string, string>();
+    setAttribute(name: string, value: string) {
+        this.attrs.set(name, value);
+    }
 }
 
-Deno.test('syncState adds is-fullscreen when a fullscreen element is set', () => {
+// deno-lint-ignore no-explicit-any
+function makeController(): any {
+    // deno-lint-ignore no-explicit-any
+    const controller = new FullscreenController({} as never) as any;
+    controller.buttonTarget = new FakeButton();
+    return controller;
+}
+
+Deno.test('syncState adds is-fullscreen and sets aria-pressed when a fullscreen element is set', () => {
     fullscreenElement = { tagName: 'HTML' };
-    makeController().syncState();
+    const controller = makeController();
+    controller.syncState();
     assertEquals(classList.contains('is-fullscreen'), true);
+    assertEquals(controller.buttonTarget.attrs.get('aria-pressed'), 'true');
 });
 
-Deno.test('syncState removes is-fullscreen when there is no fullscreen element', () => {
+Deno.test('syncState removes is-fullscreen and sets aria-pressed to false when there is no fullscreen element', () => {
     fullscreenElement = null;
-    makeController().syncState();
+    const controller = makeController();
+    controller.syncState();
     assertEquals(classList.contains('is-fullscreen'), false);
+    assertEquals(controller.buttonTarget.attrs.get('aria-pressed'), 'false');
 });
 
 Deno.test('onFullscreenChange persists the fullscreen state and syncs classes', () => {

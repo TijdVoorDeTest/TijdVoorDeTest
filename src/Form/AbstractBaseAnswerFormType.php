@@ -22,7 +22,8 @@ abstract class AbstractBaseAnswerFormType extends AbstractType
         $builder
             ->add('ordering', HiddenType::class, ['empty_data' => '0'])
             ->add('text', TextType::class, [
-                'label' => false,
+                'label' => 'Answer',
+                'label_attr' => ['class' => 'visually-hidden'],
                 'attr' => ['placeholder' => 'Answer', 'maxlength' => 255],
             ])
             ->add('isRightAnswer', CheckboxType::class, [

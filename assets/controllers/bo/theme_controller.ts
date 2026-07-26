@@ -56,10 +56,9 @@ export default class extends Controller {
     syncActive(): void {
         const current = this.currentTheme();
         this.optionTargets.forEach((option) => {
-            option.classList.toggle(
-                'active',
-                option.dataset.theme === current,
-            );
+            const isCurrent = option.dataset.theme === current;
+            option.classList.toggle('active', isCurrent);
+            option.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
         });
         this.iconTarget.className = `bi ${ICON_CLASSES[current]}`;
     }

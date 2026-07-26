@@ -58,6 +58,9 @@ Concept: Concept
 'Confirm your email address to enable this feature.': 'Bevestig je e-mailadres om deze functie te kunnen gebruiken.'
 'Confirm your email address to enable this.': 'Bevestig je e-mailadres om dit te gebruiken.'
 Confirmed: Bevestigd
+'Copy join link': 'Kopieer deelnamelink'
+'Copy join link (active season)': 'Kopieer deelnamelink (actief seizoen)'
+'Copy join link (inactive season)': 'Kopieer deelnamelink (inactief seizoen)'
 'Correct Answers': 'Goede antwoorden'
 Corrections: Jokers
 'Could not find candidate with name {name}': 'Kon kandidaat met naam {name} niet vinden'
@@ -133,10 +136,12 @@ Language: Taal
 'Leave season': 'Seizoen verlaten'
 'Leaving this season removes your ownership. You need at least one other owner before you can leave.': 'Als je dit seizoen verlaat, ben je geen eigenaar meer. Er moet minimaal één andere eigenaar zijn voordat je kunt vertrekken.'
 Light: Licht
+'Link copied to clipboard': 'Link gekopieerd naar klembord'
 'Load Prepared Elimination': 'Laad voorbereide eliminatie'
 'Locked (answers given)': 'Vergrendeld (antwoorden gegeven)'
 'Locks the quiz so it can no longer be edited and makes it ready for candidates to take.': 'Vergrendelt de test zodat deze niet meer bewerkt kan worden en maakt deze klaar voor deelnemers.'
 Logout: Uitloggen
+'Main navigation': Hoofdnavigatie
 'Make active': 'Maak actief'
 Manage: Beheren
 Molehill: Molshoop
@@ -163,7 +168,6 @@ Open: Openen
 Overview: Overzicht
 'Owner added': 'Eigenaar toegevoegd'
 'Owner removed': 'Eigenaar verwijderd'
-Owner(s): Eigenaar/Eigenaren
 Owners: Eigenaren
 Password: Wachtwoord
 Penalty: Straftijd
@@ -177,6 +181,7 @@ Penalty: Straftijd
 'Please upload a valid XLSX file': 'Upload een geldig XLSX-bestand'
 'Prepare Custom Elimination': 'Bereid aangepaste eliminatie voor'
 'Prepare Elimination': 'Bereid eliminatie voor'
+'Press to continue': 'Druk om door te gaan'
 Previous: Vorige
 Question: Vraag
 'Question added to quiz {quiz}': 'Vraag toegevoegd aan test {quiz}'
@@ -213,6 +218,7 @@ Register: Registreren
 Releases: Releases
 'Remember me': 'Onthoud mij'
 Remove: Verwijderen
+'Remove answer': 'Antwoord verwijderen'
 'Remove label': 'Label verwijderen'
 Rename: Hernoemen
 'Rename candidate': 'Kandidaat hernoemen'
@@ -223,6 +229,7 @@ Rename: Hernoemen
 'Reset password': 'Wachtwoord resetten'
 'Reset progress': 'Voortgang resetten'
 'Reset your password': 'Wachtwoord resetten'
+Result: Uitslag
 'Results & Elimination': 'Resultaat & Eliminatie'
 Reusable: Herbruikbaar
 Revealed: Onthuld
@@ -243,6 +250,7 @@ Settings: Instellingen
 'Show Numbers': 'Toon nummers'
 'Shown at': 'Getoond om'
 'Sign in': 'Log in'
+'Skip to content': 'Naar inhoud'
 Soon™: Soon™
 'Sort A–Z': 'Sorteer A-Z'
 Status: Status
@@ -301,4 +309,6 @@ Yellow: Geel
 'Your email address is already confirmed.': 'Je e-mailadres is al bevestigd.'
 'Your password has been changed.': 'Je wachtwoord is gewijzigd.'
 'Your password reset request': 'Verzoek tot wachtwoordreset'
+correct: goed
 'try again': 'probeer opnieuw'
+'{count, plural, one {Owner} other {Owners}}': '{count, plural, one {Eigenaar} other {Eigenaren}}'

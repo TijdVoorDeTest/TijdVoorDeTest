@@ -1,5 +1,5 @@
 {% if is_granted('IS_AUTHENTICATED') or app.current_route() == 'tvdt_quiz_select_season' %}
-    <div class="quiz-topbar">
+    <nav class="quiz-topbar" aria-label="{{ 'Main navigation'|trans }}">
         <a href="{{ path('tvdt_molshoop_index') }}" class="btn btn-outline-secondary btn-sm">
             {{ 'Molehill'|trans }}
         </a>
@@ -8,5 +8,5 @@
                 {{ 'Logout'|trans }}
             </a>
         {% endif %}
-    </div>
+    </nav>
 {% endif %}

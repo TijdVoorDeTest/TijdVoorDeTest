@@ -26,7 +26,7 @@ final class ReleasesControllerTest extends AbstractControllerWebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'v0.8.0');
         self::assertSelectorTextContains('body', 'Some release notes');
-        self::assertSelectorTextContains('#releasesModalLabel', 'Huidige versie: v0.8.0');
+        self::assertSelectorTextContains('#currentReleaseVersion', 'Huidige versie: v0.8.0');
     }
 
     public function testReleasesFrameIsAccessibleWithoutAuthentication(): void

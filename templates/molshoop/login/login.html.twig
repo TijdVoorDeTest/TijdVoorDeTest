@@ -4,11 +4,11 @@
 
 {% block body %}
     <form method="post" data-controller="forgot-password">
-        <h3 class="mb-3">{{ 'Please sign in'|trans }}</h3>
+        <h1 class="mb-3 fs-3">{{ 'Please sign in'|trans }}</h1>
         <div class="mb-3">
             <label for="username" class="form-label">{{ 'Email'|trans }}</label>
             <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control"
-                   autocomplete="email" required autofocus
+                   autocomplete="email" required
                    data-forgot-password-target="email" data-action="input->forgot-password#prefill">
         </div>
 

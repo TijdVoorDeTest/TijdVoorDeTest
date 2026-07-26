@@ -15,9 +15,11 @@
                     <div class="btn-group btn-group-sm" role="group">
                         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
                                 data-bs-target="#renameCandidate-{{ candidate.id }}"
+                                aria-label="{{ 'Rename'|trans }}"
                                 title="{{ 'Rename'|trans }}"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                                 data-bs-target="#deleteCandidate-{{ candidate.id }}"
+                                aria-label="{{ 'Delete'|trans }}"
                                 title="{{ 'Delete'|trans }}"><i class="bi bi-trash"></i></button>
                     </div>
 
@@ -35,7 +37,7 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="deleteCandidate-{{ candidate.id }}Label">{{ 'Please Confirm'|trans }}</h1>
+                                    <h5 class="modal-title fs-5" id="deleteCandidate-{{ candidate.id }}Label">{{ 'Please Confirm'|trans }}</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body text-start">
@@ -65,7 +67,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="addCandidatesModalLabel">{{ 'Add Candidate'|trans }}</h1>
+                        <h5 class="modal-title fs-5" id="addCandidatesModalLabel">{{ 'Add Candidate'|trans }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <turbo-frame id="add-candidates-modal-frame"
