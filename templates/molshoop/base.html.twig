@@ -1,6 +1,5 @@
 {% extends 'base.html.twig' %}
 {% block importmap %}{{ importmap('molshoop') }}{% endblock %}
-{% block sentry_loader %}{% endblock %}
 {% block head_extra %}
     <meta name="sentry-dsn" content="{{ sentry_dsn }}">
     <meta name="user-email" content="{{ app.user ? app.user.userIdentifier : '' }}">
