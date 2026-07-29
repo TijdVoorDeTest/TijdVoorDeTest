@@ -54,7 +54,7 @@ class Season
 
     #[ORM\JoinColumn(nullable: true)]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    public ?SeasonSettings $settings = null;
+    public ?SeasonSettings $settings;
 
     /** @var Collection<int, BankQuestion> */
     #[ORM\OneToMany(targetEntity: BankQuestion::class, mappedBy: 'season', cascade: ['persist'], orphanRemoval: true)]
