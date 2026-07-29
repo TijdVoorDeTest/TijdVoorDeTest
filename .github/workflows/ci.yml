@@ -73,40 +73,21 @@ jobs:
         env:
           HTTP_PORT: "80"
         run: docker compose up php database --wait --no-build
+      - name: Check HTTP reachability
+        run: curl -v --fail-with-body http://localhost
       - name: Warm up dev cache
         run: docker compose exec -T php bin/console cache:warmup --env=dev
       - name: Lint Twig templates
-        id: twig_lint
-        continue-on-error: true
         run: docker compose exec -T php bin/console lint:twig --format=github templates
-      - name: Coding Style
-        id: cs
-        continue-on-error: true
-        run: docker compose exec -T php vendor/bin/php-cs-fixer check --diff --show-progress=none
       - name: Twig Coding Style
-        id: twig_cs
-        continue-on-error: true
         run: docker compose exec -T php vendor/bin/twig-cs-fixer check
-      - name: Static Analysis (PHPStan)
-        id: phpstan
-        continue-on-error: true
-        run: docker compose exec -T php vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=github
-      - name: Rector
-        id: rector
-        continue-on-error: true
-        run: docker compose exec -T php vendor/bin/rector process --dry-run --no-progress-bar --output-format=github
-      - name: Translations
-        id: translations
-        continue-on-error: true
-        run: |
-          docker compose exec -T php bin/console translation:extract --force --format=yaml --sort=asc --domain=messages nl
-          if ! git diff --exit-code -- translations; then
-            echo "::error::Translations are out of date. Run 'just translations' and commit the changes."
-            exit 1
-          fi
+      - name: Coding Style
+        run: docker compose exec -T php vendor/bin/php-cs-fixer check --diff --show-progress=none
+      - name: TypeScript Formatting
+        run: docker compose exec -T php deno fmt --check assets/
+      - name: TypeScript Lint
+        run: docker compose exec -T php deno lint assets/
       - name: Validator translations (new messages check)
-        id: validator_translations
-        continue-on-error: true
         run: |
           new_messages=$(docker compose exec -T php bin/console translation:extract --dump-messages --domain=validators --ansi nl | grep -aP '^\s*\* ' | grep -aP '\x1b\[32m' | grep -oP "(?<=\x1b\[32m).*?(?=\x1b\[39m)" || true)
           if [ -n "$new_messages" ]; then
@@ -114,47 +95,19 @@ jobs:
             echo "$new_messages" | while IFS= read -r msg; do echo "::error::  - $msg"; done
             exit 1
           fi
-      - name: TypeScript Formatting
-        id: ts_fmt
-        continue-on-error: true
-        run: docker compose exec -T php deno fmt --check assets/
-      - name: TypeScript Lint
-        id: ts_lint
-        continue-on-error: true
-        run: docker compose exec -T php deno lint assets/
-      - name: TypeScript Type Check
-        id: ts_check
-        continue-on-error: true
-        run: docker compose exec -T php deno check assets/
-      - name: TypeScript Tests
-        id: ts_test
-        continue-on-error: true
-        run: docker compose exec -T php deno test assets/
-      - name: Check HTTP reachability
-        run: curl -v --fail-with-body http://localhost
-      - name: Assert all checks passed
-        if: always()
+      - name: Translations
         run: |
-          failed=0
-          check() {
-            local name="$1" outcome="$2"
-            if [[ "$outcome" == "failure" ]]; then
-              echo "::error::$name failed"
-              failed=1
-            fi
-          }
-          check "Twig Lint"        "${{ steps.twig_lint.outcome }}"
-          check "Coding Style"     "${{ steps.cs.outcome }}"
-          check "Twig Coding Style" "${{ steps.twig_cs.outcome }}"
-          check "PHPStan"          "${{ steps.phpstan.outcome }}"
-          check "Rector"           "${{ steps.rector.outcome }}"
-          check "Translations"     "${{ steps.translations.outcome }}"
-          check "Validator translations" "${{ steps.validator_translations.outcome }}"
-          check "TypeScript Formatting" "${{ steps.ts_fmt.outcome }}"
-          check "TypeScript Lint"       "${{ steps.ts_lint.outcome }}"
-          check "TypeScript Type Check" "${{ steps.ts_check.outcome }}"
-          check "TypeScript Tests"      "${{ steps.ts_test.outcome }}"
-          exit $failed
+          docker compose exec -T php bin/console translation:extract --force --format=yaml --sort=asc --domain=messages nl
+          if ! git diff --exit-code -- translations; then
+            echo "::error::Translations are out of date. Run 'just translations' and commit the changes."
+            exit 1
+          fi
+      - name: TypeScript Type Check
+        run: docker compose exec -T php deno check assets/
+      - name: Static Analysis (PHPStan)
+        run: docker compose exec -T php vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=github
+      - name: Rector
+        run: docker compose exec -T php vendor/bin/rector process --dry-run --no-progress-bar --output-format=github
 
   tests:
     name: Tests
@@ -189,6 +142,8 @@ jobs:
         run: docker compose exec -T php bin/console sass:build
       - name: Build TypeScript
         run: docker compose exec -T php bin/console typescript:build
+      - name: TypeScript Tests
+        run: docker compose exec -T php deno test assets/
       - name: Create test database
         run: docker compose exec -T php bin/console -e test doctrine:database:create
       - name: Run migrations
