@@ -15,6 +15,7 @@ use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
 use Symfony\UX\StimulusBundle\StimulusBundle;
+use Symfony\UX\Translator\UxTranslatorBundle;
 use Symfony\UX\Turbo\TurboBundle;
 use SymfonyCasts\Bundle\ResetPassword\SymfonyCastsResetPasswordBundle;
 use SymfonyCasts\Bundle\VerifyEmail\SymfonyCastsVerifyEmailBundle;
@@ -40,4 +41,5 @@ return [
     StofDoctrineExtensionsBundle::class => ['all' => true],
     SymfonyCastsResetPasswordBundle::class => ['all' => true],
     SensiolabsTypeScriptBundle::class => ['all' => true],
+    UxTranslatorBundle::class => ['all' => true],
 ];

@@ -1,3 +1,4 @@
+(required): (verplicht)
 'A candidate with this name already exists in this season': 'Er bestaat al een kandidaat met deze naam in dit seizoen'
 'A label with a similar name already exists': 'Er bestaat al een label met deze naam'
 'A new confirmation email has been sent. Please check your inbox.': 'Er is een nieuwe bevestigingsmail verstuurd. Check je inbox.'
@@ -13,6 +14,7 @@ Add: Toevoegen
 'Add Empty Quiz': 'Voeg een lege test toe'
 'Add Quiz': 'Test toevoegen'
 'Add a quiz to {name}': 'Voeg een test toe aan {name}'
+'Add a screenshot': 'Screenshot toevoegen'
 'Add answer': 'Antwoord toevoegen'
 'Add blank': 'Leeg toevoegen'
 'Add blank quiz': 'Lege quiz toevoegen'
@@ -57,6 +59,7 @@ Code: Code
 Colour: Kleur
 Completed: Voltooid
 Concept: Concept
+Confirm: Bevestigen
 'Confirm Answers': 'Bevestig antwoorden'
 'Confirm your email address to enable this feature.': 'Bevestig je e-mailadres om deze functie te kunnen gebruiken.'
 'Confirm your email address to enable this.': 'Bevestig je e-mailadres om dit te gebruiken.'
@@ -94,6 +97,7 @@ Delete: Verwijderen
 Delete...: Verwijderen...
 'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
+Description: Beschrijving
 Done: Klaar
 'Download Template': 'Download sjabloon'
 'Download an archive of everything stored under your account: your profile, the seasons you own, their quizzes, results and candidates.': 'Download een archief met alles wat onder je account is opgeslagen: je profiel, de seizoenen die je bezit, met de bijbehorende testen, resultaten en kandidaten.'
@@ -229,11 +233,13 @@ Releases: Releases
 Remove: Verwijderen
 'Remove answer': 'Antwoord verwijderen'
 'Remove label': 'Label verwijderen'
+'Remove screenshot': 'Screenshot verwijderen'
 Rename: Hernoemen
 'Rename candidate': 'Kandidaat hernoemen'
 'Rename quiz': 'Test hernoemen'
 'Rename season': 'Seizoen hernoemen'
 'Repeat Password': 'Herhaal wachtwoord'
+'Report feedback': 'Feedback melden'
 'Resend confirmation email': 'Bevestigingsmail opnieuw versturen'
 'Reset password': 'Wachtwoord resetten'
 'Reset progress': 'Voortgang resetten'
@@ -255,6 +261,7 @@ Season: Seizoen
 'Season renamed': 'Seizoen hernoemd'
 Seasons: Seizoenen
 'Send a password reset email to {email}?': 'Wachtwoordherstel-e-mail sturen naar {email}?'
+'Send feedback': 'Feedback versturen'
 'Send password reset email': 'Stuur reset-e-mail'
 Settings: Instellingen
 'Show Numbers': 'Toon nummers'
@@ -266,6 +273,7 @@ Soon™: Soon™
 Status: Status
 Submit: Verstuur
 'Sync latest changes to this quiz': 'Laatste wijzigingen synchroniseren naar deze quiz'
+'Thank you for your report!': 'Bedankt voor je feedback!'
 'The candidate name must be between 1 and 16 characters': 'De naam van de kandidaat moet tussen de 1 en 16 tekens zijn'
 'The confirmation email could not be sent. Please try again later.': 'De bevestigingsmail kon niet worden verzonden. Probeer het later opnieuw.'
 'The confirmation email could not be sent. Please use the resend button to try again.': 'De bevestigingsmail kon niet worden verzonden. Gebruik de knop om het opnieuw te proberen.'
@@ -307,6 +315,7 @@ Unassign: Ontkoppelen
 Users: Gebruikers
 View: Bekijken
 'View on GitHub': 'Bekijk op GitHub'
+"What's the bug? What did you expect?": 'Wat ging er mis? Wat had je verwacht?'
 White: Wit
 'Wrong password, your account has not been deleted.': 'Verkeerd wachtwoord, je account is niet verwijderd.'
 Yellow: Geel
@@ -325,4 +334,5 @@ Yellow: Geel
 'Your password reset request': 'Verzoek tot wachtwoordreset'
 correct: goed
 'try again': 'probeer opnieuw'
+your.email@example.org: jouw.naam@voorbeeld.nl
 '{count, plural, one {Owner} other {Owners}}': '{count, plural, one {Eigenaar} other {Eigenaren}}'
