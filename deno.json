@@ -9,6 +9,7 @@
     "imports": {
         "@hotwired/stimulus": "npm:@hotwired/stimulus@^3.2.2",
         "@hotwired/turbo": "npm:@hotwired/turbo@^8.0.23",
+        "@symfony/ux-translator": "npm:@symfony/ux-translator@^3.2.0",
         "bootstrap": "npm:bootstrap@^5.3.8",
         "@sentry/browser": "npm:@sentry/browser@^10.63.0",
         "@std/assert": "jsr:@std/assert@^1.0.19"

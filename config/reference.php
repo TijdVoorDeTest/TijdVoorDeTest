@@ -1503,6 +1503,15 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     swc_config_file?: scalar|Param|null, // Path to .swcrc configuration file to use // Default: "%kernel.project_dir%/.swcrc"
  *     swc_version?: scalar|Param|null, // The SWC version to use // Default: "v1.3.92"
  * }
+ * @psalm-type UxTranslatorConfig = array{
+ *     dump_directory?: scalar|Param|null, // The directory where translations and TypeScript types are dumped. // Default: "%kernel.project_dir%/var/translations"
+ *     dump_typescript?: bool|Param, // Control whether TypeScript types are dumped alongside translations. Disable this if you do not use TypeScript (e.g. in production when using AssetMapper). // Default: true
+ *     domains?: Param|string|array{ // List of domains to include/exclude from the generated translations. Prefix with a `!` to exclude a domain.
+ *         type?: scalar|Param|null,
+ *         elements?: list<scalar|Param|null>,
+ *     },
+ *     keys_patterns?: Param|string|list<scalar|Param|null>,
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1520,6 +1529,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *     sensiolabs_typescript?: SensiolabsTypescriptConfig,
+ *     ux_translator?: UxTranslatorConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1540,6 +1550,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *         sensiolabs_typescript?: SensiolabsTypescriptConfig,
+ *         ux_translator?: UxTranslatorConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1559,6 +1570,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *         sensiolabs_typescript?: SensiolabsTypescriptConfig,
+ *         ux_translator?: UxTranslatorConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1579,6 +1591,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
  *         sensiolabs_typescript?: SensiolabsTypescriptConfig,
+ *         ux_translator?: UxTranslatorConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
