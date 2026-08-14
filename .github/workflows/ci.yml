@@ -165,7 +165,7 @@ jobs:
         # Settings > Code security > Code quality; fail-on-error is false so CI
         # doesn't go red before that one-time, manual repository setting is turned on.
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/upload-code-coverage@f8bb4848421d758cb893e8e371d261678618a754 # v1
+        uses: actions/upload-code-coverage@d8e329117199404bba6fc81efe8093dc7c015e34 # v1
         with:
           file: reports/coverage/cobertura.xml
           language: PHP
