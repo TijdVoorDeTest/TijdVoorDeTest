@@ -5,3 +5,10 @@ framework:
             sender: '%env(MAILER_SENDER)%'
         headers:
             From: 'Tijd voor de test <%env(MAILER_SENDER)%>'
+
+when@test:
+    framework:
+        mailer:
+            # compose.override.yaml sets MAILER_DSN as a real env var, which beats .env.test's
+            # null://null. Pin it here so the suite never depends on a reachable SMTP server.
+            dsn: 'null://null'
