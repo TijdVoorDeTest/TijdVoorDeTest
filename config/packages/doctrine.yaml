@@ -1,21 +1,8 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
-        
         profiling_collect_backtrace: '%kernel.debug%'
-        types:
-            # JSON types
-            jsonb: MartinGeorgiev\Doctrine\DBAL\Types\Jsonb
-            'jsonb[]': MartinGeorgiev\Doctrine\DBAL\Types\JsonbArray
-            tsrange: MartinGeorgiev\Doctrine\DBAL\Types\TsRange
-        mapping_types:
-            # JSON type mappings
-            jsonb: jsonb
-            'jsonb[]': 'jsonb[]'
-            _jsonb: 'jsonb[]'
-            tsrange: tsrange
-    
-    
+
     orm:
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
@@ -49,7 +36,7 @@ when@prod:
             result_cache_driver:
                 type: pool
                 pool: doctrine.result_cache_pool
-    
+
     framework:
         cache:
             pools:
