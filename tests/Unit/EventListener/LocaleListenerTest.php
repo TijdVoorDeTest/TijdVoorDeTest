@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tvdt\Tests\Unit\EventListener;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,7 @@ use Tvdt\Entity\SeasonSettings;
 use Tvdt\Entity\User;
 use Tvdt\EventListener\LocaleListener;
 
+#[AllowMockObjectsWithoutExpectations]
 #[CoversClass(LocaleListener::class)]
 final class LocaleListenerTest extends TestCase
 {

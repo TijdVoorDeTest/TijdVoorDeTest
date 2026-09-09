@@ -193,9 +193,7 @@ class Quiz
             foreach ($question->answers as $answer) {
                 foreach ($answer->candidates as $candidate) {
                     $candidateId = $candidate->id->toString();
-                    if (!isset($candidateCounts[$candidateId])) {
-                        $candidateCounts[$candidateId] = ['name' => $candidate->name, 'count' => 0];
-                    }
+                    $candidateCounts[$candidateId] ??= ['name' => $candidate->name, 'count' => 0];
 
                     ++$candidateCounts[$candidateId]['count'];
                 }
