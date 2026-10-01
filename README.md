@@ -126,8 +126,9 @@ run in the hook; CI covers that.
 
 ## Deployment
 
-Docker images are published to `ghcr.io/marijndoeve/tijdvoordetest`
-for each tagged release.
+Docker images are published to `ghcr.io/tijdvoordetest/tijdvoordetest`
+for each tagged release. Docker Compose is the recommended way to run it,
+see below. For Kubernetes there's a [Helm chart](#kubernetes-helm).
 
 ### First-time setup
 
@@ -171,6 +172,13 @@ IMAGE_TAG=<tag> docker compose -f compose.yaml -f compose.prod.yaml up -d
 The `compose.prod.yaml` configures Traefik labels for TLS termination at
 `tijdvoordetest.nl`. Adjust the `traefik` labels in that file if you're
 hosting on a different domain or using a different reverse proxy.
+
+### Kubernetes (Helm)
+
+A Helm chart lives in [`helm/tijdvoordetest`](helm/tijdvoordetest) and is published for each release to
+`oci://ghcr.io/tijdvoordetest/charts/tijdvoordetest`, with the chart version matching the release (without the `v`).
+It needs an existing PostgreSQL database. All values are explained in
+[`values.yaml`](helm/tijdvoordetest/values.yaml).
 
 ## License
 

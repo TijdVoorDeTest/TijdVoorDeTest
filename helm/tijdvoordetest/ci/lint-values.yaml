@@ -1,0 +1,13 @@
+# Values used by `helm lint`/`helm template` in CI, not for a real deployment.
+image:
+  tag: v0.0.0-ci
+app:
+  defaultUri: https://chart-example.local
+  mailerSender: noreply@example.com
+secrets:
+  appSecret: ci-not-a-secret
+database:
+  existingSecret: tvdt-db
+ingress:
+  enabled: true
+  tls: true

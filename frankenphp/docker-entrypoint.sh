@@ -28,7 +28,8 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 			echo 'The database is now ready and reachable'
 		fi
 
-		if [ "$( find ./migrations -iname '*.php' -print -quit )" ]; then
+		# Kubernetes runs migrations once per deploy in a dedicated Job and sets RUN_MIGRATIONS=0 on the pods.
+		if [ "${RUN_MIGRATIONS:-1}" != '0' ] && [ "$( find ./migrations -iname '*.php' -print -quit )" ]; then
 			php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
 		fi
 	fi

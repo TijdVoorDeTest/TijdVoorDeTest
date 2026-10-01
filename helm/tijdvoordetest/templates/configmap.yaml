@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tvdt.fullname" . }}
+  labels:
+    {{- include "tvdt.labels" . | nindent 4 }}
+data:
+  APP_ENV: {{ .Values.app.env | quote }}
+  SERVER_NAME: {{ printf ":%d" (int .Values.app.port) | quote }}
+  CADDY_GLOBAL_OPTIONS: {{ .Values.app.caddyGlobalOptions | quote }}
+  DEFAULT_URI: {{ required "app.defaultUri is required" .Values.app.defaultUri | quote }}
+  MAILER_SENDER: {{ required "app.mailerSender is required" .Values.app.mailerSender | quote }}
+  SENTRY_ENVIRONMENT: {{ .Values.app.sentryEnvironment | quote }}
+  SENTRY_RELEASE: {{ trimPrefix "v" (include "tvdt.imageTag" .) | quote }}
+  {{- range $key, $value := .Values.app.extraEnv }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

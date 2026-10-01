@@ -1,0 +1,48 @@
+{{- if .Values.migrations.enabled }}
+# Runs before the Deployment is updated: Helm pre-install/pre-upgrade hooks map to Argo CD PreSync
+# (and Flux's helm-controller runs them natively), so a failing migration blocks the rollout.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "tvdt.fullname" . }}-migrations
+  labels:
+    {{- include "tvdt.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.migrations.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.migrations.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "tvdt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrations
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: migrations
+          image: {{ include "tvdt.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          # The entrypoint waits for the database before handing off to this command.
+          args: ["bin/console", "doctrine:migrations:migrate", "--no-interaction", "--all-or-nothing", "--allow-no-migration"]
+          env:
+            - name: APP_ENV
+              value: {{ .Values.app.env | quote }}
+            - name: RUN_MIGRATIONS
+              value: "0"
+            {{- include "tvdt.databaseEnv" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+{{- end }}
