@@ -11,7 +11,7 @@ data:
   DEFAULT_URI: {{ required "app.defaultUri is required" .Values.app.defaultUri | quote }}
   MAILER_SENDER: {{ required "app.mailerSender is required" .Values.app.mailerSender | quote }}
   SENTRY_ENVIRONMENT: {{ .Values.app.sentryEnvironment | quote }}
-  SENTRY_RELEASE: {{ trimPrefix "v" (include "tvdt.imageTag" .) | quote }}
+  SENTRY_RELEASE: {{ printf "tijdvoordetest@%s" (trimPrefix "v" (include "tvdt.imageTag" .)) | quote }}
   {{- range $key, $value := .Values.app.extraEnv }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}

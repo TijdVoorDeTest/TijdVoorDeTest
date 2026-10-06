@@ -9,7 +9,7 @@ image:
   repository: ghcr.io/tijdvoordetest/tijdvoordetest
   pullPolicy: IfNotPresent
   # Defaults to the chart's appVersion, which is set for published charts. Required when installing from git.
-  # Also used for SENTRY_RELEASE (without the leading "v").
+  # Also used for SENTRY_RELEASE as "tijdvoordetest@<tag without leading v>".
   tag: ""
 
 imagePullSecrets: []
