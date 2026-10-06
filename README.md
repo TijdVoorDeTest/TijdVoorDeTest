@@ -177,6 +177,8 @@ hosting on a different domain or using a different reverse proxy.
 
 A Helm chart lives in [`helm/tijdvoordetest`](helm/tijdvoordetest) and is published for each release to
 `oci://ghcr.io/tijdvoordetest/charts/tijdvoordetest`, with the chart version matching the release (without the `v`).
+Every commit on `main` is published as a pre-release chart `0.0.0-main.<build>` (e.g. for a staging environment,
+use the version range `>=0.0.0-0 <0.0.1` to follow it).
 It needs an existing PostgreSQL database. All values are explained in
 [`values.yaml`](helm/tijdvoordetest/values.yaml).
 

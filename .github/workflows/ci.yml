@@ -270,7 +270,7 @@ jobs:
     timeout-minutes: 15
     if: >-
       always() && !cancelled() && !failure() &&
-      ((github.ref == 'refs/heads/main' && false) || startsWith(github.ref, 'refs/tags/'))
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -296,6 +296,7 @@ jobs:
             {
               echo "tag=$TAG"
               echo "sentry_version=$SENTRY_VERSION"
+              echo "chart_version=$SENTRY_VERSION"
               echo "full_name=ghcr.io/${REPO_LOWER}:$TAG"
             } >> "$GITHUB_OUTPUT"
           else
@@ -303,6 +304,8 @@ jobs:
             {
               echo "tag=$SHORT_SHA"
               echo "sentry_version=$SHORT_SHA"
+              # Pre-release of 0.0.0 so a range like ">=0.0.0-0 <0.0.1" follows main, and "1.*" never matches it
+              echo "chart_version=0.0.0-main.${{ github.run_number }}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$SHORT_SHA"
             } >> "$GITHUB_OUTPUT"
           fi
@@ -325,15 +328,13 @@ jobs:
             *.tags=${{ steps.meta.outputs.full_name }}
 
       - name: Set up Helm
-        if: startsWith(github.ref, 'refs/tags/')
         uses: azure/setup-helm@59b1c81c6280f5abebb1fb1bc585696daa7dfb42 # v5
 
       - name: Publish Helm chart
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.meta.outputs.tag }}
-          CHART_VERSION: ${{ steps.meta.outputs.sentry_version }}
+          CHART_VERSION: ${{ steps.meta.outputs.chart_version }}
           OWNER: ${{ github.repository_owner }}
         run: |
           echo "$GITHUB_TOKEN" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
@@ -351,6 +352,7 @@ jobs:
           environment: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'acceptance' }}
 
       - name: Trigger Portainer Deployment
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         env:
           PORTAINER_WEBHOOK: ${{secrets.PORTAINER_WEBHOOK}}
