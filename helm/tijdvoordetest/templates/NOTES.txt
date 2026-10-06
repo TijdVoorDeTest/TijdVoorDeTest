@@ -1,0 +1,9 @@
+Tijd voor de test {{ include "tvdt.imageTag" . }} deployed as {{ include "tvdt.fullname" . }}.
+{{- if .Values.ingress.enabled }}
+{{ range .Values.ingress.hosts }}
+  https://{{ . }}
+{{- end }}
+{{- end }}
+
+Run console commands (e.g. tvdt:make-admin) with:
+  kubectl -n {{ .Release.Namespace }} exec -it deploy/{{ include "tvdt.fullname" . }} -- bin/console <command>

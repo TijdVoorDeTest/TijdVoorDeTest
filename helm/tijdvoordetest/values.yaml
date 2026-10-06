@@ -1,0 +1,97 @@
+# Default values for the Tijd voor de test chart (structure based on the API Platform 4.1 chart).
+# Required: app.defaultUri, app.mailerSender, database.existingSecret, and secrets (existingSecret or appSecret).
+
+# Sessions and the rate limiter's cache are stored on the pod's local filesystem,
+# so keep this at 1 until those move to a shared store (e.g. PdoSessionHandler).
+replicaCount: 1
+
+image:
+  repository: ghcr.io/tijdvoordetest/tijdvoordetest
+  pullPolicy: IfNotPresent
+  # Defaults to the chart's appVersion, which is set for published charts. Required when installing from git.
+  # Also used for SENTRY_RELEASE (without the leading "v").
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+app:
+  env: prod
+  port: 8080
+  caddyGlobalOptions: ""
+  # Required: public URL, used to generate absolute URLs outside of HTTP requests (e.g. emails sent from commands).
+  defaultUri: ""
+  # Required: From address for emails.
+  mailerSender: ""
+  sentryEnvironment: production
+  extraEnv: {}
+
+secrets:
+  # Keys: app-secret, mailer-dsn and optionally sentry-dsn. When set, the values below are ignored.
+  existingSecret: ""
+  # Random string, e.g. `openssl rand -hex 32`.
+  appSecret: ""
+  # Symfony Mailer DSN, defaults to null://null (no mail sent).
+  mailerDsn: ""
+  # Optional, leave empty to disable Sentry.
+  sentryDsn: ""
+
+database:
+  # Secret with a URL-encoded postgresql://user:password@host:port/dbname URI, without query string
+  # (serverVersion and charset are appended for Doctrine).
+  existingSecret: ""
+  uriKey: uri
+  serverVersion: "18"
+  charset: utf8
+
+migrations:
+  enabled: true
+  backoffLimit: 1
+  activeDeadlineSeconds: 600
+
+deploymentAnnotations: {}
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  # www-data in the Debian-based prod image
+  runAsUser: 33
+  runAsGroup: 33
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  # e.g. cert-manager.io/cluster-issuer: letsencrypt
+  annotations: {}
+  hosts:
+    - chart-example.local
+  tls: false
+  # Defaults to <fullname>-tls (e.g. created by cert-manager).
+  tlsSecretName: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

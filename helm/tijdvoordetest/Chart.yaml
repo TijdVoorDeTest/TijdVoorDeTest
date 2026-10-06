@@ -1,0 +1,10 @@
+apiVersion: v2
+name: tijdvoordetest
+description: Tijd voor de test (Symfony + FrankenPHP)
+type: application
+# Placeholder: CI sets version and appVersion (the image tag) when publishing a release to
+# oci://ghcr.io/tijdvoordetest/charts. Installing from git requires image.tag instead.
+version: 0.0.0
+home: https://github.com/TijdVoorDeTest/TijdVoorDeTest
+sources:
+  - https://github.com/TijdVoorDeTest/TijdVoorDeTest
