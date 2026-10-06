@@ -10,7 +10,7 @@ services:
       - ~/.composer/cache:/root/.composer/cache
       - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
       - ./frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
-      - ${CADDY_DATA_DIR:-./frankenphp/data}:/data
+      - ./frankenphp/data:/data
       - sass:/app/var/sass
       - typescript:/app/var/typescript
     environment:
@@ -25,15 +25,15 @@ services:
     ports:
       # HTTP
       - target: 80
-        published: ${HTTP_PORT:-8080}
+        published: ${HTTP_PORT:-80}
         protocol: tcp
       # HTTPS
       - target: 443
-        published: ${HTTPS_PORT:-8443}
+        published: ${HTTPS_PORT:-443}
         protocol: tcp
       # HTTP/3
       - target: 443
-        published: ${HTTPS_PORT:-8443}
+        published: ${HTTP3_PORT:-443}
         protocol: udp
   sass:
     image: ${IMAGES_PREFIX:-}app-php
@@ -73,7 +73,7 @@ services:
   ###> doctrine/doctrine-bundle ###
   database:
     ports:
-      - "${POSTGRES_PORT:-5430}:5432"
+      - "5432:5432"
   ###< doctrine/doctrine-bundle ###
   
   ###> symfony/mailer ###
@@ -81,7 +81,7 @@ services:
     image: axllent/mailpit
     ports:
       - "1025"
-      - "${MAILPIT_PORT:-8025}:8025"
+      - "8025:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
@@ -90,7 +90,7 @@ services:
   spotlight:
     image: ghcr.io/getsentry/spotlight:latest
     ports:
-      - "${SPOTLIGHT_PORT:-8969}:8969"
+      - "8969:8969"
 
 volumes:
   sass:
