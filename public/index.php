@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tvdt\Kernel;
 
-require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
+require_once __DIR__.'/../vendor/autoload_runtime.php';
 
 return static function (array $context): Kernel {
     $appEnv = empty($context['APP_ENV']) ? 'prod' : (string) $context['APP_ENV'];
