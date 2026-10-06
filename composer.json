@@ -1,5 +1,5 @@
 {
-    "name": "marijndoeve/tijdvoordetest",
+    "name": "tijdvoordetest/tijdvoordetest",
     "type": "project",
     "license": "AGPL-3.0-or-later",
     "description": "A Wie is de Mol?-style quiz engine for tracking candidate answers and eliminations across episodes.",
