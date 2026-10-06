@@ -290,18 +290,18 @@ jobs:
           echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
-            SENTRY_VERSION="${TAG#v}"
+            SENTRY_VERSION="tijdvoordetest@${TAG#v}"
             {
               echo "tag=$TAG"
               echo "sentry_version=$SENTRY_VERSION"
-              echo "chart_version=$SENTRY_VERSION"
+              echo "chart_version=${TAG#v}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$TAG"
             } >> "$GITHUB_OUTPUT"
           else
             SHORT_SHA=$(git rev-parse --short HEAD)
             {
               echo "tag=$SHORT_SHA"
-              echo "sentry_version=$SHORT_SHA"
+              echo "sentry_version=tijdvoordetest@$SHORT_SHA"
               echo "chart_version=0.0.0-main.${{ github.run_number }}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$SHORT_SHA"
             } >> "$GITHUB_OUTPUT"
