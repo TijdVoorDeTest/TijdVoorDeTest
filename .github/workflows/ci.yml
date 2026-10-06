@@ -304,7 +304,6 @@ jobs:
             {
               echo "tag=$SHORT_SHA"
               echo "sentry_version=$SHORT_SHA"
-              # Pre-release of 0.0.0 so a range like ">=0.0.0-0 <0.0.1" follows main, and "1.*" never matches it
               echo "chart_version=0.0.0-main.${{ github.run_number }}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$SHORT_SHA"
             } >> "$GITHUB_OUTPUT"

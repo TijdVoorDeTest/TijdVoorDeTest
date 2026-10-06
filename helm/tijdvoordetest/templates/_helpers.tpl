@@ -45,10 +45,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- .Values.secrets.existingSecret | default (include "tvdt.fullname" .) }}
 {{- end }}
 
-{{/*
-DATABASE_URL built from a postgresql:// URI (URL-encoded, without query string) in an existing Secret,
-Doctrine only needs serverVersion/charset appended.
-*/}}
 {{- define "tvdt.databaseEnv" -}}
 - name: DATABASE_URI
   valueFrom:

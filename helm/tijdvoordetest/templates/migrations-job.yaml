@@ -1,6 +1,4 @@
 {{- if .Values.migrations.enabled }}
-# Runs before the Deployment is updated: Helm pre-install/pre-upgrade hooks map to Argo CD PreSync
-# (and Flux's helm-controller runs them natively), so a failing migration blocks the rollout.
 apiVersion: batch/v1
 kind: Job
 metadata:

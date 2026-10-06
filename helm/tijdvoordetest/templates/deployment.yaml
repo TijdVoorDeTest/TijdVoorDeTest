@@ -43,7 +43,6 @@ spec:
             - configMapRef:
                 name: {{ include "tvdt.fullname" . }}
           env:
-            # Migrations run in the pre-sync Job (migrations-job.yaml), not on every pod start.
             - name: RUN_MIGRATIONS
               value: "0"
             - name: APP_SECRET
@@ -69,7 +68,6 @@ spec:
               protocol: TCP
           lifecycle:
             preStop:
-              # Give the ingress time to stop routing to this pod before FrankenPHP shuts down gracefully on SIGTERM.
               exec:
                 command: ["/bin/sleep", "5"]
           startupProbe:
