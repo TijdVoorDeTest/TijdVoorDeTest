@@ -89,8 +89,6 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
       - name: Start services
-        env:
-          HTTP_PORT: "80"
         run: docker compose up php database --wait --no-build
       - name: Check HTTP reachability
         run: curl -v --fail-with-body http://localhost

@@ -1,15 +1,6 @@
 #!/usr/bin/env zsh
 setopt ERR_EXIT PIPE_FAIL NOUNSET
 
-# Load the per-worktree COMPOSE_PROJECT_NAME etc. (see Justfile's dotenv-load) so
-# docker compose resolves this worktree's running services instead of falling
-# back to a directory-name-derived project with nothing running.
-if [[ -f .env.local ]]; then
-    set -a
-    source .env.local
-    set +a
-fi
-
 # Collect staged PHP and Twig files
 STAGED_PHP=()
 while IFS= read -r file; do

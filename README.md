@@ -25,13 +25,8 @@ just migrate   # Run pending database migrations
 just fixtures  # Load dev fixtures (truncates first)
 ```
 
-`just up` first runs `just init`, which generates a `.env.local` (gitignored)
-with a unique `COMPOSE_PROJECT_NAME`, image tag and free host ports for this
-checkout, so multiple worktrees/clones can run at the same time without their
-containers, volumes, images or ports colliding. Run `just ports` to see the
-ports assigned to the current checkout — the app is served at
-`https://localhost:<HTTPS_PORT>` (self-signed cert — run `just trust-cert` on
-macOS to trust it).
+The app is served at `https://localhost` (self-signed cert — run
+`just trust-cert` on macOS to trust it).
 
 ### Useful commands
 

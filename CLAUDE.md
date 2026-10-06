@@ -40,24 +40,6 @@ just shell        # Interactive shell inside the PHP container
 just shell-run    # Shell in a fresh one-off container
 ```
 
-### Working in git worktrees
-
-`just up` auto-runs `just init` first, which generates a gitignored `.env.local` per checkout with a unique
-`COMPOSE_PROJECT_NAME`, `IMAGES_PREFIX`, and free `HTTP_PORT`/`HTTPS_PORT`/`POSTGRES_PORT`/`MAILPIT_PORT`/
-`SPOTLIGHT_PORT`. This means every worktree gets its own containers, network, volumes, and image tag — running
-`just up` in two worktrees at the same time does **not** make them share a database, image, or port, even if the
-worktree directories have the same basename.
-
-- Run `just ports` to see the ports assigned to the *current* checkout — the app for that worktree is at
-  `https://localhost:<HTTPS_PORT>`, not a fixed port. Never assume port 8080/8443/5432/etc. when working inside a
-  worktree; always check `.env.local` or `just ports` first.
-- `.env.local` is generated once and reused; it's safe to run `just init`/`just up` repeatedly. Delete `.env.local`
-  and re-run `just init` to force new ports (e.g. if the assigned ones are now taken by something else).
-- Each worktree's Postgres data, uploaded files, and Caddy state live in per-worktree Docker volumes — nothing is
-  shared with the main checkout or other worktrees. Migrations/fixtures must be (re-)run per worktree.
-- `just down`/`just clean` in one worktree only ever affects that worktree's own containers/volumes — safe to run
-  without impacting other worktrees.
-
 ### Database
 
 ```bash

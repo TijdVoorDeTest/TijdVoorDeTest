@@ -4,6 +4,14 @@
 	frankenphp {
 		{$FRANKENPHP_CONFIG}
 	}
+
+	pki {
+		ca local {
+			name "Tvdt Caddy Local Authority"
+			root_cn "Tvdt Caddy Local Authority - Root"
+			intermediate_cn "Tvdt Caddy Local Authority - Intermediate"
+		}
+	}
 }
 
 {$CADDY_EXTRA_CONFIG}
