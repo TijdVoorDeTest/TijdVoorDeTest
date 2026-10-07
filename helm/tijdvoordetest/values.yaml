@@ -5,6 +5,9 @@
 # so keep this at 1 until those move to a shared store (e.g. PdoSessionHandler).
 replicaCount: 1
 
+# Old ReplicaSets kept for `kubectl rollout undo`. Argo CD rolls back via git, so a few suffice.
+revisionHistoryLimit: 3
+
 image:
   repository: ghcr.io/tijdvoordetest/tijdvoordetest
   pullPolicy: IfNotPresent
