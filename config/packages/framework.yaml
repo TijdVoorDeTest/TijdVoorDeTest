@@ -18,6 +18,12 @@ framework:
             policy: sliding_window
             limit: 20
             interval: '1 minute'
+        # Throttles the public self-registration endpoint to slow down automated
+        # account creation and confirmation-email bombing.
+        registration:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
 when@prod:
     framework:
         # shortcut for private IP address ranges of your proxy
@@ -32,4 +38,6 @@ when@test:
             storage_factory_id: session.storage.factory.mock_file
         rate_limiter:
             season_code:
+                limit: 3
+            registration:
                 limit: 3

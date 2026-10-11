@@ -66,6 +66,28 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         $this->assertSame('en', $user->locale);
     }
 
+    public function testRegisterIsThrottledAfterTooManyAttempts(): void
+    {
+        for ($i = 0; $i < 3; ++$i) {
+            $crawler = $this->client->request(Request::METHOD_GET, '/register');
+            $form = $crawler->filter('form')->form([
+                'registration_form[email]' => "throttled-{$i}@example.org",
+                'registration_form[plainPassword][first]' => 'NewPass123!',
+                'registration_form[plainPassword][second]' => 'NewPass123!',
+            ]);
+            $this->client->submit($form);
+        }
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/register');
+        $form = $crawler->filter('form')->form([
+            'registration_form[email]' => 'throttled-3@example.org',
+            'registration_form[plainPassword][first]' => 'NewPass123!',
+            'registration_form[plainPassword][second]' => 'NewPass123!',
+        ]);
+        $this->client->submit($form);
+        self::assertResponseStatusCodeSame(429);
+    }
+
     public function testVerifyEmailWithoutIdRedirectsToRegister(): void
     {
         $this->client->request(Request::METHOD_GET, '/verify/email');
