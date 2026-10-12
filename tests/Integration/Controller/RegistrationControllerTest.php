@@ -76,7 +76,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         // The limiter's cache outlives earlier tests in this class that also submit
         // the registration form, so reset it to make the count deterministic.
         $limiterFactory = self::getContainer()->get('limiter.registration');
-        \assert($limiterFactory instanceof RateLimiterFactory);
+        $this->assertInstanceOf(RateLimiterFactory::class, $limiterFactory);
         $limiterFactory->create('127.0.0.1')->reset();
 
         for ($i = 0; $i < 3; ++$i) {
