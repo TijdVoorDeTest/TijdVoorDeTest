@@ -79,7 +79,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
                 'registration_form[plainPassword][second]' => 'DifferentPass123!',
             ]);
             $this->client->submit($form);
-            self::assertResponseIsSuccessful();
+            self::assertResponseStatusCodeSame(422);
         }
 
         $crawler = $this->client->request(Request::METHOD_GET, '/register');
