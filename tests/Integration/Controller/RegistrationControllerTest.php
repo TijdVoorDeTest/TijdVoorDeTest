@@ -68,21 +68,25 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
 
     public function testRegisterIsThrottledAfterTooManyAttempts(): void
     {
+        // Invalid submissions still count against the limiter but keep the client
+        // anonymous, because successful registrations would auto-login and make
+        // GET /register redirect away from the form.
         for ($i = 0; $i < 3; ++$i) {
             $crawler = $this->client->request(Request::METHOD_GET, '/register');
             $form = $crawler->filter('form')->form([
                 'registration_form[email]' => "throttled-{$i}@example.org",
                 'registration_form[plainPassword][first]' => 'NewPass123!',
-                'registration_form[plainPassword][second]' => 'NewPass123!',
+                'registration_form[plainPassword][second]' => 'DifferentPass123!',
             ]);
             $this->client->submit($form);
+            self::assertResponseIsSuccessful();
         }
 
         $crawler = $this->client->request(Request::METHOD_GET, '/register');
         $form = $crawler->filter('form')->form([
             'registration_form[email]' => 'throttled-3@example.org',
             'registration_form[plainPassword][first]' => 'NewPass123!',
-            'registration_form[plainPassword][second]' => 'NewPass123!',
+            'registration_form[plainPassword][second]' => 'DifferentPass123!',
         ]);
         $this->client->submit($form);
         self::assertResponseStatusCodeSame(429);
