@@ -6,6 +6,7 @@ namespace Tvdt\Tests\Integration\Controller;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 use Tvdt\Controller\RegistrationController;
 
@@ -71,6 +72,13 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         // Invalid submissions still count against the limiter but keep the client
         // anonymous, because successful registrations would auto-login and make
         // GET /register redirect away from the form.
+        //
+        // The limiter's cache outlives earlier tests in this class that also submit
+        // the registration form, so reset it to make the count deterministic.
+        $limiterFactory = self::getContainer()->get('limiter.registration');
+        \assert($limiterFactory instanceof RateLimiterFactory);
+        $limiterFactory->create('127.0.0.1')->reset();
+
         for ($i = 0; $i < 3; ++$i) {
             $crawler = $this->client->request(Request::METHOD_GET, '/register');
             $form = $crawler->filter('form')->form([
