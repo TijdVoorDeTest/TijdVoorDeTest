@@ -50,16 +50,17 @@ final class RegistrationController extends AbstractController
         if ($this->getUser() instanceof UserInterface) {
             return $this->redirectToRoute('tvdt_molshoop_index');
         }
+
+        $user = new User();
+        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form->handleRequest($request);
+
         if ($form->isSubmitted()) {
             $limit = $this->registrationLimiter->create($request->getClientIp())->consume();
             if (!$limit->isAccepted()) {
                 throw new TooManyRequestsHttpException(max(1, $limit->getRetryAfter()->getTimestamp() - time()));
             }
         }
-
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var string $plainPassword */
