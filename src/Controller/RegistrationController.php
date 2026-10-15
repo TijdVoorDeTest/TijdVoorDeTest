@@ -56,7 +56,7 @@ final class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $limit = $this->registrationLimiter->create($request->getClientIp())->consume();
+            $limit = $this->registrationLimiter->create($request->getClientIp() ?? 'unknown')->consume();
             if (!$limit->isAccepted()) {
                 throw new TooManyRequestsHttpException(max(1, $limit->getRetryAfter()->getTimestamp() - time()));
             }

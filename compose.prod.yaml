@@ -25,6 +25,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_RELEASE: ${SENTRY_RELEASE:-}
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      CADDY_SERVER_EXTRA_DIRECTIVES: header Strict-Transport-Security "max-age=31536000; includeSubDomains"
   database:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
