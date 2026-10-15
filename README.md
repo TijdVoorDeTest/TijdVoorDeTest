@@ -128,12 +128,16 @@ see below. For Kubernetes there's a [Helm chart](#kubernetes-helm).
 ### First-time setup
 
 1. Copy `compose.yaml` and `compose.prod.yaml` to your server.
-2. Create a `.env.prod.local` file with the required variables (see below).
-3. Start the stack — migrations run automatically on container start:
+2. Create a `.env` file next to them with the required variables (see below).
+3. Point your domain's DNS at the server and make sure ports 80 and 443 are open. Caddy fetches and renews
+   the HTTPS certificate itself.
+4. Start the stack, migrations run automatically on container start:
 
 ```bash
-IMAGE_TAG=latest docker compose -f compose.yaml -f compose.prod.yaml up -d
+docker compose -f compose.yaml -f compose.prod.yaml up -d
 ```
+
+Already running behind a reverse proxy such as Traefik? See `compose.traefik.example.yaml`.
 
 ### Updating to a new version
 
@@ -152,21 +156,17 @@ IMAGE_TAG=<tag> docker compose -f compose.yaml -f compose.prod.yaml up -d
 > IMAGE_TAG=<tag> docker compose -f compose.yaml -f compose.prod.yaml up -d
 > ```
 
-### Required environment variables
+### Environment variables
 
-| Variable                   | Description                                 |
-|----------------------------|---------------------------------------------|
-| `IMAGE_TAG`                | Image tag to run (e.g. `1.2.3` or `latest`) |
-| `APP_SECRET`               | Random secret string for Symfony            |
-| `CADDY_MERCURE_JWT_SECRET` | JWT secret for the Mercure hub              |
-| `POSTGRES_PASSWORD`        | PostgreSQL password                         |
-| `MAILER_DSN`               | Mailer transport DSN                        |
-| `MAILER_SENDER`            | From address for emails                     |
-| `SENTRY_DSN`               | Sentry project DSN (optional)               |
-
-The `compose.prod.yaml` configures Traefik labels for TLS termination at
-`tijdvoordetest.nl`. Adjust the `traefik` labels in that file if you're
-hosting on a different domain or using a different reverse proxy.
+| Variable            | Description                                                    |
+|---------------------|----------------------------------------------------------------|
+| `SERVER_NAME`       | Your domain name, e.g. `quiz.example.com`                      |
+| `APP_SECRET`        | Random secret string for Symfony                               |
+| `POSTGRES_PASSWORD` | PostgreSQL password                                            |
+| `MAILER_DSN`        | Mailer transport DSN                                           |
+| `MAILER_SENDER`     | From address for emails                                        |
+| `IMAGE_TAG`         | Image tag to run (default `latest`, e.g. `1.2.3` to pin)       |
+| `SENTRY_DSN`        | Sentry project DSN (optional)                                  |
 
 ### Kubernetes (Helm)
 

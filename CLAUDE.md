@@ -353,7 +353,6 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 4. **Build & Deploy** (on tags or main, disabled currently):
     - Docker image push to GitHub Container Registry
     - Sentry release creation
-    - Portainer webhook trigger for production deployment
 
 Runs on all pushes to main and pull requests. Concurrency cancels old runs on new commits.
 

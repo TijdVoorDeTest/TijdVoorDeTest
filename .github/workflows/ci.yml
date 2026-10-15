@@ -347,13 +347,3 @@ jobs:
         with:
           release: ${{steps.meta.outputs.sentry_version}}
           environment: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'acceptance' }}
-
-      - name: Trigger Portainer Deployment
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        env:
-          PORTAINER_WEBHOOK: ${{secrets.PORTAINER_WEBHOOK}}
-          IMAGE_TAG: ${{steps.meta.outputs.tag}}
-          SENTRY_RELEASE: ${{steps.meta.outputs.sentry_version}}
-        run: |
-          curl -v -X POST "${PORTAINER_WEBHOOK}?IMAGE_TAG=${IMAGE_TAG}&SENTRY_RELEASE=${SENTRY_RELEASE}" --fail-with-body

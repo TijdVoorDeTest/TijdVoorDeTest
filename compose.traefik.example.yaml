@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json
+# Example override for running behind an existing Traefik instance. Use it instead of the published
+# ports of compose.prod.yaml (`!reset` drops them), and adjust the host, entrypoint, resolver and network.
+#   docker compose -f compose.yaml -f compose.prod.yaml -f compose.traefik.example.yaml up -d
+# Set SERVER_NAME to `:80` so Caddy serves plain HTTP and Traefik handles TLS.
+services:
+  php:
+    ports: !reset []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tvdt.rule=Host(`example.com`)"
+      - "traefik.http.routers.tvdt.entrypoints=websecure"
+      - "traefik.http.routers.tvdt.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tvdt.loadbalancer.server.port=80"
+    networks:
+      - default
+      - web
+networks:
+  web:
+    external: true
