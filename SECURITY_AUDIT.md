@@ -44,12 +44,12 @@ The class carried no `#[IsGranted]` at class or method level — unlike every si
 
 **Files:** `compose.prod.yaml:27-28`, `compose.yaml:11,30`
 
-- `compose.prod.yaml:27-28` publishes `5430:5432` in the *production* override; the DB should stay on the `internal` network only.
-- `compose.yaml:11,30` default `POSTGRES_PASSWORD` to `!ChangeMe!`, and `compose.prod.yaml` never sets it — so if the Portainer stack env omits it, prod silently runs with a publicly-known password.
+- `compose.prod.yaml:27-28` published `5430:5432` in the *production* override; the DB should stay on the internal network only.
+- `compose.yaml:11,30` default `POSTGRES_PASSWORD` to `!ChangeMe!`, and `compose.prod.yaml` never set it, so a deployment that omitted it silently ran with a publicly known password.
 
 **Failure scenario:** Internet-reachable database with a known default credential → full read/write of user hashes, quiz data, reset-password tokens.
 
-**Fix:** Drop the port publish from the prod override; make `POSTGRES_PASSWORD` mandatory with no fallback in prod.
+**Fix applied:** Dropped the port publish from the prod override, and `compose.prod.yaml` now requires `POSTGRES_PASSWORD` (`${POSTGRES_PASSWORD:?...}`) with no fallback.
 
 ---
 
