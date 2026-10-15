@@ -137,8 +137,6 @@ see below. For Kubernetes there's a [Helm chart](#kubernetes-helm).
 docker compose -f compose.yaml -f compose.prod.yaml up -d
 ```
 
-Already running behind a reverse proxy such as Traefik? See `compose.traefik.example.yaml`.
-
 ### Updating to a new version
 
 ```bash
