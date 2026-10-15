@@ -23,6 +23,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         $this->assertInstanceOf(RateLimiterFactory::class, $limiterFactory);
         $limiterFactory->create('127.0.0.1')->reset();
         $limiterFactory->create('203.0.113.9')->reset();
+        $limiterFactory->create('203.0.113.10')->reset();
     }
 
     public function testRegisterPageLoadsWhenNotAuthenticated(): void
