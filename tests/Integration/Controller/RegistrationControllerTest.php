@@ -13,6 +13,17 @@ use Tvdt\Controller\RegistrationController;
 #[CoversClass(RegistrationController::class)]
 final class RegistrationControllerTest extends AbstractControllerWebTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The limiter's cache outlives individual tests and test runs, so reset it
+        // to keep the attempt count deterministic.
+        $limiterFactory = self::getContainer()->get('limiter.registration');
+        $this->assertInstanceOf(RateLimiterFactory::class, $limiterFactory);
+        $limiterFactory->create('127.0.0.1')->reset();
+    }
+
     public function testRegisterPageLoadsWhenNotAuthenticated(): void
     {
         $this->client->request(Request::METHOD_GET, '/register');
@@ -72,12 +83,6 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         // Invalid submissions still count against the limiter but keep the client
         // anonymous, because successful registrations would auto-login and make
         // GET /register redirect away from the form.
-        //
-        // The limiter's cache outlives earlier tests in this class that also submit
-        // the registration form, so reset it to make the count deterministic.
-        $limiterFactory = self::getContainer()->get('limiter.registration');
-        $this->assertInstanceOf(RateLimiterFactory::class, $limiterFactory);
-        $limiterFactory->create('127.0.0.1')->reset();
 
         for ($i = 0; $i < 3; ++$i) {
             $crawler = $this->client->request(Request::METHOD_GET, '/register');
