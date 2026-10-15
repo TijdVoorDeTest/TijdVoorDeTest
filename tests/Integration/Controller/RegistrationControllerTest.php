@@ -22,6 +22,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         $limiterFactory = self::getContainer()->get('limiter.registration');
         $this->assertInstanceOf(RateLimiterFactory::class, $limiterFactory);
         $limiterFactory->create('127.0.0.1')->reset();
+        $limiterFactory->create('203.0.113.9')->reset();
     }
 
     public function testRegisterPageLoadsWhenNotAuthenticated(): void
@@ -103,6 +104,32 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         ]);
         $this->client->submit($form);
         self::assertResponseStatusCodeSame(429);
+    }
+
+    public function testRegisterThrottleKeysOnForwardedClientIp(): void
+    {
+        $submit = function (string $clientIp): void {
+            $crawler = $this->client->request(Request::METHOD_GET, '/register');
+            $form = $crawler->filter('form')->form([
+                'registration_form[email]' => 'forwarded@example.org',
+                'registration_form[plainPassword][first]' => 'NewPass123!',
+                'registration_form[plainPassword][second]' => 'DifferentPass123!',
+            ]);
+            $this->client->setServerParameter('HTTP_X_FORWARDED_FOR', $clientIp);
+            $this->client->submit($form);
+        };
+
+        for ($i = 0; $i < 3; ++$i) {
+            $submit('203.0.113.9');
+            self::assertResponseStatusCodeSame(422);
+        }
+
+        $submit('203.0.113.9');
+        self::assertResponseStatusCodeSame(429);
+
+        // A different client behind the same proxy has its own bucket.
+        $submit('203.0.113.10');
+        self::assertResponseStatusCodeSame(422);
     }
 
     public function testVerifyEmailWithoutIdRedirectsToRegister(): void

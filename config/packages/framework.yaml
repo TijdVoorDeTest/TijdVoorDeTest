@@ -6,6 +6,10 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
+    # shortcut for private IP address ranges of your proxy
+    trusted_proxies: 'private_ranges'
+    # x-forwarded-for is needed so the rate limiters key on the real client, not the ingress
+    trusted_headers: [ 'x-forwarded-for', 'x-forwarded-proto' ]
     form:
         csrf_protection:
             enabled: true
@@ -24,13 +28,6 @@ framework:
             policy: sliding_window
             limit: 5
             interval: '1 hour'
-when@prod:
-    framework:
-        # shortcut for private IP address ranges of your proxy
-        trusted_proxies: 'private_ranges'
-        # or, if your proxy instead uses the "Forwarded" header
-        trusted_headers: [ 'x-forwarded-proto' ]
-
 when@test:
     framework:
         test: true
