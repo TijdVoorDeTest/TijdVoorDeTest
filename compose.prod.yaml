@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json
 # Production environment override. Caddy terminates HTTPS itself for ${SERVER_NAME}.
-# Behind an existing reverse proxy? See compose.traefik.example.yaml.
 services:
   php:
     image: ghcr.io/tijdvoordetest/tijdvoordetest:${IMAGE_TAG:-latest}
