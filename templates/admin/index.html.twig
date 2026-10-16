@@ -2,7 +2,7 @@
 
 {% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
 
-{% block title %}{{ parent() }}{{ 'Admin'|trans }}{% endblock %}
+{% block title %}{{ 'Admin'|trans }} | {{ parent() }}{% endblock %}
 
 {% block breadcrumbs %}
     {{ breadcrumb.breadcrumb([
