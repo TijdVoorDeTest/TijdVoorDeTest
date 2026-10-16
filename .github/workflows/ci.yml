@@ -288,6 +288,8 @@ jobs:
         run: |
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          echo "git_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "git_commit_time=$(git log -1 --format=%cI)" >> "$GITHUB_OUTPUT"
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
             SENTRY_VERSION="tijdvoordetest@${TAG#v}"
@@ -322,6 +324,8 @@ jobs:
             *.cache-from=type=gha,scope=refs/heads/main
             *.cache-to=type=gha,scope=${{github.ref}},mode=max
             *.args.BUILD_TIME=${{ steps.meta.outputs.build_time }}
+            *.args.GIT_SHA=${{ steps.meta.outputs.git_sha }}
+            *.args.GIT_COMMIT_TIME=${{ steps.meta.outputs.git_commit_time }}
             *.tags=${{ steps.meta.outputs.full_name }}
 
       - name: Set up Helm
