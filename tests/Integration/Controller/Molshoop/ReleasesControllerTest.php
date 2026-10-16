@@ -13,6 +13,8 @@ use Tvdt\Controller\Molshoop\ReleasesController;
 use Tvdt\Service\GitHubReleasesService;
 use Tvdt\Tests\Integration\Controller\AbstractControllerWebTestCase;
 
+use function Safe\putenv;
+
 #[CoversClass(ReleasesController::class)]
 final class ReleasesControllerTest extends AbstractControllerWebTestCase
 {
@@ -26,10 +28,9 @@ final class ReleasesControllerTest extends AbstractControllerWebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'v0.8.0');
         self::assertSelectorTextContains('body', 'Some release notes');
-        self::assertSelectorTextContains('#currentReleaseVersion', 'Huidige versie: v0.8.0');
     }
 
-    public function testReleasesFrameShowsDeployedCommit(): void
+    public function testReleasesFrameShowsDeployedCommitOnUntaggedBuild(): void
     {
         $this->loginAs('user2@example.org');
         $this->mockReleasesService();
@@ -38,6 +39,23 @@ final class ReleasesControllerTest extends AbstractControllerWebTestCase
 
         self::assertSelectorTextContains('#deployedCommit', 'abc1234');
         self::assertSelectorTextContains('#deployedCommit', '12-07-2026 12:00');
+        self::assertSelectorNotExists('#currentReleaseVersion');
+    }
+
+    public function testReleasesFrameShowsVersionOnlyOnTaggedBuild(): void
+    {
+        $this->loginAs('user2@example.org');
+        $this->mockReleasesService();
+        putenv('GIT_TAG=v1.0.2');
+
+        try {
+            $this->client->request(Request::METHOD_GET, '/molshoop/releases');
+        } finally {
+            putenv('GIT_TAG');
+        }
+
+        self::assertSelectorTextContains('#currentReleaseVersion', 'Huidige versie: v1.0.2');
+        self::assertSelectorNotExists('#deployedCommit');
     }
 
     public function testReleasesFrameIsAccessibleWithoutAuthentication(): void

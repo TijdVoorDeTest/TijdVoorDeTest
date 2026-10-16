@@ -19,6 +19,8 @@ final class ReleasesController extends AbstractController
         private readonly ?string $gitSha,
         #[Autowire(env: 'default::GIT_COMMIT_TIME')]
         private readonly ?string $gitCommitTime,
+        #[Autowire(env: 'default::GIT_TAG')]
+        private readonly ?string $gitTag,
     ) {}
 
     #[Route('/molshoop/releases', name: 'tvdt_molshoop_releases', methods: ['GET'])]
@@ -26,6 +28,7 @@ final class ReleasesController extends AbstractController
     {
         return $this->render('molshoop/releases/_frame.html.twig', [
             'releases' => $this->gitHubReleasesService->getReleases(),
+            'gitTag' => $this->gitTag,
             'gitSha' => $this->gitSha,
             'gitCommitTime' => $this->gitCommitTime ? new DateTimeImmutable($this->gitCommitTime) : null,
         ]);

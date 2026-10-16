@@ -214,4 +214,5 @@ ENV BUILD_TIME=$BUILD_TIME
 # Deployed commit info shown on the releases page; injected last to avoid cache busting.
 ARG GIT_SHA=""
 ARG GIT_COMMIT_TIME=""
-ENV GIT_SHA=$GIT_SHA GIT_COMMIT_TIME=$GIT_COMMIT_TIME
+ARG GIT_TAG=""
+ENV GIT_SHA=$GIT_SHA GIT_COMMIT_TIME=$GIT_COMMIT_TIME GIT_TAG=$GIT_TAG
