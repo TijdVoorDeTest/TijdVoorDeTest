@@ -34,9 +34,13 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     /** Sanity check: every full HTML page the test last rendered must set a page title. */
     protected function tearDown(): void
     {
-        $response = $this->client->getInternalResponse();
-        $content = $response->getContent();
-        if (200 === $response->getStatusCode() && str_contains($content, '<title>')) {
+        try {
+            $response = $this->client->getInternalResponse();
+        } catch (\BadMethodCallException) {
+            $response = null; // test made no request
+        }
+
+        if (200 === $response?->getStatusCode() && str_contains($response->getContent(), '<title>')) {
             $title = $this->client->getCrawler()->filter('title')->text();
             $this->assertDoesNotMatchRegularExpression('/^Tijd voor de test/', mb_trim($title), 'Page has no page_title block.');
         }

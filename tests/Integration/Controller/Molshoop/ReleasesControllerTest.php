@@ -44,11 +44,10 @@ final class ReleasesControllerTest extends AbstractControllerWebTestCase
 
     public function testReleasesFrameShowsVersionOnlyOnTaggedBuild(): void
     {
-        putenv('GIT_TAG=v1.0.2');
-        $this->loginAs('user2@example.org');
-        $this->mockReleasesService();
-
         try {
+            putenv('GIT_TAG=v1.0.2');
+            $this->loginAs('user2@example.org');
+            $this->mockReleasesService();
             $this->client->request(Request::METHOD_GET, '/molshoop/releases');
         } finally {
             putenv('GIT_TAG');
