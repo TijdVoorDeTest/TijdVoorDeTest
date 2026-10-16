@@ -295,6 +295,7 @@ jobs:
             SENTRY_VERSION="tijdvoordetest@${TAG#v}"
             {
               echo "tag=$TAG"
+              echo "git_tag=$TAG"
               echo "sentry_version=$SENTRY_VERSION"
               echo "chart_version=${TAG#v}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$TAG"
@@ -326,6 +327,7 @@ jobs:
             *.args.BUILD_TIME=${{ steps.meta.outputs.build_time }}
             *.args.GIT_SHA=${{ steps.meta.outputs.git_sha }}
             *.args.GIT_COMMIT_TIME=${{ steps.meta.outputs.git_commit_time }}
+            *.args.GIT_TAG=${{ steps.meta.outputs.git_tag }}
             *.tags=${{ steps.meta.outputs.full_name }}
 
       - name: Set up Helm

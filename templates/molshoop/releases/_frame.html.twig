@@ -1,13 +1,12 @@
 <turbo-frame id="releases-modal-frame">
     <div class="modal-body">
-        {% if gitSha %}
+        {% if gitTag %}
+            <p class="text-muted mb-3" id="currentReleaseVersion">{{ 'Current version'|trans }}: {{ gitTag }}</p>
+        {% elseif gitSha %}
             <p class="text-muted mb-3" id="deployedCommit">
                 {{ 'Deployed commit'|trans }}: <code>{{ gitSha }}</code>
                 {% if gitCommitTime %}({{ gitCommitTime|date('d-m-Y H:i', 'Europe/Amsterdam') }}){% endif %}
             </p>
-        {% endif %}
-        {% if releases[0] is defined %}
-            <p class="text-muted mb-3" id="currentReleaseVersion">{{ 'Current version'|trans }}: {{ releases[0].tagName }}</p>
         {% endif %}
         {% if releases is empty %}
             <p class="text-muted mb-0">{{ 'Could not load releases from GitHub.'|trans }}</p>
