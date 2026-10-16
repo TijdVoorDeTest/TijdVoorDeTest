@@ -210,3 +210,8 @@ CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile" ]
 # Build timestamp for /.well-known/security.txt Expires; must be injected last to avoid cache busting.
 ARG BUILD_TIME=""
 ENV BUILD_TIME=$BUILD_TIME
+
+# Deployed commit info shown on the releases page; injected last to avoid cache busting.
+ARG GIT_SHA=""
+ARG GIT_COMMIT_TIME=""
+ENV GIT_SHA=$GIT_SHA GIT_COMMIT_TIME=$GIT_COMMIT_TIME

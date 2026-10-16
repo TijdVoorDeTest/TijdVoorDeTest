@@ -29,6 +29,17 @@ final class ReleasesControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('#currentReleaseVersion', 'Huidige versie: v0.8.0');
     }
 
+    public function testReleasesFrameShowsDeployedCommit(): void
+    {
+        $this->loginAs('user2@example.org');
+        $this->mockReleasesService();
+
+        $this->client->request(Request::METHOD_GET, '/molshoop/releases');
+
+        self::assertSelectorTextContains('#deployedCommit', 'abc1234');
+        self::assertSelectorTextContains('#deployedCommit', '12-07-2026 12:00');
+    }
+
     public function testReleasesFrameIsAccessibleWithoutAuthentication(): void
     {
         $this->mockReleasesService();

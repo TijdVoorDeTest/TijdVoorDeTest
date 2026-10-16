@@ -97,6 +97,7 @@ Delete: Verwijderen
 Delete...: Verwijderen...
 'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
+'Deployed commit': 'Uitgerolde commit'
 Description: Beschrijving
 Done: Klaar
 'Download Template': 'Download sjabloon'
