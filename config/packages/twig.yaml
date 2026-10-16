@@ -4,6 +4,8 @@ twig:
     globals:
         sentry_dsn: '%env(SENTRY_DSN)%'
         enabled_locales: '%kernel.enabled_locales%'
+        git_sha: '%env(default::GIT_SHA)%'
+        git_tag: '%env(default::GIT_TAG)%'
 
 when@test:
     twig:

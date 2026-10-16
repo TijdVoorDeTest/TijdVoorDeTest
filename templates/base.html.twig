@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
-        {% block title %}Tijd voor de test{% endblock title %}
+        {% block title %}Tijd voor de test{% if git_sha and not git_tag %} (Acceptatie){% endif %}{% endblock title %}
     </title>
     {% block importmap %}{% endblock %}
     {% block head_extra %}{% endblock %}
