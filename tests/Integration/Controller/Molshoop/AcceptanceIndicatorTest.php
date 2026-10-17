@@ -23,12 +23,13 @@ final class AcceptanceIndicatorTest extends AbstractControllerWebTestCase
 
     public function testTaggedBuildIsNotMarkedAsAcceptance(): void
     {
+        $originalTag = getenv('GIT_TAG');
         try {
             putenv('GIT_TAG=v1.0.2');
             $this->loginAs('user2@example.org');
             $this->client->request(Request::METHOD_GET, '/molshoop/');
         } finally {
-            putenv('GIT_TAG');
+            putenv(false === $originalTag ? 'GIT_TAG' : 'GIT_TAG='.$originalTag);
         }
 
         self::assertPageTitleContains('Tijd voor de test');
