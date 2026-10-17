@@ -4,6 +4,7 @@
 'A new confirmation email has been sent. Please check your inbox.': 'Er is een nieuwe bevestigingsmail verstuurd. Check je inbox.'
 'A password reset email has been sent to this user.': 'Er is een wachtwoordherstel-e-mail naar deze gebruiker gestuurd.'
 'A quiz with this name already exists in this season': 'Er bestaat al een test met deze naam in dit seizoen'
+Acceptance: Acceptatie
 Actions: Acties
 Activate: Activeren
 Active: Actief
@@ -99,6 +100,7 @@ Delete...: Verwijderen...
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
 'Deployed commit': 'Uitgerolde commit'
 Description: Beschrijving
+Develop: Develop
 Done: Klaar
 'Download Template': 'Download sjabloon'
 'Download an archive of everything stored under your account: your profile, the seasons you own, their quizzes, results and candidates.': 'Download een archief met alles wat onder je account is opgeslagen: je profiel, de seizoenen die je bezit, met de bijbehorende testen, resultaten en kandidaten.'
@@ -337,5 +339,3 @@ correct: goed
 'try again': 'probeer opnieuw'
 your.email@example.org: jouw.naam@voorbeeld.nl
 '{count, plural, one {Owner} other {Owners}}': '{count, plural, one {Eigenaar} other {Eigenaren}}'
-Acceptance: Acceptatie
-Develop: Develop
