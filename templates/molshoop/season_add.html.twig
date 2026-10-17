@@ -1,5 +1,7 @@
 {% extends 'molshoop/base.html.twig' %}
 
+{% block page_title %}{{ 'Create a season'|trans }}{% endblock %}
+
 {% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
 
 {% block breadcrumbs %}
@@ -22,8 +24,4 @@
             {{ include('molshoop/help/season_add.html.twig') }}
         </div>
     </div>
-{% endblock %}
-
-{% block title %}
-
 {% endblock %}

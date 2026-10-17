@@ -31,6 +31,33 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
     }
 
+    protected function tearDown(): void
+    {
+        try {
+            $this->assertLastPageHasTitle();
+        } catch (\Throwable $throwable) {
+            parent::tearDown(); // still shut the kernel down when the title check fails
+            throw $throwable;
+        }
+
+        parent::tearDown();
+    }
+
+    /** Sanity check: every full HTML page the test last rendered must set a page title. */
+    private function assertLastPageHasTitle(): void
+    {
+        try {
+            $response = $this->client->getInternalResponse();
+        } catch (\BadMethodCallException) {
+            return; // test made no request
+        }
+
+        if (200 === $response->getStatusCode() && str_contains($response->getContent(), '<title>')) {
+            $title = $this->client->getCrawler()->filter('title')->text();
+            $this->assertDoesNotMatchRegularExpression('/^Tijd voor de test/', mb_trim($title), 'Page has no page_title block.');
+        }
+    }
+
     protected function getUserByEmail(string $email): User
     {
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);

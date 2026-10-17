@@ -1,6 +1,6 @@
 {% extends 'quiz/base.html.twig' %}
 
-{% block title %}{{ parent() }}{{ 'Result'|trans }}{% endblock %}
+{% block page_title %}{{ 'Result'|trans }}{% endblock %}
 {% block nav %}{% endblock %}
 {% block body %}
     <img src="{{ asset("img/#{colour}.png") }}"

@@ -1,5 +1,7 @@
 {% extends 'molshoop/base.html.twig' %}
 
+{% block page_title %}{{ 'Add Candidates'|trans }}{% endblock %}
+
 {% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
 
 {% block breadcrumbs %}
@@ -23,8 +25,4 @@
             {{ include('molshoop/help/season_add_candidates.html.twig') }}
         </div>
     </div>
-{% endblock %}
-
-{% block title %}
-
 {% endblock %}

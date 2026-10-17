@@ -1,5 +1,5 @@
 {% extends 'quiz/base.html.twig' %}
-{% block title %}{{ parent() }}{{ question.ordering }}/{{ question.quiz.questions.count }}{% endblock %}
+{% block page_title %}{{ question.ordering }}/{{ question.quiz.questions.count }}{% endblock %}
 {% block body %}
     <div class="quiz-content">
         <h1 class="fs-4" id="question-heading">

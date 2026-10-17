@@ -1,6 +1,7 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary" aria-label="{{ 'Main navigation'|trans }}">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ path('tvdt_molshoop_index') }}">Tijd voor de test</a>
+        {% if build_environment() %}<span class="badge text-bg-warning me-auto" id="buildEnvironmentBadge">{{ build_environment()|trans }}</span>{% endif %}
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"

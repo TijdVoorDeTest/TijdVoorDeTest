@@ -3,7 +3,7 @@
 {% import 'molshoop/partials/rename_control.html.twig' as rename %}
 {% import 'molshoop/partials/breadcrumb.html.twig' as breadcrumb %}
 
-{% block title %}{{ parent() }}{{ season.name }}{% endblock %}
+{% block page_title %}{{ season.name }}{% endblock %}
 
 {% block breadcrumbs %}
     {{ breadcrumb.breadcrumb([
