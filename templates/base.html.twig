@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% set page_title %}{% block page_title %}{% endblock %}{% endset %}
-    <title>{% if page_title|trim %}{{ page_title|trim }} | {% endif %}Tijd voor de test{% if git_sha and not git_tag %} ({{ 'Acceptance'|trans }}){% endif %}</title>
+    <title>{% if page_title|trim %}{{ page_title|trim }} | {% endif %}Tijd voor de test{% if build_environment() %} ({{ build_environment()|trans }}){% endif %}</title>
     {% block importmap %}{% endblock %}
     {% block head_extra %}{% endblock %}
 </head>

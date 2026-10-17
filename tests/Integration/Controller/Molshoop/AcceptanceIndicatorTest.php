@@ -18,7 +18,7 @@ final class AcceptanceIndicatorTest extends AbstractControllerWebTestCase
         $this->client->request(Request::METHOD_GET, '/molshoop/');
 
         self::assertPageTitleContains('Acceptatie');
-        self::assertSelectorExists('nav #acceptanceBadge');
+        self::assertSelectorExists('nav #buildEnvironmentBadge');
     }
 
     public function testTaggedBuildIsNotMarkedAsAcceptance(): void
@@ -33,6 +33,6 @@ final class AcceptanceIndicatorTest extends AbstractControllerWebTestCase
 
         self::assertPageTitleContains('Tijd voor de test');
         $this->assertStringNotContainsString('Acceptatie', $this->client->getCrawler()->filter('title')->text());
-        self::assertSelectorNotExists('#acceptanceBadge');
+        self::assertSelectorNotExists('#buildEnvironmentBadge');
     }
 }
