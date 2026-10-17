@@ -338,4 +338,3 @@ correct: goed
 your.email@example.org: jouw.naam@voorbeeld.nl
 '{count, plural, one {Owner} other {Owners}}': '{count, plural, one {Eigenaar} other {Eigenaren}}'
 Acceptance: Acceptatie
-Develop: Ontwikkel
