@@ -4,7 +4,7 @@
             {{ 'Molehill'|trans }}
         </a>
         {% if is_granted('IS_AUTHENTICATED') %}
-            <a href="{{ path('tvdt_login_logout', {target: app.request.pathInfo}) }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ path('tvdt_login_logout', {target: app.request.pathInfo}) }}" class="btn btn-outline-secondary btn-sm" data-turbo-prefetch="false">
                 {{ 'Logout'|trans }}
             </a>
         {% endif %}
