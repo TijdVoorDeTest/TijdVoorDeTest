@@ -58,7 +58,7 @@
                            href="{{ path('tvdt_molshoop_settings') }}">{{ 'Settings'|trans }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link"
+                        <a class="nav-link" data-turbo-prefetch="false"
                            href="{{ path('tvdt_login_logout') }}">{{ 'Logout'|trans }}</a>
                     </li>
                 {% endif %}
