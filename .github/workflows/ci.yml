@@ -255,8 +255,8 @@ jobs:
           echo "::error::Timed out waiting for CI run to complete for ${{ github.sha }}."
           exit 1
 
-  build-deploy:
-    name: Build and Deploy
+  build-release:
+    name: Build and Release
     permissions:
       contents: read
       packages: write
