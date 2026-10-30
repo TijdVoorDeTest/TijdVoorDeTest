@@ -89,9 +89,9 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
       - name: Start services
-        run: docker compose up php database --wait --no-build
+        run: docker compose up php database --wait --wait-timeout 180 --no-build
       - name: Check HTTP reachability
-        run: curl -v --fail-with-body http://localhost
+        run: curl -v --fail-with-body --retry 10 --retry-delay 3 --retry-connrefused --retry-all-errors http://localhost
       - name: Warm up dev cache
         run: docker compose exec -T php bin/console cache:warmup --env=dev
       - name: Lint Twig templates
@@ -154,7 +154,7 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
       - name: Start services
-        run: docker compose up php database --wait --no-build
+        run: docker compose up php database --wait --wait-timeout 180 --no-build
       - name: Build SCSS
         run: docker compose exec -T php bin/console sass:build
       - name: Build TypeScript
