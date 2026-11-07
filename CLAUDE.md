@@ -355,8 +355,10 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
     - Docker image push to GitHub Container Registry
     - Helm chart publish to GHCR (OCI)
     - Sentry release creation
-    - Main pushes use the `acceptance` environment, tags use `production`. Tag runs first wait for the CI run of the
-      same commit (`verify-prior-run`)
+    - Main pushes and tags both run it, and it needs `quality`, `tests` and `helm`. Tag runs first wait for the CI run
+      of the same commit (`verify-prior-run`). The job has no GitHub `environment:` on purpose, because it publishes
+      artifacts and GitHub would show it as a deployment. The Sentry release still gets `acceptance` (main) or
+      `production` (tags) as its environment name
 
 Runs on all pushes to main and pull requests. Concurrency cancels old runs on new commits.
 

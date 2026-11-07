@@ -46,7 +46,7 @@ jobs:
             *.cache-to=type=gha,scope=${{github.ref}}-devbuild,mode=${{ github.event_name == 'pull_request' && 'min' || 'max' }}
 
   helm:
-    name: Helm Chart
+    name: Helm Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: "!startsWith(github.ref, 'refs/tags/')"
@@ -260,10 +260,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    environment:
-      name: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'acceptance' }}
-      url: ${{ vars.URL }}
-    needs: [quality, tests, verify-prior-run]
+    needs: [quality, tests, helm, verify-prior-run]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: >-
