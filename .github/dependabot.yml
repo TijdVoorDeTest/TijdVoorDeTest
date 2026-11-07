@@ -16,6 +16,11 @@ updates:
       - dependency-name: "symfony/*"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
     groups:
+      # First match wins, so Rector bumps stay out of the dev-dependencies group. A new
+      # Rector minor often adds rules that fail CI and would otherwise block the whole group.
+      rector:
+        patterns:
+          - "rector/*"
       dev-dependencies:
         dependency-type: "development"
       symfony:
