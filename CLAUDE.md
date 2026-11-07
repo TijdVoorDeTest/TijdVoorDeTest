@@ -350,9 +350,13 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
     - Fixture loading
     - Full PHPUnit test suite with JUnit XML output
     - Doctrine schema validation
-4. **Build & Deploy** (on tags or main, disabled currently):
+4. **Build & Release** (`build-release` job, on pushes to main and on tags; it publishes artifacts, it does not deploy
+   to a cluster):
     - Docker image push to GitHub Container Registry
+    - Helm chart publish to GHCR (OCI)
     - Sentry release creation
+    - Main pushes use the `acceptance` environment, tags use `production`. Tag runs first wait for the CI run of the
+      same commit (`verify-prior-run`)
 
 Runs on all pushes to main and pull requests. Concurrency cancels old runs on new commits.
 
