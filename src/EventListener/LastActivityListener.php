@@ -7,13 +7,13 @@ namespace Tvdt\EventListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Safe\DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Tvdt\Entity\User;
 
 /** Records how recently a user was last seen, throttled so it costs at most one write per user per window. */
-final readonly class LastActivityListener implements EventSubscriberInterface
+final readonly class LastActivityListener
 {
     // ponytail: per-user throttle window; lower it if "last activity" needs to be closer to real-time
     private const int THROTTLE_SECONDS = 60;
@@ -23,12 +23,7 @@ final readonly class LastActivityListener implements EventSubscriberInterface
         private EntityManagerInterface $em,
     ) {}
 
-    /** @return array<string, string> */
-    public static function getSubscribedEvents(): array
-    {
-        return [KernelEvents::CONTROLLER => 'onKernelController'];
-    }
-
+    #[AsEventListener(event: KernelEvents::CONTROLLER)]
     public function onKernelController(ControllerEvent $event): void
     {
         if (!$event->isMainRequest()) {

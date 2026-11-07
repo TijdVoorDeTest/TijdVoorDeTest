@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tvdt\EventListener;
 
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Translation\LocaleSwitcher;
@@ -15,19 +15,14 @@ use Tvdt\Entity\SeasonSettings;
 use Tvdt\Entity\User;
 
 /** Overrides the Accept-Language-derived locale with the user's profile locale on Molshoop pages, or the viewed season's locale (found directly, or via an Elimination's quiz, falling back to the user's profile locale when no season or season settings are available, e.g. on the season-selection homepage) elsewhere. See LocaleListenerTest for the exact precedence per scenario. */
-final readonly class LocaleListener implements EventSubscriberInterface
+final readonly class LocaleListener
 {
     public function __construct(
         private Security $security,
         private LocaleSwitcher $localeSwitcher,
     ) {}
 
-    /** @return array<string, string> */
-    public static function getSubscribedEvents(): array
-    {
-        return [KernelEvents::CONTROLLER_ARGUMENTS => 'onControllerArguments'];
-    }
-
+    #[AsEventListener(event: KernelEvents::CONTROLLER_ARGUMENTS)]
     public function onControllerArguments(ControllerArgumentsEvent $event): void
     {
         $locale = $this->resolveLocale($event);

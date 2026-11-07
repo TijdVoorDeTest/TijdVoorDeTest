@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Tvdt\Security;
 
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Event\LogoutEvent;
 
-final readonly class LogoutRedirectListener implements EventSubscriberInterface
+final readonly class LogoutRedirectListener
 {
     private const array BLOCKED_TARGET_PREFIXES = ['/molshoop', '/elimination'];
 
     public function __construct(private UrlGeneratorInterface $urlGenerator) {}
 
+    #[AsEventListener(event: LogoutEvent::class, priority: 128)]
     public function onLogout(LogoutEvent $event): void
     {
         $target = $event->getRequest()->query->get('target');
@@ -26,15 +27,6 @@ final readonly class LogoutRedirectListener implements EventSubscriberInterface
         }
 
         $event->setResponse(new RedirectResponse($this->urlGenerator->generate('tvdt_quiz_select_season')));
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        // Must run before Symfony's DefaultLogoutListener (priority 64), which only
-        // sets a response if none is set yet.
-        return [
-            LogoutEvent::class => ['onLogout', 128],
-        ];
     }
 
     private function isAllowedTarget(string $target): bool
