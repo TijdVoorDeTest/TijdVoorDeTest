@@ -11,17 +11,62 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only PR runs are cancelled when superseded. A main run that is already
+  # publishing (image, Helm chart, Sentry release) must finish, and GitHub keeps
+  # at most one queued run per group, so a burst of merges still collapses to the
+  # first and the latest commit.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      helm: ${{ steps.filter.outputs.helm }}
+    steps:
+      # Fails closed: only pull requests can skip anything, and only when every changed
+      # file is on the explicit skip list. Any error or empty result runs everything.
+      - name: Filter changed files
+        id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          app=true
+          helm=true
+          if [[ "$EVENT" == "pull_request" ]] && files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename') && [[ -n "$files" ]]; then
+            app=false
+            helm=false
+            while IFS= read -r f; do
+              case "$f" in
+                .github/workflows/ci.yml) app=true; helm=true ;;
+                helm/*) helm=true ;;
+                .github/dependabot.yml | .github/workflows/* | docs/* | .idea/* | .coderabbit.yaml | LICENSE | *.md) ;;
+                *) app=true ;;
+              esac
+            done <<< "$files"
+          fi
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+          echo "helm=$helm" >> "$GITHUB_OUTPUT"
+          echo "app=$app helm=$helm"
+
   build:
     name: Build Dev Image
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: "!startsWith(github.ref, 'refs/tags/')"
+    needs: changes
+    if: "!cancelled() && !startsWith(github.ref, 'refs/tags/') && needs.changes.outputs.app != 'false'"
     permissions:
       contents: read
     steps:
@@ -49,7 +94,8 @@ jobs:
     name: Helm Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: "!startsWith(github.ref, 'refs/tags/')"
+    needs: changes
+    if: "!cancelled() && !startsWith(github.ref, 'refs/tags/') && needs.changes.outputs.helm != 'false'"
     permissions:
       contents: read
     steps:
@@ -124,7 +170,7 @@ jobs:
       - name: Static Analysis (PHPStan)
         run: docker compose exec -T php vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=github
       - name: Rector
-        run: docker compose exec -T php vendor/bin/rector process --dry-run --no-progress-bar --output-format=github
+        run: docker compose exec -T php vendor/bin/rector process --dry-run --no-progress-bar --no-ansi
 
   tests:
     name: Tests
@@ -197,7 +243,7 @@ jobs:
     timeout-minutes: 20
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
-      actions: write
+      actions: read
     steps:
       - name: Wait for and verify successful CI run on this commit
         env:
@@ -205,7 +251,6 @@ jobs:
         run: |
           max_attempts=30
           attempt=0
-          triggered=false
 
           while [[ $attempt -lt $max_attempts ]]; do
             attempt=$((attempt + 1))
@@ -229,30 +274,12 @@ jobs:
               continue
             fi
 
-            if [[ "$triggered" == "false" ]]; then
-              echo "No prior CI run found for ${{ github.sha }}. Triggering CI on ${{ github.ref }}..."
-              gh workflow run ci.yml --repo "${{ github.repository }}" --ref "${{ github.ref }}"
-              triggered=true
-              echo "Triggered. Waiting 20s for run to register..."
-              sleep 20
-              continue
-            fi
-
-            failed_conclusion=$(gh api \
-              "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ github.sha }}&per_page=10" \
-              --jq "[.workflow_runs[] | select(.id != ${{ github.run_id }}) | select(.status == \"completed\") | select(.conclusion != \"success\")] | first | .conclusion // empty" \
-              --raw-output)
-
-            if [[ -n "$failed_conclusion" ]]; then
-              echo "::error::Triggered CI run on main failed with conclusion: $failed_conclusion. Fix the issue before re-tagging."
-              exit 1
-            fi
-
-            echo "Waiting for triggered run to register (attempt $attempt/$max_attempts)..."
-            sleep 20
+            break
           done
 
-          echo "::error::Timed out waiting for CI run to complete for ${{ github.sha }}."
+          # Dispatching CI on the tag ref cannot help: build, quality and tests are skipped on tags,
+          # and the dispatched run would share this run's concurrency group.
+          echo "::error::No successful CI run found for ${{ github.sha }}. Push the commit to main and wait for CI to pass before tagging."
           exit 1
 
   build-release:
@@ -289,12 +316,12 @@ jobs:
           echo "git_commit_time=$(git log -1 --format=%cI)" >> "$GITHUB_OUTPUT"
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
-            SENTRY_VERSION="tijdvoordetest@${TAG#v}"
+            SENTRY_VERSION="tijdvoordetest@${TAG#[vV]}"
             {
               echo "tag=$TAG"
               echo "git_tag=$TAG"
               echo "sentry_version=$SENTRY_VERSION"
-              echo "chart_version=${TAG#v}"
+              echo "chart_version=${TAG#[vV]}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$TAG"
             } >> "$GITHUB_OUTPUT"
           else
