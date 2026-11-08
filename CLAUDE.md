@@ -355,10 +355,24 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
     - Docker image push to GitHub Container Registry
     - Helm chart publish to GHCR (OCI)
     - Sentry release creation
-    - Main pushes use the `acceptance` environment, tags use `production`. Tag runs first wait for the CI run of the
-      same commit (`verify-prior-run`)
+    - Main pushes and tags both run it, and it needs `quality`, `tests` and `helm`. Tag runs first wait for the CI run
+      of the same commit (`verify-prior-run`). The job has no GitHub `environment:` on purpose, because it publishes
+      artifacts and GitHub would show it as a deployment. The Sentry release still gets `acceptance` (main) or
+      `production` (tags) as its environment name
 
-Runs on all pushes to main and pull requests. Concurrency cancels old runs on new commits.
+Runs on all pushes to main and pull requests.
+
+- **Concurrency**: a new push to a PR cancels that PR's older run. Main runs are never cancelled mid-run, because
+  `build-release` publishes artifacts. GitHub keeps one queued run per group, so a burst of merges runs the first
+  and the latest commit.
+- **Path filtering**: the `changes` job lets a PR skip the heavy jobs (`build`, `quality`, `tests`) when every changed
+  file is on its skip list (docs, `.idea`, `dependabot.yml`, workflows other than `ci.yml`), and skip `helm` unless
+  `helm/` or `ci.yml` changed. It fails closed: pushes to main, any detection error, and any file not on the list run
+  everything. Skipping is done with job-level `if:` and never with workflow-level `paths:`, because the ruleset
+  requires the `Tests` and `Code Quality` checks, which must still report (a skipped job counts as passing). Do not
+  rename those two jobs without updating the ruleset.
+- **Tags**: tag runs only run `verify-prior-run` and `build-release`. `verify-prior-run` fails if the tagged commit
+  has no successful CI run, so push to main and wait for CI before tagging.
 
 ## Important Files & Conventions
 
