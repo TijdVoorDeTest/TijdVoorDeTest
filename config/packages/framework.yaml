@@ -31,6 +31,10 @@ framework:
 when@test:
     framework:
         test: true
+        cache:
+            # Rate limiter state lives in the cache, so ParaTest workers (TEST_TOKEN) must not share it
+            # or their requests would count against each other's buckets.
+            directory: '%kernel.cache_dir%/pools/app%env(default::TEST_TOKEN)%'
         session:
             storage_factory_id: session.storage.factory.mock_file
         rate_limiter:

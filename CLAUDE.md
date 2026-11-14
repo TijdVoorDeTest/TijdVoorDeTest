@@ -45,15 +45,16 @@ just shell-run    # Shell in a fresh one-off container
 ```bash
 just migrate                  # Run Doctrine migrations (starts services first)
 just fixtures                 # Load dev fixtures (truncates first)
-just reload-tests             # Drop/recreate test DB, migrate, load test fixtures
+just reload-tests             # Drop/recreate test DB + one per ParaTest worker, migrate, load test fixtures
 ```
 
 ### Testing
 
 ```bash
-just test                                  # Run full PHPUnit suite
+just test                                  # Run full suite in parallel (ParaTest, one worker per core)
+just test-serial                           # Same suite in a single PHPUnit process
 just test tests/Path/To/TestFile.php       # Run a specific test file
-just test --coverage-html var/coverage     # Generate HTML coverage report
+XDEBUG_MODE=coverage just up && just test --coverage-html var/coverage   # HTML coverage report (Xdebug is off by default)
 ```
 
 ### Code Quality & Linting
@@ -200,6 +201,15 @@ question counts as covered more than once).
 
 ## Architecture Notes
 
+### `config/reference.php` (generated)
+
+Symfony generates `config/reference.php` (array shapes for the PHP config format, read by IDEs and PHPStan) from the
+installed bundles, and the Symfony blog says to commit it. FrameworkBundle rewrites it whenever the container is
+compiled in debug mode, so it changes after `composer install`/`update` (their `cache:clear` script) but also after any
+dev cache rebuild or bundle change. Commit the new version with the change that caused it, never leave it as a stray
+modification, and never hand-edit, format or lint it on its own. PHP-CS-Fixer, PHPStan and Rector already skip it
+(`.php-cs-fixer.dist.php`, `phpstan.dist.neon`, `rector.php`), keep it that way.
+
 ### Routing
 
 - Routes are **attribute-based** (PHP 8 attributes in controller methods)
@@ -258,6 +268,9 @@ it's the single most common perf bug to introduce in this codebase.
 - Symfony test utilities (BrowserKit, CSS selectors) available
 - Coverage excluded from: `src/DataFixtures/`
 - Test environment: `APP_ENV=test` (set in phpunit.dist.xml)
+- **Parallel runs**: `just test` uses ParaTest, which sets `TEST_TOKEN` per worker. `doctrine.yaml` turns that into a
+  `_test<N>` database suffix and `framework.yaml` into a per-worker cache dir (rate limiter state), so tests must not
+  share state across workers. `bin/reload-test-dbs` (used by `just reload-tests` and CI) builds all of them.
 
 ### Testing Conventions (TDD)
 

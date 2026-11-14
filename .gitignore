@@ -34,6 +34,7 @@
 /var/bootstrap.php.cache
 /bin/*
 !bin/console
+!bin/reload-test-dbs
 !bin/symfony_requirements
 
 # Assets and user uploads

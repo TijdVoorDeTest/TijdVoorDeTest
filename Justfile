@@ -40,7 +40,11 @@ rector *args:
 phpstan *args:
     docker compose exec php vendor/bin/phpstan analyse {{ args }}
 
+# Runs in parallel (ParaTest, one DB per worker, see reload-tests). For a single process use `just test-serial`.
 test *args:
+    docker compose exec php vendor/bin/paratest {{ args }}
+
+test-serial *args:
     docker compose exec php vendor/bin/phpunit {{ args }}
 
 # Browser-driven E2E tests (Symfony Panther). Reloads the test DB before AND after: these tests
@@ -69,11 +73,8 @@ clean:
     docker compose down -v --remove-orphans
     rm -rf vendor var assets/vendor public/assets public/bundles .php-cs-fixer.cache .twig-cs-fixer.cache
 
-reload-tests:
-    @docker compose exec php bin/console --env=test doctrine:database:drop --if-exists --force
-    @docker compose exec php bin/console --env=test doctrine:database:create
-    @docker compose exec php bin/console --env=test doctrine:migrations:migrate -n
-    @docker compose exec php bin/console --env=test doctrine:fixtures:load -n --group=test
+reload-tests *workers:
+    @docker compose exec php bin/reload-test-dbs {{ workers }}
 
 install-hooks:
     git config core.hooksPath .githooks

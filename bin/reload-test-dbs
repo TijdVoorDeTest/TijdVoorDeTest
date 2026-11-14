@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Recreate the test database (migrated, test fixtures), then clone it once per ParaTest worker
+# (TEST_TOKEN=1..N, see doctrine.yaml's dbname_suffix) with Postgres' CREATE DATABASE ... TEMPLATE,
+# which is much faster than migrating and loading fixtures N times.
+# Usage: bin/reload-test-dbs [workers] (default: nproc, which is also ParaTest's "auto" process count)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+workers="${1:-$(nproc)}"
+
+bin/console --env=test doctrine:database:drop --if-exists --force
+bin/console --env=test doctrine:database:create
+bin/console --env=test doctrine:migrations:migrate -n
+bin/console --env=test doctrine:fixtures:load -n --group=test
+
+php -r '
+    $url = parse_url(getenv("DATABASE_URL"));
+    $template = ltrim($url["path"], "/") . "_test";
+    $pdo = new PDO(sprintf("pgsql:host=%s;port=%d;dbname=postgres", $url["host"], $url["port"] ?? 5432), urldecode($url["user"]), urldecode($url["pass"]));
+    for ($i = 1; $i <= (int) $argv[1]; ++$i) {
+        $pdo->exec("DROP DATABASE IF EXISTS \"{$template}{$i}\" WITH (FORCE)");
+        $pdo->exec("CREATE DATABASE \"{$template}{$i}\" TEMPLATE \"{$template}\"");
+    }
+' "$workers"

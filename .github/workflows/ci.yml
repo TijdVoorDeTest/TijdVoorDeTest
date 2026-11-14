@@ -189,7 +189,6 @@ jobs:
       checks: write
       pull-requests: write
       contents: read
-      code-quality: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -215,33 +214,19 @@ jobs:
         run: docker compose exec -T php bin/console typescript:build
       - name: TypeScript Tests
         run: docker compose exec -T php deno test assets/
-      - name: Create test database
-        run: docker compose exec -T php bin/console -e test doctrine:database:create
-      - name: Run migrations
-        run: docker compose exec -T php bin/console -e test doctrine:migrations:migrate --no-interaction
-      - name: Load fixtures
-        run: docker compose exec -T php bin/console -e test doctrine:fixtures:load --no-interaction --group=test
+      - name: Create test databases
+        # The plain test database plus one per ParaTest worker (see bin/reload-test-dbs).
+        run: docker compose exec -T php bin/reload-test-dbs
       - name: Run PHPUnit
         # Reports are written outside var/ since var/ is a Docker volume (see the Dockerfile's
         # VOLUME /app/var/) and isn't bind-mounted to the runner, unlike the rest of the project.
-        run: docker compose exec -T php vendor/bin/phpunit --log-junit reports/junit.xml --coverage-cobertura reports/coverage/cobertura.xml
+        run: docker compose exec -T php vendor/bin/paratest --log-junit reports/junit.xml
       - name: Publish PHPUnit test results
         if: always()
         uses: mikepenz/action-junit-report@a16be3a69023e9bd7e748ede768b3282ea7b30ce # v6
         with:
           report_paths: reports/junit.xml
           check_name: PHPUnit
-      - name: Upload code coverage
-        # Requires "Code Quality" to be enabled for this repository under
-        # Settings > Code security > Code quality; fail-on-error is false so CI
-        # doesn't go red before that one-time, manual repository setting is turned on.
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/upload-code-coverage@2b21a77928be8d5168c2b9581a67f2adbebacc52 # v1
-        with:
-          file: reports/coverage/cobertura.xml
-          language: PHP
-          label: phpunit
-          fail-on-error: false
       - name: Doctrine Schema Validator
         run: docker compose exec -T php bin/console -e test doctrine:schema:validate
 
