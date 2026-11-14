@@ -141,25 +141,27 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
             *.cache-from=type=registry,ref=${{ env.CACHE_REF }}
-      - name: Start services
-        run: docker compose up php database --wait --wait-timeout 180 --no-build
-      - name: Check HTTP reachability
-        run: curl -v --fail-with-body --retry 10 --retry-delay 3 --retry-connrefused --retry-all-errors http://localhost
+      - name: Start container
+        # Lint and static analysis need neither the database, Caddy nor the entrypoint's DB wait,
+        # migrations and healthcheck, so run a bare idle container and just install vendor/.
+        run: |
+          docker compose run -d --no-deps --entrypoint '' --name php-qa php sleep infinity
+          docker exec php-qa composer install --prefer-dist --no-progress --no-interaction
       - name: Warm up dev cache
-        run: docker compose exec -T php bin/console cache:warmup --env=dev
+        run: docker exec php-qa bin/console cache:warmup --env=dev
       - name: Lint Twig templates
-        run: docker compose exec -T php bin/console lint:twig --format=github templates
+        run: docker exec php-qa bin/console lint:twig --format=github templates
       - name: Twig Coding Style
-        run: docker compose exec -T php vendor/bin/twig-cs-fixer check
+        run: docker exec php-qa vendor/bin/twig-cs-fixer check
       - name: Coding Style
-        run: docker compose exec -T php vendor/bin/php-cs-fixer check --diff --show-progress=none
+        run: docker exec php-qa vendor/bin/php-cs-fixer check --diff --show-progress=none
       - name: TypeScript Formatting
-        run: docker compose exec -T php deno fmt --check assets/
+        run: docker exec php-qa deno fmt --check assets/
       - name: TypeScript Lint
-        run: docker compose exec -T php deno lint assets/
+        run: docker exec php-qa deno lint assets/
       - name: Validator translations (new messages check)
         run: |
-          new_messages=$(docker compose exec -T php bin/console translation:extract --dump-messages --domain=validators --ansi nl | grep -aP '^\s*\* ' | grep -aP '\x1b\[32m' | grep -oP "(?<=\x1b\[32m).*?(?=\x1b\[39m)" || true)
+          new_messages=$(docker exec php-qa bin/console translation:extract --dump-messages --domain=validators --ansi nl | grep -aP '^\s*\* ' | grep -aP '\x1b\[32m' | grep -oP "(?<=\x1b\[32m).*?(?=\x1b\[39m)" || true)
           if [ -n "$new_messages" ]; then
             echo "::error::New validator constraint messages found that aren't in translations/validators.nl.yaml yet:"
             echo "$new_messages" | while IFS= read -r msg; do echo "::error::  - $msg"; done
@@ -167,17 +169,17 @@ jobs:
           fi
       - name: Translations
         run: |
-          docker compose exec -T php bin/console translation:extract --force --format=yaml --sort=asc --domain=messages nl
+          docker exec php-qa bin/console translation:extract --force --format=yaml --sort=asc --domain=messages nl
           if ! git diff --exit-code -- translations; then
             echo "::error::Translations are out of date. Run 'just translations' and commit the changes."
             exit 1
           fi
       - name: TypeScript Type Check
-        run: docker compose exec -T php deno check assets/
+        run: docker exec php-qa deno check assets/
       - name: Static Analysis (PHPStan)
-        run: docker compose exec -T php vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=github
+        run: docker exec php-qa vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=github
       - name: Rector
-        run: docker compose exec -T php vendor/bin/rector process --dry-run --no-progress-bar --no-ansi
+        run: docker exec php-qa vendor/bin/rector process --dry-run --no-progress-bar --no-ansi
 
   tests:
     name: Tests
