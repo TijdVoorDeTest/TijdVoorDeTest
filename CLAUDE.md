@@ -203,10 +203,12 @@ question counts as covered more than once).
 
 ### `config/reference.php` (generated)
 
-Symfony regenerates `config/reference.php` on every `composer install`/`update`. Always commit the new version
-alongside whatever caused it (never leave it as a stray modification), and never hand-edit, format or lint it on its
-own. PHP-CS-Fixer, PHPStan and Rector already skip it (`.php-cs-fixer.dist.php`, `phpstan.dist.neon`, `rector.php`),
-keep it that way.
+Symfony generates `config/reference.php` (array shapes for the PHP config format, read by IDEs and PHPStan) from the
+installed bundles, and the Symfony blog says to commit it. FrameworkBundle rewrites it whenever the container is
+compiled in debug mode, so it changes after `composer install`/`update` (their `cache:clear` script) but also after any
+dev cache rebuild or bundle change. Commit the new version with the change that caused it, never leave it as a stray
+modification, and never hand-edit, format or lint it on its own. PHP-CS-Fixer, PHPStan and Rector already skip it
+(`.php-cs-fixer.dist.php`, `phpstan.dist.neon`, `rector.php`), keep it that way.
 
 ### Routing
 
