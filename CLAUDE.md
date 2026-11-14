@@ -75,7 +75,7 @@ just trust-cert     # Trust the local Caddy TLS certificate (macOS)
 just exec <cmd>     # Run any command inside the PHP container
 ```
 
-All code quality checks run in CI/CD (.github/workflows/ci.yml) and should pass before merging.
+All code quality checks run in CI/CD (.github/workflows/ci.yml) and should pass before merging. See `docs/ci.md` for how PR, main and tag runs differ (with a diagram).
 
 ## Project Structure
 
@@ -355,8 +355,8 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
     - Docker image push to GitHub Container Registry
     - Helm chart publish to GHCR (OCI)
     - Sentry release creation
-    - Main pushes and tags both run it, and it needs `quality`, `tests` and `helm`. Tag runs first wait for the CI run
-      of the same commit (`verify-prior-run`). The job has no GitHub `environment:` on purpose, because it publishes
+    - Main pushes and tags both run it, and it needs `quality`, `tests` and `helm`. Main builds and pushes
+      `:<sha>`. Tags do not rebuild, they retag that image as `:<tag>` (see Tags below). The job has no GitHub `environment:` on purpose, because it publishes
       artifacts and GitHub would show it as a deployment. The Sentry release still gets `acceptance` (main) or
       `production` (tags) as its environment name
 
@@ -371,8 +371,10 @@ Runs on all pushes to main and pull requests.
   everything. Skipping is done with job-level `if:` and never with workflow-level `paths:`, because the ruleset
   requires the `Tests` and `Code Quality` checks, which must still report (a skipped job counts as passing). Do not
   rename those two jobs without updating the ruleset.
-- **Tags**: tag runs only run `verify-prior-run` and `build-release`. `verify-prior-run` fails if the tagged commit
-  has no successful CI run, so push to main and wait for CI before tagging.
+- **Tags**: tag runs only run `build-release`, which retags the `:<sha>` image from main as `:<tag>` instead of
+  rebuilding. It polls for up to 20 minutes for that image, which only exists once main's `build-release` passed, so
+  push to main and wait for CI before tagging. `GIT_TAG` is not baked into the image, the Helm chart sets it at runtime
+  when the image tag is a version.
 
 ## Important Files & Conventions
 

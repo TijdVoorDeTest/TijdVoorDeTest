@@ -17,6 +17,11 @@ concurrency:
   # first and the latest commit.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # Written by build-release only (mode=max, so it holds the shared frankenphp_base layers);
+  # every other job just reads it.
+  CACHE_REF: ghcr.io/tijdvoordetest/tijdvoordetest:buildcache
+
 permissions:
   contents: read
 
@@ -87,6 +92,7 @@ jobs:
             compose.override.yaml
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
+            *.cache-from=type=registry,ref=${{ env.CACHE_REF }}
             *.cache-from=type=gha,scope=refs/heads/main-devbuild
             *.cache-to=type=gha,scope=${{github.ref}}-devbuild,mode=${{ github.event_name == 'pull_request' && 'min' || 'max' }}
 
@@ -134,6 +140,7 @@ jobs:
             compose.override.yaml
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
+            *.cache-from=type=registry,ref=${{ env.CACHE_REF }}
       - name: Start services
         run: docker compose up php database --wait --wait-timeout 180 --no-build
       - name: Check HTTP reachability
@@ -199,6 +206,7 @@ jobs:
             compose.override.yaml
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
+            *.cache-from=type=registry,ref=${{ env.CACHE_REF }}
       - name: Start services
         run: docker compose up php database --wait --wait-timeout 180 --no-build
       - name: Build SCSS
@@ -237,59 +245,14 @@ jobs:
       - name: Doctrine Schema Validator
         run: docker compose exec -T php bin/console -e test doctrine:schema:validate
 
-  verify-prior-run:
-    name: Verify Prior CI Run
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: startsWith(github.ref, 'refs/tags/')
-    permissions:
-      actions: read
-    steps:
-      - name: Wait for and verify successful CI run on this commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          max_attempts=30
-          attempt=0
-
-          while [[ $attempt -lt $max_attempts ]]; do
-            attempt=$((attempt + 1))
-
-            success_count=$(gh api \
-              "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ github.sha }}&status=success&per_page=5" \
-              --jq "[.workflow_runs[] | select(.id != ${{ github.run_id }})] | length")
-
-            if [[ "$success_count" -gt 0 ]]; then
-              echo "Found $success_count prior successful CI run(s) for ${{ github.sha }}."
-              exit 0
-            fi
-
-            in_progress_count=$(gh api \
-              "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ github.sha }}&per_page=10" \
-              --jq "[.workflow_runs[] | select(.id != ${{ github.run_id }}) | select(.status == \"in_progress\" or .status == \"queued\" or .status == \"waiting\" or .status == \"requested\" or .status == \"pending\")] | length")
-
-            if [[ "$in_progress_count" -gt 0 ]]; then
-              echo "CI in progress (attempt $attempt/$max_attempts), waiting 30s..."
-              sleep 30
-              continue
-            fi
-
-            break
-          done
-
-          # Dispatching CI on the tag ref cannot help: build, quality and tests are skipped on tags,
-          # and the dispatched run would share this run's concurrency group.
-          echo "::error::No successful CI run found for ${{ github.sha }}. Push the commit to main and wait for CI to pass before tagging."
-          exit 1
-
   build-release:
     name: Build and Release
     permissions:
       contents: read
       packages: write
-    needs: [quality, tests, helm, verify-prior-run]
+    needs: [quality, tests, helm]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     if: >-
       always() && !cancelled() && !failure() &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
@@ -299,6 +262,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Docker Buildx
+        if: "!startsWith(github.ref, 'refs/tags/')"
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
@@ -319,10 +283,10 @@ jobs:
             SENTRY_VERSION="tijdvoordetest@${TAG#[vV]}"
             {
               echo "tag=$TAG"
-              echo "git_tag=$TAG"
               echo "sentry_version=$SENTRY_VERSION"
               echo "chart_version=${TAG#[vV]}"
               echo "full_name=ghcr.io/${REPO_LOWER}:$TAG"
+              echo "source_name=ghcr.io/${REPO_LOWER}:$(git rev-parse --short HEAD)"
             } >> "$GITHUB_OUTPUT"
           else
             SHORT_SHA=$(git rev-parse --short HEAD)
@@ -334,7 +298,28 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
 
+      # A release is the commit CI already built on main, so retag that image instead of rebuilding.
+      # The image only exists once build-release on main passed (it needs quality, tests and helm),
+      # so waiting for it doubles as the "CI passed on this commit" gate.
+      - name: Retag main image as release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          SOURCE: ${{ steps.meta.outputs.source_name }}
+          TARGET: ${{ steps.meta.outputs.full_name }}
+        run: |
+          for attempt in {1..40}; do
+            docker buildx imagetools inspect "$SOURCE" >/dev/null 2>&1 && break
+            if [[ $attempt -eq 40 ]]; then
+              echo "::error::$SOURCE not found after 20 minutes. Push the commit to main and wait for CI to pass before tagging."
+              exit 1
+            fi
+            echo "$SOURCE not published yet (attempt $attempt/40), waiting 30s..."
+            sleep 30
+          done
+          docker buildx imagetools create --tag "$TARGET" "$SOURCE"
+
       - name: Build and Push Docker images
+        if: "!startsWith(github.ref, 'refs/tags/')"
         uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e # v7
         with:
           pull: true
@@ -344,14 +329,12 @@ jobs:
             compose.build.yaml
           set: |
             *.cache-from=type=gha,scope=${{github.ref}}-devbuild
+            *.cache-from=type=registry,ref=${{ env.CACHE_REF }}
             *.cache-from=type=gha,scope=refs/heads/main-devbuild
-            *.cache-from=type=gha,scope=${{github.ref}}
-            *.cache-from=type=gha,scope=refs/heads/main
-            *.cache-to=type=gha,scope=${{github.ref}},mode=max
+            *.cache-to=type=registry,ref=${{ env.CACHE_REF }},mode=max,image-manifest=true,oci-mediatypes=true
             *.args.BUILD_TIME=${{ steps.meta.outputs.build_time }}
             *.args.GIT_SHA=${{ steps.meta.outputs.git_sha }}
             *.args.GIT_COMMIT_TIME=${{ steps.meta.outputs.git_commit_time }}
-            *.args.GIT_TAG=${{ steps.meta.outputs.git_tag }}
             *.tags=${{ steps.meta.outputs.full_name }}
 
       - name: Set up Helm
