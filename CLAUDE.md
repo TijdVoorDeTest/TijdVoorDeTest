@@ -54,7 +54,7 @@ just reload-tests             # Drop/recreate test DB + one per ParaTest worker,
 just test                                  # Run full suite in parallel (ParaTest, one worker per core)
 just test-serial                           # Same suite in a single PHPUnit process
 just test tests/Path/To/TestFile.php       # Run a specific test file
-just test --coverage-html var/coverage     # Generate HTML coverage report
+XDEBUG_MODE=coverage just up && just test --coverage-html var/coverage   # HTML coverage report (Xdebug is off by default)
 ```
 
 ### Code Quality & Linting
