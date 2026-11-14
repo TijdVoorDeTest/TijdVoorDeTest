@@ -75,7 +75,7 @@ just trust-cert     # Trust the local Caddy TLS certificate (macOS)
 just exec <cmd>     # Run any command inside the PHP container
 ```
 
-All code quality checks run in CI/CD (.github/workflows/ci.yml) and should pass before merging.
+All code quality checks run in CI/CD (.github/workflows/ci.yml) and should pass before merging. See `docs/ci.md` for how PR, main and tag runs differ (with a diagram).
 
 ## Project Structure
 
