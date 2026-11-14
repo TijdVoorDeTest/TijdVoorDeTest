@@ -53,10 +53,11 @@ Copy `.env` and override locally via `.env.local` (not committed):
 ## Testing
 
 ```bash
-just test                                   # Full PHPUnit suite
+just test                                   # Full suite, parallel (ParaTest)
+just test-serial                            # Single PHPUnit process
 just test tests/Path/To/TestFile.php        # Single file
 just test --coverage-html var/coverage      # HTML coverage report
-just reload-tests             # Drop/recreate test DB + migrate + test fixtures
+just reload-tests             # Drop/recreate test DBs (one per parallel worker) + migrate + test fixtures
 ```
 
 Tests use a separate database configured via `.env.test`. The DAMA

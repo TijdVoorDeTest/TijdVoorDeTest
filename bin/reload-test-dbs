@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Recreate the test database plus one per ParaTest worker (TEST_TOKEN=1..N, see doctrine.yaml's
+# dbname_suffix), each migrated and loaded with the test fixtures. Usage: bin/reload-test-dbs [workers]
+# (default: nproc, which is also ParaTest's default "auto" process count)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+workers="${1:-$(nproc)}"
+setup() {
+    bin/console --env=test doctrine:database:drop --if-exists --force
+    bin/console --env=test doctrine:database:create
+    bin/console --env=test doctrine:migrations:migrate -n
+    bin/console --env=test doctrine:fixtures:load -n --group=test
+}
+
+TEST_TOKEN= setup
+for ((i = 1; i <= workers; i++)); do
+    TEST_TOKEN=$i setup
+done

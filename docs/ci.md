@@ -35,6 +35,9 @@ flowchart TD
     end
 ```
 
+The `tests` job runs PHPUnit through ParaTest with one process per core (ParaTest and `bin/reload-test-dbs` both default to the core count), each on its own database
+created by `bin/reload-test-dbs`. JUnit and Cobertura reports are merged by ParaTest.
+
 On a tag run `changes`, `build`, `helm`, `quality` and `tests` are skipped (their `if:` excludes tags). `build-release`
 still starts because its condition uses `always() && !failure()`, and a skipped dependency is not a failure. The `needs`
 list therefore only gates `main`.

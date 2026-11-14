@@ -45,13 +45,14 @@ just shell-run    # Shell in a fresh one-off container
 ```bash
 just migrate                  # Run Doctrine migrations (starts services first)
 just fixtures                 # Load dev fixtures (truncates first)
-just reload-tests             # Drop/recreate test DB, migrate, load test fixtures
+just reload-tests             # Drop/recreate test DB + one per ParaTest worker, migrate, load test fixtures
 ```
 
 ### Testing
 
 ```bash
-just test                                  # Run full PHPUnit suite
+just test                                  # Run full suite in parallel (ParaTest, one worker per core)
+just test-serial                           # Same suite in a single PHPUnit process
 just test tests/Path/To/TestFile.php       # Run a specific test file
 just test --coverage-html var/coverage     # Generate HTML coverage report
 ```
@@ -258,6 +259,9 @@ it's the single most common perf bug to introduce in this codebase.
 - Symfony test utilities (BrowserKit, CSS selectors) available
 - Coverage excluded from: `src/DataFixtures/`
 - Test environment: `APP_ENV=test` (set in phpunit.dist.xml)
+- **Parallel runs**: `just test` uses ParaTest, which sets `TEST_TOKEN` per worker. `doctrine.yaml` turns that into a
+  `_test<N>` database suffix and `framework.yaml` into a per-worker cache dir (rate limiter state), so tests must not
+  share state across workers. `bin/reload-test-dbs` (used by `just reload-tests` and CI) builds all of them.
 
 ### Testing Conventions (TDD)
 

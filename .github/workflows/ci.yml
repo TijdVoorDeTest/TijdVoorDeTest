@@ -215,16 +215,13 @@ jobs:
         run: docker compose exec -T php bin/console typescript:build
       - name: TypeScript Tests
         run: docker compose exec -T php deno test assets/
-      - name: Create test database
-        run: docker compose exec -T php bin/console -e test doctrine:database:create
-      - name: Run migrations
-        run: docker compose exec -T php bin/console -e test doctrine:migrations:migrate --no-interaction
-      - name: Load fixtures
-        run: docker compose exec -T php bin/console -e test doctrine:fixtures:load --no-interaction --group=test
+      - name: Create test databases
+        # The plain test database plus one per ParaTest worker (see bin/reload-test-dbs).
+        run: docker compose exec -T php bin/reload-test-dbs
       - name: Run PHPUnit
         # Reports are written outside var/ since var/ is a Docker volume (see the Dockerfile's
         # VOLUME /app/var/) and isn't bind-mounted to the runner, unlike the rest of the project.
-        run: docker compose exec -T php vendor/bin/phpunit --log-junit reports/junit.xml --coverage-cobertura reports/coverage/cobertura.xml
+        run: docker compose exec -T php vendor/bin/paratest --log-junit reports/junit.xml --coverage-cobertura reports/coverage/cobertura.xml
       - name: Publish PHPUnit test results
         if: always()
         uses: mikepenz/action-junit-report@a16be3a69023e9bd7e748ede768b3282ea7b30ce # v6
