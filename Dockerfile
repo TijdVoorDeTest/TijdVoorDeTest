@@ -212,7 +212,7 @@ ARG BUILD_TIME=""
 ENV BUILD_TIME=$BUILD_TIME
 
 # Deployed commit info shown on the releases page; injected last to avoid cache busting.
+# GIT_TAG is deliberately not baked in: releases retag the main image, the chart sets it at runtime.
 ARG GIT_SHA=""
 ARG GIT_COMMIT_TIME=""
-ARG GIT_TAG=""
-ENV GIT_SHA=$GIT_SHA GIT_COMMIT_TIME=$GIT_COMMIT_TIME GIT_TAG=$GIT_TAG
+ENV GIT_SHA=$GIT_SHA GIT_COMMIT_TIME=$GIT_COMMIT_TIME
