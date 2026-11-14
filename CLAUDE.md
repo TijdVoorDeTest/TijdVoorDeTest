@@ -201,6 +201,13 @@ question counts as covered more than once).
 
 ## Architecture Notes
 
+### `config/reference.php` (generated)
+
+Symfony regenerates `config/reference.php` on every `composer install`/`update`. Always commit the new version
+alongside whatever caused it (never leave it as a stray modification), and never hand-edit, format or lint it on its
+own. PHP-CS-Fixer, PHPStan and Rector already skip it (`.php-cs-fixer.dist.php`, `phpstan.dist.neon`, `rector.php`),
+keep it that way.
+
 ### Routing
 
 - Routes are **attribute-based** (PHP 8 attributes in controller methods)
