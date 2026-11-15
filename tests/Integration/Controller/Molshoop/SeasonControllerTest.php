@@ -164,7 +164,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
     public function testAddCandidates(): void
     {
         $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/add-candidate');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form:not([action="/logout"])')->form([
             'add_candidates_form[candidates]' => "Nora\nPiet",
         ]);
         $this->client->submit($form);
@@ -182,7 +182,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
     public function testAddCandidatesViaTurboFrameReturnsEmptyFrame(): void
     {
         $this->client->xmlHttpRequest(Request::METHOD_GET, '/molshoop/season/krtek/add-candidate', server: ['HTTP_TURBO-FRAME' => 'add-candidates-modal-frame']);
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form:not([action="/logout"])')->form([
             'add_candidates_form[candidates]' => 'Sanne',
         ]);
         $this->client->submit($form, [], ['HTTP_TURBO-FRAME' => 'add-candidates-modal-frame']);
@@ -419,7 +419,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         file_put_contents($path, ob_get_clean());
 
         $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/add-quiz');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form:not([action="/logout"])')->form([
             'upload_quiz_form[name]' => 'Broken quiz',
             'upload_quiz_form[sheet]' => $path,
         ]);

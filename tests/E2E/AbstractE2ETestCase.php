@@ -14,12 +14,12 @@ abstract class AbstractE2ETestCase extends PantherTestCase
     {
         $client = $this->visitLoginPageLoggedOut();
 
-        $form = $client->getCrawler()->filter('form')->form([
+        $form = $client->getCrawler()->filter('form:not([action="/logout"])')->form([
             '_username' => 'krtek-admin@example.org',
             '_password' => TestFixtures::PASSWORD,
         ]);
         $client->submit($form);
-        $client->waitFor('a[href="/logout"]');
+        $client->waitFor('form[action="/logout"]');
 
         return $client;
     }
@@ -31,7 +31,11 @@ abstract class AbstractE2ETestCase extends PantherTestCase
     protected function visitLoginPageLoggedOut(): Client
     {
         $client = self::createPantherClient(['browser' => self::FIREFOX]);
-        $client->request('GET', '/logout');
+        $client->request('GET', '/login');
+        if ($client->getCrawler()->filter('form[action="/logout"]')->count() > 0) {
+            $client->getCrawler()->filter('form[action="/logout"] button')->click();
+        }
+
         $client->request('GET', '/login');
 
         return $client;

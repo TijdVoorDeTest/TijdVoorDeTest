@@ -4,9 +4,10 @@
             {{ 'Molehill'|trans }}
         </a>
         {% if is_granted('IS_AUTHENTICATED') %}
-            <a href="{{ path('tvdt_login_logout', {target: app.request.pathInfo}) }}" class="btn btn-outline-secondary btn-sm" data-turbo-prefetch="false">
-                {{ 'Logout'|trans }}
-            </a>
+            <form method="post" action="{{ path('tvdt_login_logout', {target: app.request.pathInfo}) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">{{ 'Logout'|trans }}</button>
+            </form>
         {% endif %}
     </nav>
 {% endif %}

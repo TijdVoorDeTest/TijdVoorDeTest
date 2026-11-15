@@ -111,6 +111,16 @@ final class QuizController extends AbstractController
             return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
         }
 
+        if ($request->isMethod('POST') && $request->request->has('start')) {
+            if (null === $this->quizCandidateRepository->createIfNotExist($quiz, $candidate)) {
+                $this->addFlash(FlashType::Danger, $this->translator->trans('You are not allowed to answer this quiz'));
+
+                return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
+            }
+
+            return $this->redirectToRoute('tvdt_quiz_quiz_page', ['seasonCode' => $season->seasonCode, 'nameHash' => $nameHash]);
+        }
+
         if ($request->isMethod('POST')) {
             // TODO: Extract saving answer logic to a service
             // Check if candidate is inactive for this quiz
@@ -160,13 +170,18 @@ final class QuizController extends AbstractController
             return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
         }
 
-        $result = $this->quizCandidateRepository->createIfNotExist($quiz, $candidate);
+        $quizCandidate = $this->quizCandidateRepository->findOneBy(['quiz' => $quiz, 'candidate' => $candidate]);
 
         // Check if candidate is inactive
-        if (null === $result) {
+        if (null !== $quizCandidate && !$quizCandidate->active) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('You are not allowed to answer this quiz'));
 
             return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
+        }
+
+        // Starting the timer changes state, so it needs an explicit POST rather than a GET that could be prefetched.
+        if (null === $quizCandidate?->started) {
+            return $this->render('quiz/start.html.twig', ['candidate' => $candidate, 'season' => $season, 'quiz' => $quiz]);
         }
 
         // end of extracting getting next question logic

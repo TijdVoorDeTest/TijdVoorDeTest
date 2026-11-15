@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Event\LogoutEvent;
 use Tvdt\Security\LogoutRedirectListener;
@@ -22,7 +23,7 @@ final class LogoutRedirectListenerTest extends TestCase
         $urlGenerator->expects($this->never())->method('generate');
         $listener = new LogoutRedirectListener($urlGenerator);
 
-        $event = new LogoutEvent(Request::create('/logout?target=/krtek'), null);
+        $event = new LogoutEvent(Request::create('/logout?target=/krtek', 'POST'), null);
         $listener->onLogout($event);
 
         $this->assertSame('/krtek', $event->getResponse()?->headers->get('Location'));
@@ -32,10 +33,18 @@ final class LogoutRedirectListenerTest extends TestCase
     {
         $listener = new LogoutRedirectListener($this->seasonSelectUrlGenerator());
 
-        $event = new LogoutEvent(Request::create('/logout'), null);
+        $event = new LogoutEvent(Request::create('/logout', 'POST'), null);
         $listener->onLogout($event);
 
         $this->assertSame('/', $event->getResponse()?->headers->get('Location'));
+    }
+
+    public function testLogoutRejectsGetRequests(): void
+    {
+        $listener = new LogoutRedirectListener($this->createStub(UrlGeneratorInterface::class));
+
+        $this->expectException(MethodNotAllowedHttpException::class);
+        $listener->onLogout(new LogoutEvent(Request::create('/logout'), null));
     }
 
     #[DataProvider('blockedTargetProvider')]
@@ -43,7 +52,7 @@ final class LogoutRedirectListenerTest extends TestCase
     {
         $listener = new LogoutRedirectListener($this->seasonSelectUrlGenerator());
 
-        $event = new LogoutEvent(Request::create('/logout?target='.urlencode($target)), null);
+        $event = new LogoutEvent(Request::create('/logout?target='.urlencode($target), 'POST'), null);
         $listener->onLogout($event);
 
         $this->assertSame('/', $event->getResponse()?->headers->get('Location'));

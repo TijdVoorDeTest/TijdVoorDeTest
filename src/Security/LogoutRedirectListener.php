@@ -6,6 +6,7 @@ namespace Tvdt\Security;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Event\LogoutEvent;
 
@@ -18,6 +19,10 @@ final readonly class LogoutRedirectListener
     #[AsEventListener(event: LogoutEvent::class, priority: 128)]
     public function onLogout(LogoutEvent $event): void
     {
+        if (!$event->getRequest()->isMethod('POST')) {
+            throw new MethodNotAllowedHttpException(['POST']);
+        }
+
         $target = $event->getRequest()->query->get('target');
 
         if (\is_string($target) && $this->isAllowedTarget($target)) {

@@ -1,0 +1,11 @@
+{% extends 'quiz/base.html.twig' %}
+{% block page_title %}{{ quiz.name }}{% endblock %}
+{% block body %}
+    <div class="quiz-form-narrow">
+        <h1 class="fs-4">{{ candidate.name }}</h1>
+        <form method="post">
+            <input type="hidden" name="token" value="{{ csrf_token('question') }}">
+            <button class="btn btn-success" type="submit" name="start" value="1">{{ 'Start the quiz'|trans }}</button>
+        </form>
+    </div>
+{% endblock body %}
