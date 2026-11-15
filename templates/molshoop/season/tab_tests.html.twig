@@ -5,6 +5,8 @@
                href="{{ path('tvdt_molshoop_quiz_add_blank', {seasonCode: season.seasonCode}) }}">{{ 'Add Empty Quiz'|trans }}</a>
             <a class="btn btn-sm btn-outline-secondary"
                href="{{ path('tvdt_molshoop_quiz_add', {seasonCode: season.seasonCode}) }}">{{ 'Import Quiz from Excel'|trans }}</a>
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{{ path('tvdt_molshoop_template') }}">{{ 'Download Template'|trans }}</a>
         </div>
         <div class="list-group mb-3">
             {% for quiz in season.quizzes %}
