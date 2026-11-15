@@ -28,6 +28,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     private function answerQuestion(Question $question): void
     {
+        $this->enterName('Tom');
         $tomHash = Base64::base64UrlEncode('Tom');
         $url = \sprintf('/krtek/%s', $tomHash);
 
@@ -151,6 +152,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     public function testQuizPageUsesTheSeasonsLanguage(): void
     {
+        $this->enterName('Tom');
         $season = $this->getSeasonByCode('krtek');
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
         $season->settings->locale = 'en';
@@ -196,25 +198,18 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('body', 'Er is geen test actief');
     }
 
-    public function testQuizPageGetDoesNotStartTheQuiz(): void
+    public function testQuizPageGetBeforeEnteringNameDoesNotStartTheQuiz(): void
     {
         $this->client->request(Request::METHOD_GET, \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('button[name="start"]');
-        self::assertSelectorTextNotContains('body', 'Is de Krtek een man of een vrouw?');
+        self::assertResponseRedirects('/krtek');
         $this->assertNull($this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]));
     }
 
-    public function testQuizPageStartPostStartsTheQuizAndShowsFirstQuestion(): void
+    public function testEnteringNameStartsTheQuizAndShowsFirstQuestion(): void
     {
-        $url = \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom'));
-        $crawler = $this->client->request(Request::METHOD_GET, $url);
-        $this->client->request(Request::METHOD_POST, $url, [
-            'token' => (string) $crawler->filter('input[name="token"]')->first()->attr('value'),
-            'start' => '1',
-        ]);
-        self::assertResponseRedirects($url);
+        $this->enterName('Tom');
+        self::assertResponseRedirects(\sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
 
         $quizCandidate = $this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]);
         $this->assertInstanceOf(QuizCandidate::class, $quizCandidate);
@@ -245,6 +240,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     public function testQuizPageInvalidAnswerIdShowsFlash(): void
     {
+        $this->enterName('Tom');
         $url = \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom'));
         $crawler = $this->client->request(Request::METHOD_GET, $url);
         $token = (string) $crawler->filter('input[name="token"]')->first()->attr('value');
@@ -261,6 +257,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     public function testQuizPageOutOfOrderAnswerShowsFlash(): void
     {
+        $this->enterName('Tom');
         $quiz = $this->getQuizByName('Quiz 1');
         $secondQuestion = $quiz->questions->get(1);
         $this->assertInstanceOf(Question::class, $secondQuestion);
@@ -314,48 +311,48 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('body', 'Je mag deze test niet beantwoorden');
     }
 
-    public function testQuizPageStartPostForInactiveCandidateIsBlocked(): void
+    public function testEnteringNameAsInactiveCandidateIsBlocked(): void
     {
-        $token = $this->questionToken();
         $quizCandidate = new QuizCandidate($this->getQuizByName('Quiz 1'), $this->getCandidate('Tom'));
         $quizCandidate->active = false;
 
         $this->entityManager->persist($quizCandidate);
         $this->entityManager->flush();
 
-        $url = \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom'));
-        $this->client->request(Request::METHOD_POST, $url, ['token' => $token, 'start' => '1']);
+        $this->enterName('Tom');
 
         self::assertResponseRedirects('/krtek');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('body', 'Je mag deze test niet beantwoorden');
         $this->entityManager->clear();
         $this->assertNull($this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')])?->started);
     }
 
-    public function testQuizPageStartPostWithoutValidCsrfTokenDoesNotStart(): void
-    {
-        $url = \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom'));
-        $this->client->request(Request::METHOD_POST, $url, ['token' => 'invalid', 'start' => '1']);
-
-        // An invalid CSRF token is an access denied, which the firewall sends to the login page.
-        self::assertResponseRedirects('http://localhost/login');
-        $this->assertNull($this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]));
-    }
-
-    public function testQuizPageShowsStartPageForExistingQuizCandidateThatHasNotStarted(): void
+    public function testEnteringNameStartsAnExistingQuizCandidateThatHasNotStarted(): void
     {
         $this->entityManager->persist(new QuizCandidate($this->getQuizByName('Quiz 1'), $this->getCandidate('Tom')));
         $this->entityManager->flush();
 
-        $this->client->request(Request::METHOD_GET, \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
+        $this->enterName('Tom');
+        $this->entityManager->clear();
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('button[name="start"]');
+        $quizCandidate = $this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $quizCandidate?->started);
     }
 
-    private function questionToken(): string
+    public function testEnteringUnknownNameDoesNotStartAnything(): void
     {
-        $crawler = $this->client->request(Request::METHOD_GET, \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
+        $before = $this->entityManager->getRepository(QuizCandidate::class)->count([]);
 
-        return (string) $crawler->filter('input[name="token"]')->first()->attr('value');
+        $this->enterName('Nobody');
+
+        self::assertResponseRedirects(\sprintf('/krtek/%s', Base64::base64UrlEncode('Nobody')));
+        $this->assertSame($before, $this->entityManager->getRepository(QuizCandidate::class)->count([]));
+    }
+
+    private function enterName(string $name): void
+    {
+        $crawler = $this->client->request(Request::METHOD_GET, '/krtek');
+        $this->client->submit($crawler->filter('form[name="enter_name"]')->form(['enter_name[name]' => $name]));
     }
 }
