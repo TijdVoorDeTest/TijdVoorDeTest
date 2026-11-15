@@ -178,6 +178,10 @@ html.is-fullscreen .fullscreen-btn {
     @include green-square;
     border-radius: 0 4px 4px 0;
 
+    @media (forced-colors: active) {
+        border: 2px solid ButtonText;
+    }
+
     &:hover,
     &:focus-visible {
         @include green-square-active;

@@ -5,6 +5,7 @@
 {% block body %}
     <div class="quiz-form-narrow">
         {{ form_start(form) }}
+        {{ form_errors(form) }}
         {{ form_label(field) }}
         <div class="quiz-input-group">
             {{ form_widget(field) }}
