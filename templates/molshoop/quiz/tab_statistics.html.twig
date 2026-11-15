@@ -79,7 +79,10 @@
     <hr>
     <h4 class="mb-3">{{ 'Correct and incorrect per question'|trans }}</h4>
     {% if correctnessChart %}
-        <div class="mb-4" style="max-width: 50rem">
+        <div class="mb-4" style="max-width: 50rem"
+             data-controller="bo--chart-titles"
+             data-bo--chart-titles-titles-value="{{ answers.questions|map(stat => stat.question)|json_encode|e('html_attr') }}"
+             data-action="chartjs:pre-connect->bo--chart-titles#preConnect">
             {{ render_chart(correctnessChart) }}
         </div>
     {% else %}
