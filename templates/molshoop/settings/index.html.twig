@@ -71,7 +71,11 @@
                 {% if not app.user.isVerified %}
                     <p class="text-warning">{{ 'Confirm your email address to enable this feature.'|trans }}</p>
                 {% endif %}
-                <a class="btn btn-primary" href="{{ path('tvdt_molshoop_settings_download_data') }}">{{ 'Download data'|trans }}</a>
+                {% if app.user.isVerified %}
+                    <a class="btn btn-primary" href="{{ path('tvdt_molshoop_settings_download_data') }}">{{ 'Download data'|trans }}</a>
+                {% else %}
+                    <button type="button" class="btn btn-primary" disabled>{{ 'Download data'|trans }}</button>
+                {% endif %}
             </section>
 
             <section class="mb-5">
