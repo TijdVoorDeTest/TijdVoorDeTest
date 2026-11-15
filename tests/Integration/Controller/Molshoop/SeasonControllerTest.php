@@ -197,6 +197,14 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         $this->assertContains('Sanne', $names);
     }
 
+    public function testAddCandidatesFormPostsToItsOwnRouteWhenEmbeddedInAModal(): void
+    {
+        // An empty action resolves to the page the modal sits on (the candidates tab) in a real browser, so it must be explicit.
+        $this->client->xmlHttpRequest(Request::METHOD_GET, '/molshoop/season/krtek/add-candidate', server: ['HTTP_TURBO-FRAME' => 'add-candidates-modal-frame']);
+
+        self::assertSelectorExists('form[name="add_candidates_form"][action="/molshoop/season/krtek/add-candidate"]');
+    }
+
     public function testRenameCandidateIsDeniedForNonOwner(): void
     {
         $candidate = $this->getCandidate('Tom');
