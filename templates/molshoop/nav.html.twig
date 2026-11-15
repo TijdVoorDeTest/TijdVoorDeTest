@@ -12,14 +12,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                {% if is_granted('IS_AUTHENTICATED') %}
-                    <li class="nav-item">
-                        <a class="nav-link{% if 'tvdt_molshoop_index' == app.current_route() %} active{% endif %}"
-                           href="{{ path('tvdt_molshoop_index') }}">{{ 'Seasons'|trans }}</a>
-                    </li>
-                {% endif %}
-            </ul>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
             <ul class="navbar-nav mb-auto me-2 me-lg-0">
                 <li class="nav-item" data-controller="bo--modal"
                     data-action="turbo:submit-end->bo--modal#frameSubmitEnd">
