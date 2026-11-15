@@ -1,5 +1,5 @@
 {% extends 'quiz/base.html.twig' %}
-{% block page_title %}{{ question.ordering }}/{{ question.quiz.questions.count }}{% endblock %}
+{% block page_title %}{% if season.settings.showNumbers %}{{ question.ordering }}/{{ question.quiz.questions.count }}{% else %}{{ question.quiz.name }}{% endif %}{% endblock %}
 {% block body %}
     <div class="quiz-content">
         <h1 class="fs-4" id="question-heading">
