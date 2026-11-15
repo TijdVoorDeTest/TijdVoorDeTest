@@ -57,7 +57,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     public function testSelectSeasonWithInvalidCodeRedirectsWithFlash(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="select_season"]')->form([
             'select_season[season_code]' => 'aaaaa',
         ]);
         $this->client->submit($form);
@@ -70,7 +70,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     public function testSelectSeasonWithValidCodeRedirectsToEnterName(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="select_season"]')->form([
             'select_season[season_code]' => 'krtek',
         ]);
         $this->client->submit($form);
@@ -82,7 +82,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     {
         for ($i = 0; $i < 3; ++$i) {
             $crawler = $this->client->request(Request::METHOD_GET, '/');
-            $form = $crawler->filter('form:not([action="/logout"])')->form([
+            $form = $crawler->filter('form[name="select_season"]')->form([
                 'select_season[season_code]' => 'aaaaa',
             ]);
             $this->client->submit($form);
@@ -90,7 +90,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         }
 
         $crawler = $this->client->request(Request::METHOD_GET, '/');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="select_season"]')->form([
             'select_season[season_code]' => 'aaaaa',
         ]);
         $this->client->submit($form);
@@ -165,7 +165,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     public function testEnterNameRedirectsToQuizPage(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/krtek');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="enter_name"]')->form([
             'enter_name[name]' => 'Tom',
         ]);
         $this->client->submit($form);

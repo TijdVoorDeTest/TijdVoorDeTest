@@ -14,7 +14,7 @@ abstract class AbstractE2ETestCase extends PantherTestCase
     {
         $client = $this->visitLoginPageLoggedOut();
 
-        $form = $client->getCrawler()->filter('form:not([action="/logout"])')->form([
+        $form = $client->getCrawler()->filter('form[name="login_form"]')->form([
             '_username' => 'krtek-admin@example.org',
             '_password' => TestFixtures::PASSWORD,
         ]);

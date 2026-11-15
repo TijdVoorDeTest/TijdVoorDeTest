@@ -46,7 +46,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
     public function testRegisterCreatesUserSendsConfirmationAndLogsIn(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/register');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="registration_form"]')->form([
             'registration_form[email]' => 'newuser@example.org',
             'registration_form[plainPassword][first]' => 'NewPass123!',
             'registration_form[plainPassword][second]' => 'NewPass123!',
@@ -66,7 +66,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         $this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'en-US,en;q=0.9');
 
         $crawler = $this->client->request(Request::METHOD_GET, '/register');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="registration_form"]')->form([
             'registration_form[email]' => 'english-speaker@example.org',
             'registration_form[plainPassword][first]' => 'NewPass123!',
             'registration_form[plainPassword][second]' => 'NewPass123!',
@@ -88,7 +88,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
 
         for ($i = 0; $i < 3; ++$i) {
             $crawler = $this->client->request(Request::METHOD_GET, '/register');
-            $form = $crawler->filter('form:not([action="/logout"])')->form([
+            $form = $crawler->filter('form[name="registration_form"]')->form([
                 'registration_form[email]' => "throttled-{$i}@example.org",
                 'registration_form[plainPassword][first]' => 'NewPass123!',
                 'registration_form[plainPassword][second]' => 'DifferentPass123!',
@@ -98,7 +98,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
         }
 
         $crawler = $this->client->request(Request::METHOD_GET, '/register');
-        $form = $crawler->filter('form:not([action="/logout"])')->form([
+        $form = $crawler->filter('form[name="registration_form"]')->form([
             'registration_form[email]' => 'throttled-3@example.org',
             'registration_form[plainPassword][first]' => 'NewPass123!',
             'registration_form[plainPassword][second]' => 'DifferentPass123!',
@@ -111,7 +111,7 @@ final class RegistrationControllerTest extends AbstractControllerWebTestCase
     {
         $submit = function (string $clientIp): void {
             $crawler = $this->client->request(Request::METHOD_GET, '/register');
-            $form = $crawler->filter('form:not([action="/logout"])')->form([
+            $form = $crawler->filter('form[name="registration_form"]')->form([
                 'registration_form[email]' => 'forwarded@example.org',
                 'registration_form[plainPassword][first]' => 'NewPass123!',
                 'registration_form[plainPassword][second]' => 'DifferentPass123!',

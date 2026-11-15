@@ -3,7 +3,7 @@
 {% block page_title %}Log in{% endblock %}
 
 {% block body %}
-    <form method="post" data-controller="forgot-password">
+    <form name="login_form" method="post" data-controller="forgot-password">
         <h1 class="mb-3 fs-3">{{ 'Please sign in'|trans }}</h1>
         <div class="mb-3">
             <label for="username" class="form-label">{{ 'Email'|trans }}</label>

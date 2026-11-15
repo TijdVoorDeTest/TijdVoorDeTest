@@ -57,7 +57,7 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
     public function testLoginWithInvalidCredentialsShowsFlash(): void
     {
         $this->client->request(Request::METHOD_GET, '/login');
-        $form = $this->client->getCrawler()->filter('form:not([action="/logout"])')->form([
+        $form = $this->client->getCrawler()->filter('form[name="login_form"]')->form([
             '_username' => 'test@example.org',
             '_password' => 'wrong-password',
         ]);
@@ -72,7 +72,7 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
     {
         for ($i = 0; $i < 2; ++$i) {
             $this->client->request(Request::METHOD_GET, '/login');
-            $form = $this->client->getCrawler()->filter('form:not([action="/logout"])')->form([
+            $form = $this->client->getCrawler()->filter('form[name="login_form"]')->form([
                 '_username' => 'test@example.org',
                 '_password' => 'wrong-password',
             ]);
@@ -81,7 +81,7 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
         }
 
         $this->client->request(Request::METHOD_GET, '/login');
-        $form = $this->client->getCrawler()->filter('form:not([action="/logout"])')->form([
+        $form = $this->client->getCrawler()->filter('form[name="login_form"]')->form([
             '_username' => 'test@example.org',
             '_password' => 'wrong-password',
         ]);
