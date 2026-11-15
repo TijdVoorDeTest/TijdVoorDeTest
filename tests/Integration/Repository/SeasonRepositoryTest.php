@@ -158,4 +158,48 @@ final class SeasonRepositoryTest extends DatabaseTestCase
         $this->entityManager->flush();
         $this->entityManager->clear();
     }
+
+    public function testDeleteIfStillExpiredSkipsASeasonRestoredAfterItWasSelected(): void
+    {
+        $this->softDelete('krtek', new DateTime('-40 days'));
+        $threshold = new DateTimeImmutable('-31 days');
+        $selected = $this->seasonRepository->findSoftDeletedOlderThan($threshold)[0];
+
+        // Someone restores it between the selection and the purge, behind the ORM's back.
+        $this->entityManager->getConnection()->executeStatement("update season set deleted_at = null where season_code = 'krtek'");
+
+        $this->assertFalse($this->seasonRepository->deleteIfStillExpired($selected, $threshold));
+        $this->assertSame(1, $this->rowCount('krtek'));
+    }
+
+    public function testDeleteIfStillExpiredPurgesAnExpiredSeason(): void
+    {
+        $this->softDelete('krtek', new DateTime('-40 days'));
+        $threshold = new DateTimeImmutable('-31 days');
+        $selected = $this->seasonRepository->findSoftDeletedOlderThan($threshold)[0];
+
+        $this->assertTrue($this->seasonRepository->deleteIfStillExpired($selected, $threshold));
+        $this->assertSame(0, $this->rowCount('krtek'));
+    }
+
+    public function testRestoreReturnsFalseWhenTheSeasonWasPurgedMeanwhile(): void
+    {
+        // A childless season, so its row can be removed behind the ORM's back without FK violations.
+        $season = new Season();
+        $season->name = 'Short lived';
+        $season->seasonCode = 'zzzzz';
+        $season->setDeletedAt(new DateTime());
+
+        $this->entityManager->persist($season);
+        $this->entityManager->flush();
+
+        $this->entityManager->getConnection()->executeStatement("delete from season where season_code = 'zzzzz'");
+
+        $this->assertFalse($this->seasonRepository->restore($season));
+    }
+
+    private function rowCount(string $seasonCode): int
+    {
+        return (int) $this->entityManager->getConnection()->fetchOne('select count(*) from season where season_code = ?', [$seasonCode]);
+    }
 }

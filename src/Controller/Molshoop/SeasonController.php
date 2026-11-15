@@ -247,8 +247,9 @@ class SeasonController extends AbstractController
 
         $this->denyAccessUnlessGranted(SeasonVoter::RESTORE, $season);
 
-        $season->setDeletedAt();
-        $this->em->flush();
+        if (!$this->seasonRepository->restore($season)) {
+            throw $this->createNotFoundException();
+        }
 
         $this->addFlash(FlashType::Success, $this->translator->trans('Season restored'));
 

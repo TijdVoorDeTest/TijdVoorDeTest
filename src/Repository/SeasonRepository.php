@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Tvdt\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 use Gedmo\SoftDeleteable\SoftDeleteableListener;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 use Tvdt\Entity\BankQuestion;
 use Tvdt\Entity\Elimination;
 use Tvdt\Entity\GivenAnswer;
@@ -149,6 +152,63 @@ class SeasonRepository extends ServiceEntityRepository
             ->getResult();
 
         return $seasons;
+    }
+
+    /** Clears deletedAt under a row lock, so it cannot interleave with deleteIfStillExpired().
+     *
+     * @return bool false when the season is no longer soft-deleted (restored already, or purged meanwhile)
+     */
+    public function restore(Season $season): bool
+    {
+        $em = $this->getEntityManager();
+
+        return SoftDeleteableFilter::withDisabled($em, fn (): bool => $em->wrapInTransaction(function () use ($em, $season): bool {
+            if (!$this->lockAndRefresh($em, $season) || !$season->isDeleted()) {
+                return false;
+            }
+
+            $season->setDeletedAt();
+            $em->flush();
+
+            return true;
+        }));
+    }
+
+    /** Purges the season only if, under a row lock, it is still soft-deleted before $threshold, so a
+     * season restored after the caller selected it is never deleted.
+     *
+     * @return bool whether the season was purged
+     */
+    public function deleteIfStillExpired(Season $season, \DateTimeInterface $threshold): bool
+    {
+        $em = $this->getEntityManager();
+
+        return SoftDeleteableFilter::withDisabled($em, fn (): bool => $em->wrapInTransaction(function () use ($em, $season, $threshold): bool {
+            if (!$this->lockAndRefresh($em, $season) || !$season->isDeleted()) {
+                return false;
+            }
+
+            $deletedAt = $season->getDeletedAt();
+            if (!$deletedAt instanceof \DateTimeInterface || $deletedAt >= $threshold) {
+                return false;
+            }
+
+            $this->deleteSeason($season);
+
+            return true;
+        }));
+    }
+
+    /** Reloads the season with a write lock; false when its row is gone. (EntityManager::refresh()
+     * doesn't signal a vanished row, so this uses a locking query that refreshes the managed entity.).
+     */
+    private function lockAndRefresh(EntityManagerInterface $em, Season $season): bool
+    {
+        return null !== $em->createQuery('select s from Tvdt\Entity\Season s where s.id = :id')
+            ->setParameter('id', $season->id, UuidType::NAME)
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getOneOrNullResult();
     }
 
     /** Permanently deletes the season and every row tied to it — including the season itself,
