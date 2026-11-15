@@ -43,7 +43,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         parent::tearDown();
     }
 
-    /** Sanity check: every full HTML page the test last rendered must set a page title. */
+    /** Sanity check: every full HTML page the test last rendered must set a page title (public quiz pages deliberately don't). */
     private function assertLastPageHasTitle(): void
     {
         try {
@@ -52,7 +52,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
             return; // test made no request
         }
 
-        if (200 === $response->getStatusCode() && str_contains($response->getContent(), '<title>')) {
+        if (200 === $response->getStatusCode() && str_contains($response->getContent(), '<title>') && !str_contains($response->getContent(), 'data-controller="fullscreen"')) {
             $title = $this->client->getCrawler()->filter('title')->text();
             $this->assertDoesNotMatchRegularExpression('/^Tijd voor de test/', mb_trim($title), 'Page has no page_title block.');
         }

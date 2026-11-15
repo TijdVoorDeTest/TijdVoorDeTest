@@ -221,6 +221,15 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('body', 'Is de Krtek een man of een vrouw?');
     }
 
+    public function testQuestionPageTitleIsJustTheSiteName(): void
+    {
+        $this->enterName('Tom');
+        $this->client->followRedirect();
+
+        self::assertResponseIsSuccessful();
+        $this->assertStringStartsWith('Tijd voor de test', $this->client->getCrawler()->filter('title')->text());
+    }
+
     public function testQuizPageAnsweringPersistsGivenAnswerAndRedirects(): void
     {
         $quiz = $this->getQuizByName('Quiz 1');
