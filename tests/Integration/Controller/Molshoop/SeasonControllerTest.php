@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Safe\DateTime;
 use Symfony\Component\HttpFoundation\Request;
 use Tvdt\Controller\Molshoop\SeasonController;
 use Tvdt\Entity\Candidate;
@@ -441,5 +442,98 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
 
         $this->entityManager->clear();
         $this->assertNotInstanceOf(Quiz::class, $this->entityManager->getRepository(Quiz::class)->findOneBy(['name' => 'Broken quiz']));
+    }
+
+    public function testDeleteModalNamesTheRestoreLocationAndThirtyDays(): void
+    {
+        $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/settings');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#deleteSeasonModal .modal-body', '30 dagen');
+        self::assertSelectorTextContains('#deleteSeasonModal .modal-body', 'verwijderde seizoenen');
+    }
+
+    public function testDeleteModalPlaceholdersAreFilledInEnglish(): void
+    {
+        // English has no catalog, so untranslated ids go through Symfony's plain strtr formatter,
+        // which only replaces placeholder keys written with their braces.
+        $this->getUserByEmail('krtek-admin@example.org')->locale = 'en';
+        $this->entityManager->flush();
+
+        $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/settings');
+
+        self::assertSelectorTextContains('#deleteSeasonModal .modal-body', 'restore it for 30 days');
+        self::assertSelectorTextContains('#deleteSeasonModal .modal-body', 'Type delete to confirm');
+        self::assertSelectorTextNotContains('#deleteSeasonModal .modal-body', '{');
+    }
+
+    public function testOwnerCanRestoreTheirSoftDeletedSeason(): void
+    {
+        $this->softDeleteSeason('krtek');
+        $token = $this->getCsrfTokenFromPage('/molshoop/settings', '/molshoop/season/krtek/restore');
+
+        $this->client->request(Request::METHOD_POST, '/molshoop/season/krtek/restore', ['_token' => $token]);
+
+        self::assertResponseRedirects('/molshoop/settings');
+        $this->entityManager->clear();
+
+        $season = $this->getSeasonByCode('krtek');
+        $this->assertNotInstanceOf(\DateTimeInterface::class, $season->getDeletedAt());
+    }
+
+    public function testAdminCanRestoreAnotherUsersSeasonAndLandsOnTheAdminTab(): void
+    {
+        $this->softDeleteSeason('krtek');
+        $this->loginAs('admin@example.org');
+        $token = $this->getCsrfTokenFromPage('/admin/seasons/deleted', '/molshoop/season/krtek/restore');
+
+        $this->client->request(Request::METHOD_POST, '/molshoop/season/krtek/restore', ['_token' => $token, 'from' => 'admin']);
+
+        self::assertResponseRedirects('/admin/seasons/deleted');
+        $this->entityManager->clear();
+        $this->assertNotInstanceOf(\DateTimeInterface::class, $this->getSeasonByCode('krtek')->getDeletedAt());
+    }
+
+    public function testRestoreIsDeniedForNonOwner(): void
+    {
+        $this->softDeleteSeason('krtek');
+        $token = $this->getCsrfTokenFromPage('/molshoop/settings', '/molshoop/season/krtek/restore');
+
+        $this->loginAs('test@example.org');
+        $this->client->request(Request::METHOD_POST, '/molshoop/season/krtek/restore', ['_token' => $token]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testRestoreWithInvalidCsrfTokenIsRejected(): void
+    {
+        $this->softDeleteSeason('krtek');
+        $this->client->request(Request::METHOD_GET, '/molshoop/settings');
+
+        $this->client->request(Request::METHOD_POST, '/molshoop/season/krtek/restore', ['_token' => 'nope']);
+
+        self::assertResponseRedirects('/login');
+        $this->entityManager->clear();
+        $this->assertSame(1, (int) $this->entityManager->getConnection()->fetchOne("select count(*) from season where season_code = 'krtek' and deleted_at is not null"));
+    }
+
+    public function testRestoreOfAnActiveOrUnknownSeasonIsNotFound(): void
+    {
+        $this->softDeleteSeason('krtek');
+        $token = $this->getCsrfTokenFromPage('/molshoop/settings', '/molshoop/season/krtek/restore');
+
+        // bbbbb exists but is not deleted, zzzzz does not exist at all.
+        $this->client->request(Request::METHOD_POST, '/molshoop/season/bbbbb/restore', ['_token' => $token]);
+        self::assertResponseStatusCodeSame(404);
+
+        $this->client->request(Request::METHOD_POST, '/molshoop/season/zzzzz/restore', ['_token' => $token]);
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    private function softDeleteSeason(string $seasonCode): void
+    {
+        $this->getSeasonByCode($seasonCode)->setDeletedAt(new DateTime());
+        $this->entityManager->flush();
+        $this->entityManager->clear();
     }
 }

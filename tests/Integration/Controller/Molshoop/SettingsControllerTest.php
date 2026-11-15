@@ -6,6 +6,7 @@ namespace Tvdt\Tests\Integration\Controller\Molshoop;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Safe\DateTime;
 use Safe\DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -381,5 +382,26 @@ final class SettingsControllerTest extends AbstractControllerWebTestCase
         $user->isVerified = true;
 
         $this->entityManager->flush();
+    }
+
+    public function testSettingsPageListsOnlyTheUsersDeletedSeasonsWithARestoreButton(): void
+    {
+        $this->loginAs('krtek-admin@example.org');
+        $this->getSeasonByCode('krtek')->setDeletedAt(new DateTime());
+        $this->getSeasonByCode('bbbbb')->setDeletedAt(new DateTime());
+        $this->entityManager->flush();
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/settings');
+
+        self::assertResponseIsSuccessful();
+        $this->assertCount(1, $crawler->filter('form[action="/molshoop/season/krtek/restore"]'));
+        $this->assertCount(0, $crawler->filter('form[action="/molshoop/season/bbbbb/restore"]'));
+    }
+
+    public function testSettingsPageHasNoDeletedSeasonsSectionWhenNothingIsDeleted(): void
+    {
+        $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/settings');
+
+        $this->assertCount(0, $crawler->filter('form[action*="/restore"]'));
     }
 }

@@ -53,6 +53,12 @@ migrations:
   backoffLimit: 1
   activeDeadlineSeconds: 600
 
+# Daily job that permanently removes seasons soft-deleted more than Season::RETENTION_DAYS ago.
+purgeDeletedSeasons:
+  enabled: true
+  schedule: "17 3 * * *"
+  activeDeadlineSeconds: 600
+
 deploymentAnnotations: {}
 
 podAnnotations: {}

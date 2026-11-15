@@ -53,6 +53,16 @@ final class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/seasons/deleted', name: 'tvdt_admin_deleted_seasons', methods: ['GET'])]
+    public function deletedSeasons(): Response
+    {
+        return $this->render('admin/index.html.twig', [
+            'activeTab' => 'deleted-seasons',
+            'template' => 'admin/tab_deleted_seasons.html.twig',
+            'seasons' => $this->seasonRepository->findAllSoftDeleted(),
+        ]);
+    }
+
     #[IsCsrfTokenValid('admin_reset_password')]
     #[Route(
         '/admin/users/{user}/reset-password',

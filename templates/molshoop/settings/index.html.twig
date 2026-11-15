@@ -57,6 +57,14 @@
                 {{ form(emailForm, {action: path('tvdt_molshoop_settings_email')}) }}
             </section>
 
+            {% if deletedSeasons is not empty %}
+                <section class="mb-5" id="deleted-seasons">
+                    <h4>{{ 'Deleted seasons'|trans }}</h4>
+                    <p>{{ 'Deleted seasons can be restored for {days} days after deleting them. After that they are permanently removed.'|trans({'{days}': constant('Tvdt\\Entity\\Season::RETENTION_DAYS') - 1}) }}</p>
+                    {{ include('molshoop/partials/deleted_seasons_table.html.twig', {seasons: deletedSeasons, admin: false}) }}
+                </section>
+            {% endif %}
+
             <section class="mb-5">
                 <h4>{{ 'Your data'|trans }}</h4>
                 <p>{{ 'Download an archive of everything stored under your account: your profile, the seasons you own, their quizzes, results and candidates.'|trans }}</p>

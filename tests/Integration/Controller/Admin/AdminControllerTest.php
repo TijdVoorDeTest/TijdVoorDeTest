@@ -6,6 +6,7 @@ namespace Tvdt\Tests\Integration\Controller\Admin;
 
 use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Safe\DateTime;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Profiler\Profile;
@@ -287,5 +288,51 @@ final class AdminControllerTest extends AbstractControllerWebTestCase
         $this->assertInstanceOf(DoctrineDataCollector::class, $collector);
 
         return $collector->getQueryCount();
+    }
+
+    public function testDeletedSeasonsTabListsDeletedSeasonsWithOwnersAndRestoreButton(): void
+    {
+        $this->getSeasonByCode('krtek')->setDeletedAt(new DateTime());
+        $this->entityManager->flush();
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/admin/seasons/deleted');
+
+        self::assertResponseIsSuccessful();
+        $this->assertCount(1, $crawler->filter('table tbody tr'));
+        $this->assertStringContainsString('krtek-admin@example.org', $crawler->filter('table tbody tr')->text());
+        $this->assertCount(1, $crawler->filter('form[action="/molshoop/season/krtek/restore"]'));
+    }
+
+    public function testDeletedSeasonsTabIsDeniedForNonAdmin(): void
+    {
+        $this->loginAs('test@example.org');
+
+        $this->client->request(Request::METHOD_GET, '/admin/seasons/deleted');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testDeletedSeasonsTabQueryCountDoesNotGrowWithMoreDeletedSeasons(): void
+    {
+        $this->client->request(Request::METHOD_GET, '/admin/seasons/deleted');
+
+        $owner = $this->getUserByEmail('test@example.org');
+        for ($i = 0; $i < 20; ++$i) {
+            $season = new Season();
+            $season->name = \sprintf('Deleted Season %d', $i);
+            $season->seasonCode = \sprintf('dl%03d', $i);
+            $season->addOwner($owner);
+            $season->setDeletedAt(new DateTime());
+
+            $this->entityManager->persist($season);
+        }
+
+        $this->entityManager->flush();
+
+        $this->client->enableProfiler();
+        $this->client->request(Request::METHOD_GET, '/admin/seasons/deleted');
+
+        self::assertResponseIsSuccessful();
+        $this->assertLessThanOrEqual(5, $this->getQueryCount(), 'Adding more deleted seasons should not add more queries (N+1 on owners).');
     }
 }

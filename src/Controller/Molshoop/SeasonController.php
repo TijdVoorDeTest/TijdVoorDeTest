@@ -34,6 +34,7 @@ use Tvdt\Form\SettingsForm;
 use Tvdt\Form\UploadQuizFormType;
 use Tvdt\Repository\CandidateRepository;
 use Tvdt\Repository\QuizRepository;
+use Tvdt\Repository\SeasonRepository;
 use Tvdt\Repository\UserRepository;
 use Tvdt\Security\Voter\SeasonVoter;
 use Tvdt\Service\QuizSpreadsheetService;
@@ -49,6 +50,7 @@ class SeasonController extends AbstractController
         private readonly CandidateRepository $candidateRepository,
         private readonly QuizRepository $quizRepository,
         private readonly UserRepository $userRepository,
+        private readonly SeasonRepository $seasonRepository,
     ) {}
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -219,15 +221,41 @@ class SeasonController extends AbstractController
         }
 
         // Soft delete only: this hides the season everywhere without touching its tests,
-        // candidates, or answers, so it can still be restored later (see issue for restoring a
-        // soft-deleted season). Permanent removal only happens via GDPR account deletion
-        // (UserRepository::deleteUser()) or the scheduled cleanup job (see issue for that).
+        // candidates, or answers, so owners and admins can restore it (restoreSeason()) until
+        // Season::RETENTION_DAYS have passed. Permanent removal only happens via GDPR account
+        // deletion (UserRepository::deleteUser()) or the purge command (PurgeDeletedSeasonsCommand).
         $season->setDeletedAt(new DateTime());
         $this->em->flush();
 
         $this->addFlash(FlashType::Success, $this->translator->trans('Season deleted'));
 
         return $this->redirectToRoute('tvdt_molshoop_index');
+    }
+
+    /** Not bound to {season}: the entity resolver goes through the softdeleteable filter and would 404 on exactly the seasons this restores. */
+    #[IsCsrfTokenValid('restore_season')]
+    #[Route(
+        '/molshoop/season/{seasonCode}/restore',
+        name: 'tvdt_molshoop_season_restore',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX],
+        methods: ['POST'],
+    )]
+    public function restoreSeason(string $seasonCode, Request $request): RedirectResponse
+    {
+        $season = $this->seasonRepository->findOneSoftDeletedBySeasonCode($seasonCode)
+            ?? throw $this->createNotFoundException();
+
+        $this->denyAccessUnlessGranted(SeasonVoter::RESTORE, $season);
+
+        $season->setDeletedAt();
+        $this->em->flush();
+
+        $this->addFlash(FlashType::Success, $this->translator->trans('Season restored'));
+
+        // Only admins have an admin tab to go back to.
+        return $this->authenticatedUser->isAdmin && 'admin' === $request->request->getString('from')
+            ? $this->redirectToRoute('tvdt_admin_deleted_seasons')
+            : $this->redirectToRoute('tvdt_molshoop_settings');
     }
 
     #[IsCsrfTokenValid('rename_season')]

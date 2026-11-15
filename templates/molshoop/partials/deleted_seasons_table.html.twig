@@ -1,0 +1,37 @@
+{# Soft-deleted seasons with a restore button. `admin` adds the owners column and sends the user back to the admin tab. #}
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>{{ 'Name'|trans }}</th>
+                <th>{{ 'Code'|trans }}</th>
+                {% if admin %}
+                    <th>{{ 'Owners'|trans }}</th>
+                {% endif %}
+                <th>{{ 'Deleted on'|trans }}</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for season in seasons %}
+                <tr>
+                    <td>{{ season.name }}</td>
+                    <td>{{ season.seasonCode }}</td>
+                    {% if admin %}
+                        <td>{{ season.owners|map(o => o.email)|join(', ') }}</td>
+                    {% endif %}
+                    <td>{{ season.deletedAt|date('d-m-Y') }}</td>
+                    <td class="text-end">
+                        <form action="{{ path('tvdt_molshoop_season_restore', {seasonCode: season.seasonCode}) }}" method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('restore_season') }}">
+                            {% if admin %}
+                                <input type="hidden" name="from" value="admin">
+                            {% endif %}
+                            <button type="submit" class="btn btn-sm btn-primary">{{ 'Restore'|trans }}</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

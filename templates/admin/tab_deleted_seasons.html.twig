@@ -1,0 +1,5 @@
+{% if seasons is empty %}
+    <p class="text-body-secondary">{{ 'There are no deleted seasons.'|trans }}</p>
+{% else %}
+    {{ include('molshoop/partials/deleted_seasons_table.html.twig', {admin: true}) }}
+{% endif %}

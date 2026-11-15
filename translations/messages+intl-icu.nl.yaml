@@ -96,7 +96,10 @@ Delete: Verwijderen
 'Delete season...': 'Seizoen verwijderen...'
 'Delete user': 'Gebruiker verwijderen'
 Delete...: Verwijderen...
-'Deleting this season hides it, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
+'Deleted on': 'Verwijderd op'
+'Deleted seasons': 'Verwijderde seizoenen'
+'Deleted seasons can be restored for {days} days after deleting them. After that they are permanently removed.': 'Verwijderde seizoenen kun je nog {days} dagen na het verwijderen terugzetten. Daarna worden ze definitief verwijderd.'
+'Deleting this season hides it, its tests, and all candidate answers everywhere.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten.'
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
 'Deployed commit': 'Uitgerolde commit'
 Description: Beschrijving
@@ -247,6 +250,7 @@ Rename: Hernoemen
 'Reset password': 'Wachtwoord resetten'
 'Reset progress': 'Voortgang resetten'
 'Reset your password': 'Wachtwoord resetten'
+Restore: Terugzetten
 Result: Uitslag
 'Results & Elimination': 'Resultaat & Eliminatie'
 Reusable: Herbruikbaar
@@ -262,6 +266,7 @@ Season: Seizoen
 'Season code regenerated': 'Seizoenscode opnieuw gegenereerd'
 'Season deleted': 'Seizoen verwijderd'
 'Season renamed': 'Seizoen hernoemd'
+'Season restored': 'Seizoen teruggezet'
 Seasons: Seizoenen
 'Send a password reset email to {email}?': 'Wachtwoordherstel-e-mail sturen naar {email}?'
 'Send feedback': 'Feedback versturen'
@@ -291,10 +296,11 @@ Submit: Verstuur
 'The season name must be between 1 and 64 characters': 'De naam van het seizoen moet tussen de 1 en 64 tekens zijn'
 Theme: Thema
 'There are no answers for this question': 'Er zijn geen antwoorden voor deze vraag'
+'There are no deleted seasons.': 'Er zijn geen verwijderde seizoenen.'
 'There is already an account with this email': 'Er is al een account met dit e-mailadres'
 'There is no active quiz': 'Er is geen test actief'
 'This deletes your account and every season you are the only owner of. Enter your password to confirm.': 'Dit verwijdert je account en alle seizoenen waarvan jij de enige eigenaar bent. Vul je wachtwoord in om te bevestigen.'
-'This hides this season, its tests, and all candidate answers everywhere. There is no way to undo this yourself yet.': 'Dit verbergt dit seizoen overal, samen met de tests en antwoorden van kandidaten. Je kunt dit nog niet zelf ongedaan maken.'
+'This hides this season, its tests, and all candidate answers everywhere.': 'Dit verbergt dit seizoen overal, samen met de tests en antwoorden van kandidaten.'
 'This invalidates the current season code. Anyone using the old code will no longer be able to join this season.': 'Hiermee wordt de huidige seizoenscode ongeldig. Iedereen die de oude code gebruikt, kan dit seizoen niet meer vinden.'
 'This link will expire in {count}.': 'Deze link verloopt over {count}.'
 'This permanently deletes {email} and every season they are the only owner of. There is no way to undo this.': 'Dit verwijdert {email} definitief, samen met elk seizoen waarvan deze gebruiker de enige eigenaar is. Dit kan niet ongedaan worden gemaakt.'
@@ -310,6 +316,7 @@ Theme: Thema
 Time: Tijd
 'Toggle correct answer': 'Goed antwoord aan/uitzetten'
 'Type delete to confirm': 'Typ verwijderen om te bevestigen'
+'Type {word} to confirm': 'Typ {word} om te bevestigen'
 Unassign: Ontkoppelen
 'Undo finalization': 'Afronden ongedaan maken'
 'Use Settings to delete your own account.': 'Gebruik Instellingen om je eigen account te verwijderen.'
@@ -324,6 +331,7 @@ White: Wit
 Yellow: Geel
 'Yes': Ja
 'You are not allowed to answer this quiz': 'Je mag deze test niet beantwoorden'
+'You can restore it for {days} days via Settings, Deleted seasons. After that it is permanently removed.': 'Je kunt het {days} dagen terugzetten via Instellingen, verwijderde seizoenen. Daarna wordt het definitief verwijderd.'
 'You cannot answer this question': 'Je kan deze vraag niet beantwoorden'
 'You have no seasons yet.': 'Je hebt nog geen seizoenen.'
 'You left the season': 'Je hebt het seizoen verlaten'
@@ -336,6 +344,7 @@ Yellow: Geel
 'Your password has been changed.': 'Je wachtwoord is gewijzigd.'
 'Your password reset request': 'Verzoek tot wachtwoordreset'
 correct: goed
+delete: verwijderen
 'try again': 'probeer opnieuw'
 your.email@example.org: jouw.naam@voorbeeld.nl
 '{count, plural, one {Owner} other {Owners}}': '{count, plural, one {Eigenaar} other {Eigenaren}}'
