@@ -164,7 +164,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
     public function testAddCandidates(): void
     {
         $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/add-candidate');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="add_candidates_form"]')->form([
             'add_candidates_form[candidates]' => "Nora\nPiet",
         ]);
         $this->client->submit($form);
@@ -182,7 +182,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
     public function testAddCandidatesViaTurboFrameReturnsEmptyFrame(): void
     {
         $this->client->xmlHttpRequest(Request::METHOD_GET, '/molshoop/season/krtek/add-candidate', server: ['HTTP_TURBO-FRAME' => 'add-candidates-modal-frame']);
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="add_candidates_form"]')->form([
             'add_candidates_form[candidates]' => 'Sanne',
         ]);
         $this->client->submit($form, [], ['HTTP_TURBO-FRAME' => 'add-candidates-modal-frame']);
@@ -195,6 +195,14 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         $this->assertInstanceOf(Season::class, $season);
         $names = array_map(static fn (Candidate $candidate): string => $candidate->name, $season->candidates->toArray());
         $this->assertContains('Sanne', $names);
+    }
+
+    public function testAddCandidatesFormPostsToItsOwnRouteWhenEmbeddedInAModal(): void
+    {
+        // An empty action resolves to the page the modal sits on (the candidates tab) in a real browser, so it must be explicit.
+        $this->client->xmlHttpRequest(Request::METHOD_GET, '/molshoop/season/krtek/add-candidate', server: ['HTTP_TURBO-FRAME' => 'add-candidates-modal-frame']);
+
+        self::assertSelectorExists('form[name="add_candidates_form"][action="/molshoop/season/krtek/add-candidate"]');
     }
 
     public function testRenameCandidateIsDeniedForNonOwner(): void
@@ -419,7 +427,7 @@ final class SeasonControllerTest extends AbstractControllerWebTestCase
         file_put_contents($path, ob_get_clean());
 
         $this->client->request(Request::METHOD_GET, '/molshoop/season/krtek/add-quiz');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="upload_quiz_form"]')->form([
             'upload_quiz_form[name]' => 'Broken quiz',
             'upload_quiz_form[sheet]' => $path,
         ]);

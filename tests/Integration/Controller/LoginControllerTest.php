@@ -57,7 +57,7 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
     public function testLoginWithInvalidCredentialsShowsFlash(): void
     {
         $this->client->request(Request::METHOD_GET, '/login');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="login_form"]')->form([
             '_username' => 'test@example.org',
             '_password' => 'wrong-password',
         ]);
@@ -72,7 +72,7 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
     {
         for ($i = 0; $i < 2; ++$i) {
             $this->client->request(Request::METHOD_GET, '/login');
-            $form = $this->client->getCrawler()->filter('form')->form([
+            $form = $this->client->getCrawler()->filter('form[name="login_form"]')->form([
                 '_username' => 'test@example.org',
                 '_password' => 'wrong-password',
             ]);
@@ -81,7 +81,7 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
         }
 
         $this->client->request(Request::METHOD_GET, '/login');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="login_form"]')->form([
             '_username' => 'test@example.org',
             '_password' => 'wrong-password',
         ]);
@@ -92,12 +92,50 @@ final class LoginControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('body', 'Te veel onjuiste inlogpogingen');
     }
 
-    public function testLogoutIsInterceptedByFirewall(): void
+    public function testLogoutViaGetDoesNotLogOut(): void
     {
         $this->loginAs('test@example.org');
 
-        $this->client->request(Request::METHOD_GET, '/logout');
+        $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/');
+        $token = $crawler->filter('form[action="/logout"] input[name="_csrf_token"]')->attr('value');
+        $this->client->request(Request::METHOD_GET, '/logout', ['_csrf_token' => $token]);
 
+        self::assertResponseStatusCodeSame(405);
+        $this->client->request(Request::METHOD_GET, '/login');
         self::assertResponseRedirects();
+    }
+
+    public function testLogoutViaPostWithCsrfTokenLogsOut(): void
+    {
+        $this->loginAs('test@example.org');
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/');
+        $this->client->submit($crawler->filter('form[action="/logout"]')->form());
+
+        self::assertResponseRedirects('/');
+        $this->client->request(Request::METHOD_GET, '/molshoop/');
+        self::assertResponseRedirects('http://localhost/login');
+    }
+
+    public function testLogoutViaPostWithoutValidCsrfTokenDoesNotLogOut(): void
+    {
+        $this->loginAs('test@example.org');
+        $this->client->request(Request::METHOD_GET, '/molshoop/');
+
+        $this->client->request(Request::METHOD_POST, '/logout', ['_csrf_token' => 'invalid']);
+
+        self::assertResponseStatusCodeSame(403);
+        $this->client->request(Request::METHOD_GET, '/molshoop/');
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testQuizNavLogoutFormCarriesTheCurrentPathAsTarget(): void
+    {
+        $this->loginAs('test@example.org');
+
+        $crawler = $this->client->request(Request::METHOD_GET, '/krtek');
+        $this->client->submit($crawler->filter('form[action^="/logout"]')->form());
+
+        self::assertResponseRedirects('/krtek');
     }
 }

@@ -43,7 +43,7 @@ final class ResetPasswordControllerTest extends AbstractControllerWebTestCase
     public function testRequestRedirectsToCheckEmail(string $email): void
     {
         $this->client->request(Request::METHOD_GET, '/reset-password');
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="reset_password_request_form"]')->form([
             'reset_password_request_form[email]' => $email,
         ]);
         $this->client->submit($form);
@@ -81,7 +81,7 @@ final class ResetPasswordControllerTest extends AbstractControllerWebTestCase
         $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
 
-        $form = $this->client->getCrawler()->filter('form')->form([
+        $form = $this->client->getCrawler()->filter('form[name="change_password_form"]')->form([
             'change_password_form[plainPassword][first]' => 'NewPass123!',
             'change_password_form[plainPassword][second]' => 'NewPass123!',
         ]);

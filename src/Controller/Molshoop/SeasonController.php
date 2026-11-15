@@ -267,7 +267,9 @@ class SeasonController extends AbstractController
     {
         $isTurboFrame = $request->headers->has('Turbo-Frame');
 
-        $form = $this->createForm(AddCandidatesFormType::class);
+        $form = $this->createForm(AddCandidatesFormType::class, options: [
+            'action' => $this->generateUrl('tvdt_molshoop_add_candidates', ['seasonCode' => $season->seasonCode]),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

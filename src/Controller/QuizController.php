@@ -76,8 +76,17 @@ final class QuizController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $name = $form->get('name')->getData();
+            $nameHash = Base64::base64UrlEncode($name);
 
-            return $this->redirectToRoute('tvdt_quiz_quiz_page', ['seasonCode' => $season->seasonCode, 'nameHash' => Base64::base64UrlEncode($name)]);
+            $candidate = $this->candidateRepository->getCandidateByHash($season, $nameHash);
+            $quiz = $season->activeQuiz;
+            if ($candidate instanceof Candidate && $quiz instanceof Quiz && null === $this->quizCandidateRepository->createIfNotExist($quiz, $candidate)) {
+                $this->addFlash(FlashType::Danger, $this->translator->trans('You are not allowed to answer this quiz'));
+
+                return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
+            }
+
+            return $this->redirectToRoute('tvdt_quiz_quiz_page', ['seasonCode' => $season->seasonCode, 'nameHash' => $nameHash]);
         }
 
         return $this->render('quiz/enter_name.html.twig', ['season' => $season, 'form' => $form]);
@@ -160,12 +169,17 @@ final class QuizController extends AbstractController
             return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
         }
 
-        $result = $this->quizCandidateRepository->createIfNotExist($quiz, $candidate);
+        $quizCandidate = $this->quizCandidateRepository->findOneBy(['quiz' => $quiz, 'candidate' => $candidate]);
 
         // Check if candidate is inactive
-        if (null === $result) {
+        if (null !== $quizCandidate && !$quizCandidate->active) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('You are not allowed to answer this quiz'));
 
+            return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
+        }
+
+        // The timer starts when the name is entered (a POST), never on this GET, so a prefetch can't start it.
+        if (null === $quizCandidate?->started) {
             return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $season->seasonCode]);
         }
 

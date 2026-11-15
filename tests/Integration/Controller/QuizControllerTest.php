@@ -28,6 +28,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     private function answerQuestion(Question $question): void
     {
+        $this->enterName('Tom');
         $tomHash = Base64::base64UrlEncode('Tom');
         $url = \sprintf('/krtek/%s', $tomHash);
 
@@ -57,7 +58,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     public function testSelectSeasonWithInvalidCodeRedirectsWithFlash(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/');
-        $form = $crawler->filter('form')->form([
+        $form = $crawler->filter('form[name="select_season"]')->form([
             'select_season[season_code]' => 'aaaaa',
         ]);
         $this->client->submit($form);
@@ -70,7 +71,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     public function testSelectSeasonWithValidCodeRedirectsToEnterName(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/');
-        $form = $crawler->filter('form')->form([
+        $form = $crawler->filter('form[name="select_season"]')->form([
             'select_season[season_code]' => 'krtek',
         ]);
         $this->client->submit($form);
@@ -82,7 +83,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     {
         for ($i = 0; $i < 3; ++$i) {
             $crawler = $this->client->request(Request::METHOD_GET, '/');
-            $form = $crawler->filter('form')->form([
+            $form = $crawler->filter('form[name="select_season"]')->form([
                 'select_season[season_code]' => 'aaaaa',
             ]);
             $this->client->submit($form);
@@ -90,7 +91,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         }
 
         $crawler = $this->client->request(Request::METHOD_GET, '/');
-        $form = $crawler->filter('form')->form([
+        $form = $crawler->filter('form[name="select_season"]')->form([
             'select_season[season_code]' => 'aaaaa',
         ]);
         $this->client->submit($form);
@@ -151,6 +152,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     public function testQuizPageUsesTheSeasonsLanguage(): void
     {
+        $this->enterName('Tom');
         $season = $this->getSeasonByCode('krtek');
         $this->assertInstanceOf(SeasonSettings::class, $season->settings);
         $season->settings->locale = 'en';
@@ -165,7 +167,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
     public function testEnterNameRedirectsToQuizPage(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, '/krtek');
-        $form = $crawler->filter('form')->form([
+        $form = $crawler->filter('form[name="enter_name"]')->form([
             'enter_name[name]' => 'Tom',
         ]);
         $this->client->submit($form);
@@ -196,9 +198,24 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('body', 'Er is geen test actief');
     }
 
-    public function testQuizPageRendersFirstQuestion(): void
+    public function testQuizPageGetBeforeEnteringNameDoesNotStartTheQuiz(): void
     {
         $this->client->request(Request::METHOD_GET, \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
+
+        self::assertResponseRedirects('/krtek');
+        $this->assertNull($this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]));
+    }
+
+    public function testEnteringNameStartsTheQuizAndShowsFirstQuestion(): void
+    {
+        $this->enterName('Tom');
+        self::assertResponseRedirects(\sprintf('/krtek/%s', Base64::base64UrlEncode('Tom')));
+
+        $quizCandidate = $this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]);
+        $this->assertInstanceOf(QuizCandidate::class, $quizCandidate);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $quizCandidate->started);
+
+        $this->client->followRedirect();
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Is de Krtek een man of een vrouw?');
@@ -223,6 +240,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     public function testQuizPageInvalidAnswerIdShowsFlash(): void
     {
+        $this->enterName('Tom');
         $url = \sprintf('/krtek/%s', Base64::base64UrlEncode('Tom'));
         $crawler = $this->client->request(Request::METHOD_GET, $url);
         $token = (string) $crawler->filter('input[name="token"]')->first()->attr('value');
@@ -239,6 +257,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
 
     public function testQuizPageOutOfOrderAnswerShowsFlash(): void
     {
+        $this->enterName('Tom');
         $quiz = $this->getQuizByName('Quiz 1');
         $secondQuestion = $quiz->questions->get(1);
         $this->assertInstanceOf(Question::class, $secondQuestion);
@@ -290,5 +309,50 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertResponseRedirects('/krtek');
         $this->client->followRedirect();
         self::assertSelectorTextContains('body', 'Je mag deze test niet beantwoorden');
+    }
+
+    public function testEnteringNameAsInactiveCandidateIsBlocked(): void
+    {
+        $quizCandidate = new QuizCandidate($this->getQuizByName('Quiz 1'), $this->getCandidate('Tom'));
+        $quizCandidate->active = false;
+
+        $this->entityManager->persist($quizCandidate);
+        $this->entityManager->flush();
+
+        $this->enterName('Tom');
+
+        self::assertResponseRedirects('/krtek');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('body', 'Je mag deze test niet beantwoorden');
+        $this->entityManager->clear();
+        $this->assertNull($this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')])?->started);
+    }
+
+    public function testEnteringNameStartsAnExistingQuizCandidateThatHasNotStarted(): void
+    {
+        $this->entityManager->persist(new QuizCandidate($this->getQuizByName('Quiz 1'), $this->getCandidate('Tom')));
+        $this->entityManager->flush();
+
+        $this->enterName('Tom');
+        $this->entityManager->clear();
+
+        $quizCandidate = $this->entityManager->getRepository(QuizCandidate::class)->findOneBy(['candidate' => $this->getCandidate('Tom')]);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $quizCandidate?->started);
+    }
+
+    public function testEnteringUnknownNameDoesNotStartAnything(): void
+    {
+        $before = $this->entityManager->getRepository(QuizCandidate::class)->count([]);
+
+        $this->enterName('Nobody');
+
+        self::assertResponseRedirects(\sprintf('/krtek/%s', Base64::base64UrlEncode('Nobody')));
+        $this->assertSame($before, $this->entityManager->getRepository(QuizCandidate::class)->count([]));
+    }
+
+    private function enterName(string $name): void
+    {
+        $crawler = $this->client->request(Request::METHOD_GET, '/krtek');
+        $this->client->submit($crawler->filter('form[name="enter_name"]')->form(['enter_name[name]' => $name]));
     }
 }

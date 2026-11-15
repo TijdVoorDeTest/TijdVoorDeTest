@@ -52,7 +52,7 @@ final class EliminationControllerTest extends AbstractControllerWebTestCase
     public function testIndexRedirectsToCandidateScreen(): void
     {
         $crawler = $this->client->request(Request::METHOD_GET, \sprintf('/elimination/%s', $this->elimination->id));
-        $form = $crawler->filter('form')->form([
+        $form = $crawler->filter('form[name="elimination_enter_name"]')->form([
             'elimination_enter_name[name]' => 'Tom',
         ]);
         $this->client->submit($form);

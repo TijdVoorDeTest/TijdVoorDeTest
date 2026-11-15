@@ -42,7 +42,7 @@ final class MolshoopControllerTest extends AbstractControllerWebTestCase
         $this->client->loginUser($user);
 
         $crawler = $this->client->request(Request::METHOD_GET, '/molshoop/season/add');
-        $form = $crawler->filter('form')->form([
+        $form = $crawler->filter('form[name="create_season_form"]')->form([
             'create_season_form[name]' => 'A New Season',
         ]);
         $this->client->submit($form);

@@ -24,6 +24,7 @@ security:
                 default_target_path: tvdt_molshoop_index
             logout:
                 path: tvdt_login_logout
+                enable_csrf: true
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800 # 1 week in seconds
