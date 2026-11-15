@@ -62,7 +62,7 @@ final class QuizController extends AbstractController
             return $this->redirectToRoute('tvdt_quiz_enter_name', ['seasonCode' => $seasonCode]);
         }
 
-        return $this->render('quiz/select_season.html.twig', ['form' => $form]);
+        return $this->render('quiz/single_field_form.html.twig', ['form' => $form]);
     }
 
     #[Route(path: '/{seasonCode:season}', name: 'tvdt_quiz_enter_name', requirements: ['seasonCode' => self::SEASON_CODE_REGEX])]
@@ -89,7 +89,7 @@ final class QuizController extends AbstractController
             return $this->redirectToRoute('tvdt_quiz_quiz_page', ['seasonCode' => $season->seasonCode, 'nameHash' => $nameHash]);
         }
 
-        return $this->render('quiz/enter_name.html.twig', ['season' => $season, 'form' => $form]);
+        return $this->render('quiz/single_field_form.html.twig', ['season' => $season, 'form' => $form]);
     }
 
     #[IsCsrfTokenValid('question', tokenKey: 'token', methods: ['POST'])]

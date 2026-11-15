@@ -1,15 +1,16 @@
 {% extends 'quiz/base.html.twig' %}
-{% block page_title %}{{ 'Enter name'|trans }}{% endblock %}
-{% block nav %}{% endblock %}
+{% set field = form.children|first %}
+{% block page_title %}{{ field.vars.label }}{% endblock %}
+{% block nav %}{% if not hide_nav|default(false) %}{{ parent() }}{% endif %}{% endblock %}
 {% block body %}
     <div class="quiz-form-narrow">
         {{ form_start(form) }}
-        {{ form_label(form.name) }}
+        {{ form_label(field) }}
         <div class="quiz-input-group">
-            {{ form_widget(form.name) }}
+            {{ form_widget(field) }}
             <button type="submit" class="quiz-submit-btn" aria-label="{{ 'Submit'|trans }}"></button>
         </div>
-        {{ form_errors(form.name) }}
+        {{ form_errors(field) }}
         {{ form_end(form) }}
     </div>
 {% endblock body %}

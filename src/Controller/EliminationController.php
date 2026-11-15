@@ -49,9 +49,9 @@ final class EliminationController extends AbstractController
             return $this->redirectToRoute('tvdt_elimination_candidate', ['elimination' => $elimination->id, 'candidateHash' => Base64::base64UrlEncode($name)]);
         }
 
-        return $this->render('quiz/elimination/index.html.twig', [
+        return $this->render('quiz/single_field_form.html.twig', [
             'form' => $form,
-            'controller_name' => 'EliminationController',
+            'hide_nav' => true,
         ]);
     }
 
