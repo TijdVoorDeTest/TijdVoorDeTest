@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Tvdt\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 use Gedmo\SoftDeleteable\SoftDeleteableListener;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 use Tvdt\Entity\BankQuestion;
 use Tvdt\Entity\Elimination;
 use Tvdt\Entity\GivenAnswer;
 use Tvdt\Entity\QuizCandidate;
 use Tvdt\Entity\Season;
 use Tvdt\Entity\User;
+use Tvdt\Helpers\SoftDeleteableFilter;
 
 /** @extends ServiceEntityRepository<Season> */
 class SeasonRepository extends ServiceEntityRepository
@@ -41,6 +45,76 @@ class SeasonRepository extends ServiceEntityRepository
             select s from Tvdt\Entity\Season s where :user member of s.owners order by s.name
             DQL
         )->setParameter('user', $user)->getResult();
+    }
+
+    /** The user's soft-deleted seasons, most recently deleted first.
+     *
+     * @return list<Season>
+     */
+    public function findSoftDeletedForUser(User $user): array
+    {
+        $em = $this->getEntityManager();
+
+        /* @var list<Season> */
+        return SoftDeleteableFilter::withDisabled($em, static fn (): array => $em->createQuery(<<<DQL
+            select s from Tvdt\Entity\Season s
+            where :user member of s.owners and s.deletedAt is not null
+            order by s.deletedAt desc
+            DQL
+        )->setParameter('user', $user)->getResult());
+    }
+
+    /** Every soft-deleted season, most recently deleted first, with $owners already initialized
+     * (in a separate follow-up query, see findAllForAdminOverview()) so the admin tab doesn't
+     * lazy-load them per row.
+     *
+     * @return list<Season>
+     */
+    public function findAllSoftDeleted(): array
+    {
+        $em = $this->getEntityManager();
+
+        /* @var list<Season> */
+        return SoftDeleteableFilter::withDisabled($em, function (): array {
+            /** @var list<Season> $seasons */
+            $seasons = $this->createQueryBuilder('s')
+                ->where('s.deletedAt is not null')
+                ->orderBy('s.deletedAt', 'DESC')
+                ->getQuery()
+                ->getResult();
+
+            if ([] !== $seasons) {
+                $this->createQueryBuilder('s')
+                    ->select('partial s.{id}', 'o')
+                    ->leftJoin('s.owners', 'o')
+                    ->where('s.deletedAt is not null')
+                    ->getQuery()
+                    ->getResult();
+            }
+
+            return $seasons;
+        });
+    }
+
+    public function findOneSoftDeletedBySeasonCode(string $seasonCode): ?Season
+    {
+        $season = SoftDeleteableFilter::withDisabled($this->getEntityManager(), fn (): ?Season => $this->findOneBySeasonCode($seasonCode));
+
+        return $season instanceof Season && $season->isDeleted() ? $season : null;
+    }
+
+    /** @return list<Season> */
+    public function findSoftDeletedOlderThan(\DateTimeInterface $threshold): array
+    {
+        $em = $this->getEntityManager();
+
+        /* @var list<Season> */
+        return SoftDeleteableFilter::withDisabled($em, static fn (): array => $em->createQuery(<<<DQL
+            select s from Tvdt\Entity\Season s
+            where s.deletedAt < :threshold
+            order by s.deletedAt
+            DQL
+        )->setParameter('threshold', $threshold)->getResult());
     }
 
     /** Every season, with $owners, $quizzes, and $activeQuiz already initialized so the admin
@@ -78,6 +152,63 @@ class SeasonRepository extends ServiceEntityRepository
             ->getResult();
 
         return $seasons;
+    }
+
+    /** Clears deletedAt under a row lock, so it cannot interleave with deleteIfStillExpired().
+     *
+     * @return bool false when the season is no longer soft-deleted (restored already, or purged meanwhile)
+     */
+    public function restore(Season $season): bool
+    {
+        $em = $this->getEntityManager();
+
+        return SoftDeleteableFilter::withDisabled($em, fn (): bool => $em->wrapInTransaction(function () use ($em, $season): bool {
+            if (!$this->lockAndRefresh($em, $season) || !$season->isDeleted()) {
+                return false;
+            }
+
+            $season->setDeletedAt();
+            $em->flush();
+
+            return true;
+        }));
+    }
+
+    /** Purges the season only if, under a row lock, it is still soft-deleted before $threshold, so a
+     * season restored after the caller selected it is never deleted.
+     *
+     * @return bool whether the season was purged
+     */
+    public function deleteIfStillExpired(Season $season, \DateTimeInterface $threshold): bool
+    {
+        $em = $this->getEntityManager();
+
+        return SoftDeleteableFilter::withDisabled($em, fn (): bool => $em->wrapInTransaction(function () use ($em, $season, $threshold): bool {
+            if (!$this->lockAndRefresh($em, $season) || !$season->isDeleted()) {
+                return false;
+            }
+
+            $deletedAt = $season->getDeletedAt();
+            if (!$deletedAt instanceof \DateTimeInterface || $deletedAt >= $threshold) {
+                return false;
+            }
+
+            $this->deleteSeason($season);
+
+            return true;
+        }));
+    }
+
+    /** Reloads the season with a write lock; false when its row is gone. (EntityManager::refresh()
+     * doesn't signal a vanished row, so this uses a locking query that refreshes the managed entity.).
+     */
+    private function lockAndRefresh(EntityManagerInterface $em, Season $season): bool
+    {
+        return null !== $em->createQuery('select s from Tvdt\Entity\Season s where s.id = :id')
+            ->setParameter('id', $season->id, UuidType::NAME)
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getOneOrNullResult();
     }
 
     /** Permanently deletes the season and every row tied to it — including the season itself,

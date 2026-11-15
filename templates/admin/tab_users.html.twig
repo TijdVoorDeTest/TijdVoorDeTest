@@ -48,7 +48,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-start">
-                    {{ 'Send a password reset email to {email}?'|trans({email: user.email}) }}
+                    {{ 'Send a password reset email to {email}?'|trans({'{email}': user.email}) }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'No'|trans }}</button>
@@ -75,10 +75,10 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body text-start">
-                            <p>{{ 'This permanently deletes {email} and every season they are the only owner of. There is no way to undo this.'|trans({email: user.email}) }}</p>
+                            <p>{{ 'This permanently deletes {email} and every season they are the only owner of. There is no way to undo this.'|trans({'{email}': user.email}) }}</p>
                             <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_user') }}">
                             <label class="form-label" for="deleteUserConfirmation-{{ user.id }}">
-                                {{ 'Type delete to confirm'|trans }}
+                                {{ 'Type {word} to confirm'|trans({'{word}': '<strong>' ~ 'delete'|trans ~ '</strong>'})|raw }}
                             </label>
                             <input type="text" class="form-control" id="deleteUserConfirmation-{{ user.id }}" name="confirmation"
                                    autocomplete="off"

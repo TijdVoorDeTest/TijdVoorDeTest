@@ -19,6 +19,9 @@ class Season
 {
     use SoftDeleteableEntity;
 
+    /** Days a soft-deleted season is kept before the purge job removes it for good. UI text promises one day less. */
+    public const int RETENTION_DAYS = 31;
+
     private const string SEASON_CODE_CHARACTERS = 'bcdfghjklmnpqrstvwxz';
 
     #[ORM\Column(type: UuidType::NAME)]

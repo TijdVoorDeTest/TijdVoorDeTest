@@ -26,11 +26,13 @@ final class SeasonVoter extends Voter
 
     public const string DELETE = 'SEASON_DELETE';
 
+    public const string RESTORE = 'SEASON_RESTORE';
+
     public const string MODIFY_QUIZ_CONTENT = 'QUIZ_MODIFY_CONTENT';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, [self::EDIT, self::DELETE, self::ELIMINATION, self::MODIFY_QUIZ_CONTENT], true)
+        return \in_array($attribute, [self::EDIT, self::DELETE, self::RESTORE, self::ELIMINATION, self::MODIFY_QUIZ_CONTENT], true)
                 && (
                     $subject instanceof Answer
                     || $subject instanceof BankQuestion
@@ -81,7 +83,7 @@ final class SeasonVoter extends Voter
         }
 
         return match ($attribute) {
-            self::EDIT, self::DELETE, self::ELIMINATION => $season->isOwner($user),
+            self::EDIT, self::DELETE, self::RESTORE, self::ELIMINATION => $season->isOwner($user),
             default => false,
         };
     }

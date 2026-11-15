@@ -26,6 +26,7 @@ use Tvdt\Enum\FlashType;
 use Tvdt\Form\ChangeEmailFormType;
 use Tvdt\Form\ChangeUserPasswordFormType;
 use Tvdt\Helpers\FilenameSanitizer;
+use Tvdt\Repository\SeasonRepository;
 use Tvdt\Repository\UserRepository;
 use Tvdt\Security\EmailVerifier;
 use Tvdt\Service\DataExportService;
@@ -37,6 +38,7 @@ final class SettingsController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly UserRepository $userRepository,
+        private readonly SeasonRepository $seasonRepository,
         private readonly EmailVerifier $emailVerifier,
         private readonly Security $security,
         private readonly TranslatorInterface $translator,
@@ -219,6 +221,7 @@ final class SettingsController extends AbstractController
         return $this->render('molshoop/settings/index.html.twig', [
             'passwordForm' => $passwordForm ?? $this->createForm(ChangeUserPasswordFormType::class),
             'emailForm' => $emailForm ?? $this->createForm(ChangeEmailFormType::class),
+            'deletedSeasons' => $this->seasonRepository->findSoftDeletedForUser($this->authenticatedUser),
         ]);
     }
 }

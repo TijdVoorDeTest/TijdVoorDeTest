@@ -1,0 +1,47 @@
+{{- if .Values.purgeDeletedSeasons.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "tvdt.fullname" . }}-purge-seasons
+  labels:
+    {{- include "tvdt.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.purgeDeletedSeasons.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: {{ .Values.purgeDeletedSeasons.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- include "tvdt.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: purge-seasons
+        spec:
+          restartPolicy: Never
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          automountServiceAccountToken: false
+          enableServiceLinks: false
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: purge-seasons
+              image: {{ include "tvdt.image" . }}
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              args: ["bin/console", "tvdt:purge-deleted-seasons", "--no-interaction"]
+              env:
+                - name: APP_ENV
+                  value: {{ .Values.app.env | quote }}
+                - name: RUN_MIGRATIONS
+                  value: "0"
+                {{- include "tvdt.databaseEnv" . | nindent 16 }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+{{- end }}

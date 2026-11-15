@@ -1,10 +1,12 @@
 <div class="row">
     <div class="col-md-6 col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <a class="btn btn-sm btn-outline-primary"
+        <div class="btn-group btn-group-sm mb-3" role="group" aria-label="{{ 'Quiz actions'|trans }}">
+            <a class="btn btn-outline-primary"
                href="{{ path('tvdt_molshoop_quiz_add_blank', {seasonCode: season.seasonCode}) }}">{{ 'Add Empty Quiz'|trans }}</a>
-            <a class="btn btn-sm btn-outline-secondary"
+            <a class="btn btn-outline-secondary"
                href="{{ path('tvdt_molshoop_quiz_add', {seasonCode: season.seasonCode}) }}">{{ 'Import Quiz from Excel'|trans }}</a>
+            <a class="btn btn-outline-secondary"
+               href="{{ path('tvdt_molshoop_template') }}">{{ 'Download Template'|trans }}</a>
         </div>
         <div class="list-group mb-3">
             {% for quiz in season.quizzes %}

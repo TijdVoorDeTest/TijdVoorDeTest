@@ -62,7 +62,7 @@ final class EliminationController extends AbstractController
         $candidate = $this->candidateRepository->getCandidateByHash($elimination->quiz->season, $candidateHash);
         if (!$candidate instanceof Candidate) {
             $this->addFlash(FlashType::Warning,
-                t('Could not find candidate with name {name}', ['name' => Base64::base64UrlDecode($candidateHash)])->trans($this->translator),
+                t('Could not find candidate with name {name}', ['{name}' => Base64::base64UrlDecode($candidateHash)])->trans($this->translator),
             );
 
             return $this->redirectToRoute('tvdt_elimination', ['elimination' => $elimination->id]);
@@ -71,7 +71,7 @@ final class EliminationController extends AbstractController
         $screenColour = $elimination->getScreenColour($candidate->name);
 
         if (!$screenColour instanceof ScreenColour) {
-            $this->addFlash(FlashType::Warning, $this->translator->trans('Could not find candidate with name {name} in elimination.', ['name' => $candidate->name]));
+            $this->addFlash(FlashType::Warning, $this->translator->trans('Could not find candidate with name {name} in elimination.', ['{name}' => $candidate->name]));
 
             return $this->redirectToRoute('tvdt_elimination', ['elimination' => $elimination->id]);
         }

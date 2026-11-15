@@ -166,4 +166,20 @@ final class SeasonVoterTest extends TestCase
         $subject = new Season();
         $this->assertSame(VoterInterface::ACCESS_ABSTAIN, $this->seasonVoter->vote($this->token, $subject, ['DO_NOTHING']));
     }
+
+    public function testRestoreGrantedToOwner(): void
+    {
+        $season = self::createStub(Season::class);
+        $season->method('isOwner')->willReturn(true);
+
+        $this->assertSame(VoterInterface::ACCESS_GRANTED, $this->seasonVoter->vote($this->token, $season, [SeasonVoter::RESTORE]));
+    }
+
+    public function testRestoreDeniedToNonOwner(): void
+    {
+        $season = self::createStub(Season::class);
+        $season->method('isOwner')->willReturn(false);
+
+        $this->assertSame(VoterInterface::ACCESS_DENIED, $this->seasonVoter->vote($this->token, $season, [SeasonVoter::RESTORE]));
+    }
 }
