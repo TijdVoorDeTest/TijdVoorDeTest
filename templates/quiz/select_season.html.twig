@@ -2,6 +2,13 @@
 {% block page_title %}{{ 'Season Code'|trans }}{% endblock %}
 {% block body %}
     <div class="quiz-form-narrow">
-        {{ form(form) }}
+        {{ form_start(form) }}
+        {{ form_label(form.season_code) }}
+        <div class="quiz-input-group">
+            {{ form_widget(form.season_code) }}
+            <button type="submit" class="quiz-submit-btn" aria-label="{{ 'Submit'|trans }}"></button>
+        </div>
+        {{ form_errors(form.season_code) }}
+        {{ form_end(form) }}
     </div>
 {% endblock body %}
