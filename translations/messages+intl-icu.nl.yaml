@@ -28,6 +28,8 @@ All: Alle
 'All Seasons': 'Alle seizoenen'
 'Already have an account? Log in': 'Heb je al een account? Log in'
 'Answer Mapping': 'Antwoord-kandidaat koppeling'
+'Answer options': Antwoordopties
+'Answers per candidate': 'Antwoorden per kandidaat'
 'Are you sure you want to clear all the results? This will also delete all the eliminations.': 'Weet je zeker dat je de resultaten wilt leegmaken? Dit gooit ook alle eliminaties weg.'
 'Are you sure you want to delete this candidate? All their answers will be lost.': 'Weet je zeker dat je deze kandidaat wilt verwijderen? Alle gegeven antwoorden gaan dan verloren.'
 'Are you sure you want to delete this elimination?': 'Weet je zeker dat je deze eliminatie wilt verwijderen?'
@@ -44,21 +46,25 @@ Cancel: Annuleren
 Candidate: Kandidaat
 'Candidate Status': Kandidaatstatus
 'Candidate answers saved': 'Kandidaatantwoorden opgeslagen'
+'Candidate coverage': Kandidaatdekking
 'Candidate deleted': 'Kandidaat verwijderd'
 'Candidate not found': 'Kandidaat niet gevonden'
 'Candidate progress reset': 'Voortgang kandidaat gereset'
 'Candidate renamed': 'Kandidaat hernoemd'
 'Candidate status updated': 'Kandidaatstatus bijgewerkt'
+'Candidate-bound questions': 'Vragen met kandidaten'
 Candidates: Kandidaten
 'Cannot remove the last owner of a season': 'Je kunt de laatste eigenaar van een seizoen niet verwijderen'
 'Change email': 'E-mailadres wijzigen'
 'Change password': 'Wachtwoord wijzigen'
 'Check your email': 'Controleer je e-mail'
+'Chosen answers per question': 'Gekozen antwoorden per vraag'
 'Clear Quiz...': 'Test leegmaken...'
 Close: Sluiten
 Code: Code
 Colour: Kleur
 Completed: Voltooid
+Composition: Samenstelling
 Concept: Concept
 Confirm: Bevestigen
 'Confirm Answers': 'Bevestig antwoorden'
@@ -68,7 +74,9 @@ Confirmed: Bevestigd
 'Copy join link': 'Kopieer deelnamelink'
 'Copy join link (active season)': 'Kopieer deelnamelink (actief seizoen)'
 'Copy join link (inactive season)': 'Kopieer deelnamelink (inactief seizoen)'
+Correct: Goed
 'Correct Answers': 'Goede antwoorden'
+'Correct and incorrect per question': 'Goed en fout per vraag'
 Corrections: Jokers
 'Could not find candidate with name {name}': 'Kon kandidaat met naam {name} niet vinden'
 'Could not find candidate with name {name} in elimination.': 'Kon geen kandidaat vinden met de naam {name} in de eliminatie'
@@ -104,6 +112,8 @@ Delete...: Verwijderen...
 'Deployed commit': 'Uitgerolde commit'
 Description: Beschrijving
 Develop: Develop
+'Disabled questions': 'Uitgeschakelde vragen'
+'Distinct candidates named': 'Verschillende kandidaten genoemd'
 Done: Klaar
 'Download Template': 'Download sjabloon'
 'Download an archive of everything stored under your account: your profile, the seasons you own, their quizzes, results and candidates.': 'Download een archief met alles wat onder je account is opgeslagen: je profiel, de seizoenen die je bezit, met de bijbehorende testen, resultaten en kandidaten.'
@@ -135,12 +145,14 @@ Green: Groen
 'Help text for creating a season': 'Maak een nieuw seizoen aan om tests en kandidaten te beheren.'
 'Help text for preparing elimination': 'Kies welke kandidaten groen of rood krijgen voor de eliminatie.'
 Home: Home
+'How many answers of a candidate-bound question represent each candidate. Every candidate should appear exactly once.': 'Hoeveel antwoorden van een vraag met kandidaten elke kandidaat vertegenwoordigen. Elke kandidaat hoort precies één keer voor te komen.'
 'If an account matching your email exists, then an email was just sent that contains a link that you can use to reset your password.': 'Als er een account met dit e-mailadres bestaat, is er zojuist een e-mail verstuurd met een link om je wachtwoord te resetten.'
 "If you don't receive an email please check your spam folder or": 'Als je geen e-mail ontvangt, controleer dan je spammap of'
 Import: Importeren
 'Import Quiz from Excel': 'Importeer test vanuit Excel'
 'In Progress': Bezig
 Inactive: Inactief
+Incorrect: Fout
 'Invalid label name': 'Ongeldige labelnaam'
 'Invalid season code': 'Ongeldige seizoencode'
 'Label added': 'Label toegevoegd'
@@ -161,6 +173,7 @@ Logout: Uitloggen
 'Make active': 'Maak actief'
 Manage: Beheren
 Molehill: Molshoop
+'Most named': 'Meest genoemd'
 Name: Naam
 Never: Nooit
 New: Nieuw
@@ -170,6 +183,7 @@ New: Nieuw
 Next: Volgende
 'No': Nee
 'No active quiz': 'Geen actieve test'
+'No candidate has started this test yet, so there are no answers to show.': 'Nog geen kandidaat is aan deze test begonnen, dus er zijn nog geen antwoorden om te tonen.'
 'No candidates': 'Geen kandidaten'
 'No questions have been added to this quiz yet.': 'Er zijn nog geen vragen aan deze test toegevoegd.'
 'No questions in the question bank yet': 'Nog geen vragen in de vragenbank'
@@ -189,6 +203,7 @@ Overview: Overzicht
 Owners: Eigenaren
 Password: Wachtwoord
 Penalty: Straftijd
+'Plain questions': 'Gewone vragen'
 'Please Confirm': 'Bevestig alsjeblieft'
 'Please Confirm your Email': 'Bevestig je e-mailadres alsjeblieft'
 'Please confirm your email address before downloading your data.': 'Bevestig eerst je e-mailadres voordat je je gegevens downloadt.'
@@ -256,6 +271,7 @@ Result: Uitslag
 'Results & Elimination': 'Resultaat & Eliminatie'
 Reusable: Herbruikbaar
 Revealed: Onthuld
+'Rows are the answering candidate, columns the candidate that was named. A group answer counts fully for every member.': 'De rijen zijn de kandidaat die antwoordt, de kolommen de kandidaat die genoemd werd. Een groepsantwoord telt volledig mee voor elk lid.'
 Save: Opslaan
 'Save and start elimination': 'Opslaan en eliminatie starten'
 Score: Score
@@ -279,6 +295,9 @@ Settings: Instellingen
 'Skip to content': 'Naar inhoud'
 Soon™: Soon™
 'Sort A–Z': 'Sorteer A-Z'
+'Spread (entropy)': 'Spreiding (entropie)'
+'Spreading or tunnel vision': 'Spreiden of tunnelvisie'
+Statistics: Statistieken
 Status: Status
 Submit: Verstuur
 'Sync latest changes to this quiz': 'Laatste wijzigingen synchroniseren naar deze quiz'
@@ -298,8 +317,10 @@ Submit: Verstuur
 Theme: Thema
 'There are no answers for this question': 'Er zijn geen antwoorden voor deze vraag'
 'There are no deleted seasons.': 'Er zijn geen verwijderde seizoenen.'
+'There are no enabled questions.': 'Er zijn geen ingeschakelde vragen.'
 'There is already an account with this email': 'Er is al een account met dit e-mailadres'
 'There is no active quiz': 'Er is geen test actief'
+'These statistics show how candidates answered, also before the elimination has been revealed.': 'Deze statistieken laten zien hoe kandidaten antwoordden, ook voordat het afvallen is onthuld.'
 'This deletes your account and every season you are the only owner of. Enter your password to confirm.': 'Dit verwijdert je account en alle seizoenen waarvan jij de enige eigenaar bent. Vul je wachtwoord in om te bevestigen.'
 'This invalidates the current season code. Anyone using the old code will no longer be able to join this season.': 'Hiermee wordt de huidige seizoenscode ongeldig. Iedereen die de oude code gebruikt, kan dit seizoen niet meer vinden.'
 'This link will expire in {count}.': 'Deze link verloopt over {count}.'
@@ -315,7 +336,10 @@ Theme: Thema
 'This user is already an owner of this season': 'Deze gebruiker is al eigenaar van dit seizoen'
 'This user is not an owner of this season': 'Deze gebruiker is geen eigenaar van dit seizoen'
 Time: Tijd
+'Times chosen': 'Aantal keer gekozen'
 'Toggle correct answer': 'Goed antwoord aan/uitzetten'
+'Top share': Topaandeel
+'Top share is the share of picks on the most named candidate (1 means tunnel vision). Spread runs from 0 (all on one candidate) to 1 (evenly spread). Needs at least 2 answered candidate-bound questions.': 'Het topaandeel is het aandeel keuzes op de meest genoemde kandidaat (1 betekent tunnelvisie). De spreiding loopt van 0 (alles op één kandidaat) tot 1 (gelijkmatig verspreid). Vraagt minstens 2 beantwoorde vragen met kandidaten.'
 'Type delete to confirm': 'Typ verwijderen om te bevestigen'
 'Type {word} to confirm': 'Typ {word} om te bevestigen'
 Unassign: Ontkoppelen
@@ -328,6 +352,7 @@ View: Bekijken
 'View on GitHub': 'Bekijk op GitHub'
 "What's the bug? What did you expect?": 'Wat ging er mis? Wat had je verwacht?'
 White: Wit
+'Who named whom': 'Wie noemde wie'
 'Wrong password, your account has not been deleted.': 'Verkeerd wachtwoord, je account is niet verwijderd.'
 Yellow: Geel
 'Yes': Ja

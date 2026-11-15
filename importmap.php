@@ -47,4 +47,6 @@ return [
     '@formatjs/icu-messageformat-parser' => ['version' => '2.11.4'],
     '@formatjs/icu-skeleton-parser' => ['version' => '1.8.16'],
     '@symfony/ux-translator' => ['path' => './vendor/symfony/ux-translator/assets/dist/translator_controller.js'],
+    'chart.js' => ['version' => '4.6.1'],
+    '@kurkle/color' => ['version' => '0.3.4'],
 ];

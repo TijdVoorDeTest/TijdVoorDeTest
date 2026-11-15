@@ -1,0 +1,198 @@
+<div class="alert alert-info">
+    {{ 'These statistics show how candidates answered, also before the elimination has been revealed.'|trans }}
+</div>
+
+<h4 class="mb-3">{{ 'Composition'|trans }}</h4>
+<div class="row mb-4">
+    <div class="col-lg-5 col-12">
+        <table class="table table-sm table-composition">
+            <tbody>
+            <tr>
+                <th scope="row">{{ 'Questions'|trans }}</th>
+                <td>{{ composition.questionCount }}</td>
+            </tr>
+            <tr>
+                <th scope="row">{{ 'Disabled questions'|trans }}</th>
+                <td>{{ composition.disabledCount }}</td>
+            </tr>
+            <tr>
+                <th scope="row">{{ 'Candidate-bound questions'|trans }}</th>
+                <td>{{ composition.candidateBoundCount }}</td>
+            </tr>
+            <tr>
+                <th scope="row">{{ 'Plain questions'|trans }}</th>
+                <td>{{ composition.plainCount }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-5 offset-lg-1 col-12">
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th scope="col">{{ 'Answer options'|trans }}</th>
+                <th scope="col">{{ 'Questions'|trans }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for options, questions in composition.optionCounts %}
+                <tr>
+                    <td>{{ options }}</td>
+                    <td>{{ questions }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if composition.coverage is not empty %}
+    <h5 class="mb-2">{{ 'Candidate coverage'|trans }}</h5>
+    <p class="text-muted">{{ 'How many answers of a candidate-bound question represent each candidate. Every candidate should appear exactly once.'|trans }}</p>
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-bordered text-center align-middle">
+            <thead>
+            <tr>
+                <th scope="col" class="text-start">{{ 'Question'|trans }}</th>
+                {% for name in composition.candidateNames %}
+                    <th scope="col">{{ name }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in composition.coverage %}
+                <tr>
+                    <th scope="row" class="text-start fw-normal">{{ row.question }}</th>
+                    {% for count in row.counts %}
+                        <td class="{{ count == 1 ? 'table-success' : 'table-danger' }}">{{ count }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{% if answers is null %}
+    <p class="text-muted">{{ 'No candidate has started this test yet, so there are no answers to show.'|trans }}</p>
+{% else %}
+    <hr>
+    <h4 class="mb-3">{{ 'Correct and incorrect per question'|trans }}</h4>
+    {% if correctnessChart %}
+        <div class="mb-4" style="max-width: 50rem">
+            {{ render_chart(correctnessChart) }}
+        </div>
+    {% else %}
+        <p class="text-muted">{{ 'There are no enabled questions.'|trans }}</p>
+    {% endif %}
+
+    <h4 class="mb-3">{{ 'Chosen answers per question'|trans }}</h4>
+    <div class="row mb-4">
+        {% for stat in answers.questions %}
+            <div class="col-lg-6 col-12 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">#{{ loop.index }} {{ stat.question }}</h6>
+                        {{ render_chart(distributionCharts[loop.index0]) }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h4 class="mb-3">{{ 'Answers per candidate'|trans }}</h4>
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-bordered table-review align-middle">
+            <thead>
+            <tr>
+                <th scope="col">{{ 'Candidate'|trans }}</th>
+                {% for stat in answers.questions %}
+                    <th scope="col" title="{{ stat.question }}">#{{ loop.index }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in answers.review %}
+                <tr>
+                    <th scope="row">{{ row.candidate }}</th>
+                    {% for cell in row.cells %}
+                        {% if cell is null %}
+                            <td class="text-muted">-</td>
+                        {% else %}
+                            <td class="{{ cell.isCorrect ? 'table-success' : 'table-danger' }}">{{ cell.text }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if answers.matrix %}
+        {% set matrix = answers.matrix %}
+        {% set highest = max(matrix.counts|map(row => max(row))) %}
+        <hr>
+        <h4 class="mb-3">{{ 'Who named whom'|trans }}</h4>
+        <p class="text-muted">{{ 'Rows are the answering candidate, columns the candidate that was named. A group answer counts fully for every member.'|trans }}</p>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered text-center align-middle table-matrix">
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    {% for name in matrix.names %}
+                        <th scope="col">{{ name }}</th>
+                    {% endfor %}
+                    <th scope="col">{{ 'Most named'|trans }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in matrix.counts %}
+                    <tr>
+                        <th scope="row" class="text-start">{{ matrix.names[loop.index0] }}</th>
+                        {% for count in row %}
+                            <td style="{{ count > 0 and highest > 0 ? 'background-color: rgba(13, 110, 253, ' ~ (0.15 + 0.6 * count / highest)|round(2) ~ ')' }}">{{ count }}</td>
+                        {% endfor %}
+                        <td>{{ matrix.mostNamed[loop.index0] ?? '-' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h4 class="mb-3">{{ 'Spreading or tunnel vision'|trans }}</h4>
+        <p class="text-muted">
+            {{ 'Top share is the share of picks on the most named candidate (1 means tunnel vision). Spread runs from 0 (all on one candidate) to 1 (evenly spread). Needs at least 2 answered candidate-bound questions.'|trans }}
+        </p>
+        <div class="row mb-4">
+            <div class="col-lg-6 col-12">
+                <table class="table table-sm table-concentration">
+                    <thead>
+                    <tr>
+                        <th scope="col">{{ 'Candidate'|trans }}</th>
+                        <th scope="col">{{ 'Questions'|trans }}</th>
+                        <th scope="col">{{ 'Distinct candidates named'|trans }}</th>
+                        <th scope="col">{{ 'Top share'|trans }}</th>
+                        <th scope="col">{{ 'Spread (entropy)'|trans }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in answers.concentration %}
+                        <tr>
+                            <th scope="row">{{ row.candidate }}</th>
+                            <td>{{ row.questions }}</td>
+                            <td>{{ row.distinctTargets ?? '-' }}</td>
+                            <td>{{ row.topShare is null ? '-' : row.topShare|format_number({fraction_digit: 2}) }}</td>
+                            <td>{{ row.entropy is null ? '-' : row.entropy|format_number({fraction_digit: 2}) }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if concentrationChart %}
+                <div class="col-lg-6 col-12">
+                    {{ render_chart(concentrationChart) }}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}

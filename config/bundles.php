@@ -14,6 +14,7 @@ use Symfony\Bundle\MakerBundle\MakerBundle;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
+use Symfony\UX\Chartjs\ChartjsBundle;
 use Symfony\UX\StimulusBundle\StimulusBundle;
 use Symfony\UX\Translator\UxTranslatorBundle;
 use Symfony\UX\Turbo\TurboBundle;
@@ -42,4 +43,5 @@ return [
     SymfonyCastsResetPasswordBundle::class => ['all' => true],
     SensiolabsTypeScriptBundle::class => ['all' => true],
     UxTranslatorBundle::class => ['all' => true],
+    ChartjsBundle::class => ['all' => true],
 ];

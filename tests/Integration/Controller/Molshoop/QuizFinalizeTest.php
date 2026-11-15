@@ -12,6 +12,7 @@ use Tvdt\Entity\Answer;
 use Tvdt\Entity\Question;
 use Tvdt\Entity\Quiz;
 use Tvdt\Entity\QuizCandidate;
+use Tvdt\Service\QuizStatisticsCache;
 use Tvdt\Tests\Integration\Controller\AbstractControllerWebTestCase;
 
 #[CoversClass(QuizController::class)]
@@ -176,6 +177,23 @@ final class QuizFinalizeTest extends AbstractControllerWebTestCase
 
         $this->entityManager->clear();
         $this->assertFalse($this->getQuizByName('Quiz 1')->isFinalized);
+    }
+
+    public function testClearQuizInvalidatesCachedStatistics(): void
+    {
+        $quiz = $this->getQuizByName('Quiz 1');
+        $this->entityManager->persist(new QuizCandidate($quiz, $this->getCandidate('Tom')));
+        $this->entityManager->flush();
+
+        $cache = self::getContainer()->get(QuizStatisticsCache::class);
+        $this->assertNotSame([], $cache->answers($quiz)->review);
+
+        $token = $this->getCsrfTokenFromOverview($quiz, '/clear');
+        $this->client->request(Request::METHOD_POST, \sprintf('/molshoop/quiz/%s/clear', $quiz->id), ['_token' => $token]);
+        $this->assertResponseRedirects();
+
+        $this->entityManager->clear();
+        $this->assertSame([], $cache->answers($this->getQuizByName('Quiz 1'))->review);
     }
 
     public function testDeactivateWithRedirectQuizStaysOnQuizOverview(): void
