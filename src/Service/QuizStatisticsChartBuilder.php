@@ -27,7 +27,7 @@ final readonly class QuizStatisticsChartBuilder
     ) {}
 
     /** @param list<QuestionStatistic> $questions */
-    public function correctness(array $questions): Chart
+    public function correctness(array $questions, int $candidateCount): Chart
     {
         $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
         $chart->setData([
@@ -37,7 +37,7 @@ final readonly class QuizStatisticsChartBuilder
                 ['label' => $this->translator->trans('Incorrect'), 'backgroundColor' => self::RED, 'data' => array_map(static fn (QuestionStatistic $q): int => $q->incorrect, $questions)],
             ],
         ]);
-        $chart->setOptions(['scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true, 'beginAtZero' => true, 'ticks' => ['precision' => 0]]]]);
+        $chart->setOptions(['scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true, 'min' => 0, 'max' => max(1, $candidateCount), 'ticks' => ['precision' => 0]]]]);
 
         return $chart;
     }

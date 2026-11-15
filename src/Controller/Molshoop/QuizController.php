@@ -122,7 +122,7 @@ class QuizController extends AbstractController
             'quiz' => $quiz,
             'composition' => $this->statisticsCache->composition($quiz),
             'answers' => $answers,
-            'correctnessChart' => !$answers instanceof QuizAnswerStatistics || [] === $answers->questions ? null : $this->chartBuilder->correctness($answers->questions),
+            'correctnessChart' => !$answers instanceof QuizAnswerStatistics || [] === $answers->questions ? null : $this->chartBuilder->correctness($answers->questions, \count($answers->review)),
             'distributionCharts' => $answers instanceof QuizAnswerStatistics ? array_map($this->chartBuilder->distribution(...), $answers->questions) : [],
             'concentrationChart' => $answers instanceof QuizAnswerStatistics ? $this->chartBuilder->concentration($answers->concentration) : null,
             'activeTab' => 'statistics',
