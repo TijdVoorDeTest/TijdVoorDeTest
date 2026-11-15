@@ -227,7 +227,7 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         $this->client->followRedirect();
 
         self::assertResponseIsSuccessful();
-        self::assertStringStartsWith('Tijd voor de test', $this->client->getCrawler()->filter('title')->text());
+        $this->assertStringStartsWith('Tijd voor de test', $this->client->getCrawler()->filter('title')->text());
     }
 
     public function testQuizPageAnsweringPersistsGivenAnswerAndRedirects(): void
