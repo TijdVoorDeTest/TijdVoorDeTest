@@ -1,6 +1,5 @@
 {% extends 'quiz/base.html.twig' %}
 {% set field = form.children|first %}
-{% block page_title %}{{ field.vars.label }}{% endblock %}
 {% block nav %}{% if not hide_nav|default(false) %}{{ parent() }}{% endif %}{% endblock %}
 {% block body %}
     <div class="quiz-form-narrow">

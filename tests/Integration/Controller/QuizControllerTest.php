@@ -221,18 +221,13 @@ final class QuizControllerTest extends AbstractControllerWebTestCase
         self::assertSelectorTextContains('body', 'Is de Krtek een man of een vrouw?');
     }
 
-    public function testQuestionPageTitleHidesNumbersWhenShowNumbersIsOff(): void
+    public function testQuestionPageTitleIsJustTheSiteName(): void
     {
-        $season = $this->getSeasonByCode('krtek');
-        $this->assertInstanceOf(SeasonSettings::class, $season->settings);
-        $season->settings->showNumbers = false;
-        $this->entityManager->flush();
-
         $this->enterName('Tom');
         $this->client->followRedirect();
 
         self::assertResponseIsSuccessful();
-        $this->assertDoesNotMatchRegularExpression('#\d+/\d+#', $this->client->getCrawler()->filter('title')->text());
+        self::assertStringStartsWith('Tijd voor de test', $this->client->getCrawler()->filter('title')->text());
     }
 
     public function testQuizPageAnsweringPersistsGivenAnswerAndRedirects(): void
