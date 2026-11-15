@@ -38,6 +38,7 @@ final class QuizStatisticsControllerTest extends AbstractControllerWebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('canvas');
         self::assertSelectorExists('table.table-review');
+        self::assertSelectorExists('table.table-review th[data-bs-toggle="tooltip"][title]');
     }
 
     public function testStatisticsTabShowsMatrixAndConcentrationForCandidateBoundQuestions(): void

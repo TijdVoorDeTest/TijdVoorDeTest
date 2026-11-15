@@ -104,13 +104,13 @@
     </div>
 
     <h4 class="mb-3">{{ 'Answers per candidate'|trans }}</h4>
-    <div class="table-responsive mb-4">
+    <div class="table-responsive mb-4" data-controller="bo--tooltips">
         <table class="table table-sm table-bordered table-review align-middle">
             <thead>
             <tr>
                 <th scope="col">{{ 'Candidate'|trans }}</th>
                 {% for stat in answers.questions %}
-                    <th scope="col" title="{{ stat.question }}">#{{ loop.index }}</th>
+                    <th scope="col" data-bs-toggle="tooltip" title="{{ stat.question }}">#{{ loop.index }}</th>
                 {% endfor %}
             </tr>
             </thead>
