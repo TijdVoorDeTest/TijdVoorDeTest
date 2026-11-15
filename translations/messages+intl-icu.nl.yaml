@@ -99,7 +99,7 @@ Delete...: Verwijderen...
 'Deleted on': 'Verwijderd op'
 'Deleted seasons': 'Verwijderde seizoenen'
 'Deleted seasons can be restored for {days} days after deleting them. After that they are permanently removed.': 'Verwijderde seizoenen kun je nog {days} dagen na het verwijderen terugzetten. Daarna worden ze definitief verwijderd.'
-'Deleting this season hides it, its tests, and all candidate answers everywhere.': 'Als je dit seizoen verwijdert, wordt het overal verborgen, samen met de tests en antwoorden van kandidaten.'
+'Deleting this season hides it, its tests, and all candidate answers everywhere.': 'Als je dit seizoen verwijdert, verdwijnt het samen met alle tests en antwoorden van kandidaten.'
 'Deleting your account also deletes every season you are the only owner of. This cannot be undone.': 'Als je je account verwijdert, worden ook alle seizoenen verwijderd waarvan jij de enige eigenaar bent. Dit kan niet ongedaan worden gemaakt.'
 'Deployed commit': 'Uitgerolde commit'
 Description: Beschrijving
@@ -300,7 +300,7 @@ Theme: Thema
 'There is already an account with this email': 'Er is al een account met dit e-mailadres'
 'There is no active quiz': 'Er is geen test actief'
 'This deletes your account and every season you are the only owner of. Enter your password to confirm.': 'Dit verwijdert je account en alle seizoenen waarvan jij de enige eigenaar bent. Vul je wachtwoord in om te bevestigen.'
-'This hides this season, its tests, and all candidate answers everywhere.': 'Dit verbergt dit seizoen overal, samen met de tests en antwoorden van kandidaten.'
+'This hides this season, its tests, and all candidate answers everywhere.': 'Hiermee verdwijnt dit seizoen, samen met alle tests en antwoorden van kandidaten.'
 'This invalidates the current season code. Anyone using the old code will no longer be able to join this season.': 'Hiermee wordt de huidige seizoenscode ongeldig. Iedereen die de oude code gebruikt, kan dit seizoen niet meer vinden.'
 'This link will expire in {count}.': 'Deze link verloopt over {count}.'
 'This permanently deletes {email} and every season they are the only owner of. There is no way to undo this.': 'Dit verwijdert {email} definitief, samen met elk seizoen waarvan deze gebruiker de enige eigenaar is. Dit kan niet ongedaan worden gemaakt.'
