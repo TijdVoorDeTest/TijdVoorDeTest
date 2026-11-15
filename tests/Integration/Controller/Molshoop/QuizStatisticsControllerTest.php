@@ -54,6 +54,7 @@ final class QuizStatisticsControllerTest extends AbstractControllerWebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('table.table-matrix');
+        self::assertSelectorExists('table.table-matrix td[title="Elise noemde Elise: 1x"]');
         self::assertSelectorExists('table.table-concentration');
     }
 

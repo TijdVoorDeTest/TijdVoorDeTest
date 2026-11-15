@@ -150,10 +150,11 @@
                 </thead>
                 <tbody>
                 {% for row in matrix.counts %}
+                    {% set answering = matrix.names[loop.index0] %}
                     <tr>
-                        <th scope="row" class="text-start">{{ matrix.names[loop.index0] }}</th>
+                        <th scope="row" class="text-start">{{ answering }}</th>
                         {% for count in row %}
-                            <td style="{{ count > 0 and highest > 0 ? 'background-color: rgba(13, 110, 253, ' ~ (0.15 + 0.6 * count / highest)|round(2) ~ ')' }}">{{ count }}</td>
+                            <td title="{{ '{answering} named {named}: {count}x'|trans({'{answering}': answering, '{named}': matrix.names[loop.index0], '{count}': count}) }}" style="{{ count > 0 and highest > 0 ? 'background-color: rgba(13, 110, 253, ' ~ (0.15 + 0.6 * count / highest)|round(2) ~ ')' }}">{{ count }}</td>
                         {% endfor %}
                         <td>{{ matrix.mostNamed[loop.index0] ?? '-' }}</td>
                     </tr>
