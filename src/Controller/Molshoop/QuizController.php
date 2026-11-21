@@ -18,6 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Tvdt\Controller\AbstractController;
+use Tvdt\Dto\Statistics\QuizAnswerStatistics;
 use Tvdt\Entity\Answer;
 use Tvdt\Entity\Candidate;
 use Tvdt\Entity\Question;
@@ -31,6 +32,8 @@ use Tvdt\Repository\QuestionRepository;
 use Tvdt\Repository\QuizCandidateRepository;
 use Tvdt\Repository\QuizRepository;
 use Tvdt\Security\Voter\SeasonVoter;
+use Tvdt\Service\QuizStatisticsCache;
+use Tvdt\Service\QuizStatisticsChartBuilder;
 
 #[AsController]
 #[IsGranted('IS_AUTHENTICATED')]
@@ -43,6 +46,8 @@ class QuizController extends AbstractController
         private readonly GivenAnswerRepository $givenAnswerRepository,
         private readonly QuestionRepository $questionRepository,
         private readonly EntityManagerInterface $em,
+        private readonly QuizStatisticsCache $statisticsCache,
+        private readonly QuizStatisticsChartBuilder $chartBuilder,
     ) {}
 
     #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
@@ -97,6 +102,31 @@ class QuizController extends AbstractController
             'result' => $this->quizRepository->getScores($quiz),
             'activeTab' => 'result',
             'template' => 'molshoop/quiz/tab_result.html.twig',
+        ]);
+    }
+
+    #[IsGranted(SeasonVoter::EDIT, subject: 'season')]
+    #[Route(
+        '/molshoop/season/{seasonCode:season}/quiz/{quiz}/statistics',
+        name: 'tvdt_molshoop_quiz_statistics',
+        requirements: ['seasonCode' => self::SEASON_CODE_REGEX, 'quiz' => Requirement::UUID],
+    )]
+    public function statistics(Season $season, Quiz $quiz): Response
+    {
+        $this->assertQuizInSeason($season, $quiz);
+
+        $answers = $quiz->hasStartedCandidates ? $this->statisticsCache->answers($quiz) : null;
+
+        return $this->render('molshoop/quiz.html.twig', [
+            'season' => $season,
+            'quiz' => $quiz,
+            'composition' => $this->statisticsCache->composition($quiz),
+            'answers' => $answers,
+            'correctnessChart' => !$answers instanceof QuizAnswerStatistics || [] === $answers->questions ? null : $this->chartBuilder->correctness($answers->questions, \count($answers->review)),
+            'distributionCharts' => $answers instanceof QuizAnswerStatistics ? array_map($this->chartBuilder->distribution(...), $answers->questions) : [],
+            'concentrationChart' => $answers instanceof QuizAnswerStatistics ? $this->chartBuilder->concentration($answers->concentration) : null,
+            'activeTab' => 'statistics',
+            'template' => 'molshoop/quiz/tab_statistics.html.twig',
         ]);
     }
 
@@ -286,6 +316,8 @@ class QuizController extends AbstractController
     {
         try {
             $this->quizRepository->clearQuiz($quiz);
+            // clearQuiz uses bulk DQL deletes, which bypass the lifecycle listener that normally clears the cache
+            $this->statisticsCache->invalidate($quiz->id);
             $this->addFlash(FlashType::Success, $this->translator->trans('Quiz cleared and no longer finalized'));
         } catch (ErrorClearingQuizException) {
             $this->addFlash(FlashType::Danger, $this->translator->trans('Error clearing quiz'));

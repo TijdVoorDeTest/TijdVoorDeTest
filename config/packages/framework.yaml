@@ -10,6 +10,11 @@ framework:
     trusted_proxies: 'private_ranges'
     # x-forwarded-for is needed so the rate limiters key on the real client, not the ingress
     trusted_headers: [ 'x-forwarded-for', 'x-forwarded-proto' ]
+    cache:
+        pools:
+            # Quiz statistics, kept in Postgres so they survive deploys (single instance, no Redis needed).
+            cache.stats:
+                adapter: cache.adapter.doctrine_dbal
     form:
         csrf_protection:
             enabled: true

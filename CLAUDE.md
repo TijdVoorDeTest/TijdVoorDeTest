@@ -431,5 +431,7 @@ When writing Dutch help content in `templates/molshoop/help/nl/`:
 - The molshoop (backoffice) elimination logic is in `Controller/Molshoop/PrepareEliminationController.php`
 - Quiz timing logic starts on candidate start click and stops on final answer selection
 - Background music feature noted but not yet implemented (requirements only)
-- Statistics module (per-quiz statistics page, candidate accusation matrix, caching) is planned per GitHub issue #199 —
-  see "Domain Context" above for why candidate-bound answers matter to it
+- Statistics module (GitHub issue #199) lives in `QuizStatisticsCalculator` (pure logic), `QuizStatisticsCache` (the
+  `cache.stats` DB-backed pool, entries never expire) and `QuizStatisticsInvalidator` (Doctrine listener that clears a
+  quiz's entries after any `Quiz`/`GivenAnswer`/`QuizCandidate` write). Bulk DQL writes bypass that listener, so call
+  `QuizStatisticsCache::invalidate()` yourself afterwards (see `QuizController::clearQuiz()`).

@@ -11,7 +11,16 @@ framework:
         missing_import_mode: strict
 
 sensiolabs_typescript:
-    source_dir: ['%kernel.project_dir%/assets']
+    # Listed explicitly instead of the whole assets/ directory: SWC chokes on assets/vendor/chart.js, a directory
+    # whose name ends in .js. Add new top-level .ts files here.
+    source_dir:
+        - '%kernel.project_dir%/assets/bootstrap.ts'
+        - '%kernel.project_dir%/assets/molshoop.ts'
+        - '%kernel.project_dir%/assets/quiz.ts'
+        - '%kernel.project_dir%/assets/sentry.ts'
+        - '%kernel.project_dir%/assets/stimulus.ts'
+        - '%kernel.project_dir%/assets/translator.ts'
+        - '%kernel.project_dir%/assets/controllers'
 
 when@prod:
     framework:
